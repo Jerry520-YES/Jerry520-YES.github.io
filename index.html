@@ -21,26 +21,32 @@ a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
 .container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
 
-/* ===== Hero ===== */
+/* ===== Hero — Rainbow Aurora ===== */
 .hero{
-  background:linear-gradient(135deg,#4A90D9 0%,#357abd 50%,#2d6aa8 100%);
+  background:#1a1a2e;
   color:#fff;padding:120px 24px 100px;text-align:center;position:relative;overflow:hidden;
 }
 .hero::before{
-  content:"";position:absolute;top:-50%;right:-20%;width:600px;height:600px;
-  background:radial-gradient(circle,rgba(255,255,255,0.08) 0%,transparent 70%);
-  border-radius:50%;
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 25%,rgba(231,76,60,0.38) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 45% at 85% 15%,rgba(232,150,20,0.32) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 45% at 80% 70%,rgba(39,174,96,0.28) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 20% 80%,rgba(0,180,216,0.32) 0%,transparent 55%),
+    radial-gradient(ellipse 45% 40% at 55% 50%,rgba(124,58,237,0.25) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 35% at 95% 50%,rgba(241,196,15,0.18) 0%,transparent 55%);
 }
 .hero::after{
-  content:"";position:absolute;bottom:-40%;left:-15%;width:500px;height:500px;
-  background:radial-gradient(circle,rgba(54,179,126,0.08) 0%,transparent 70%);
-  border-radius:50%;
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 0%,rgba(26,26,46,0.3) 100%);
 }
 .hero-avatar{
-  width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,0.15);
-  border:3px solid rgba(255,255,255,0.3);margin:0 auto 24px;display:flex;
+  width:96px;height:96px;border-radius:50%;margin:0 auto 24px;display:flex;
   align-items:center;justify-content:center;font-size:2.4rem;font-weight:800;
   position:relative;backdrop-filter:blur(8px);
+  background:linear-gradient(135deg,rgba(231,76,60,0.3),rgba(232,150,20,0.3),rgba(39,174,96,0.3),rgba(0,180,216,0.3),rgba(124,58,237,0.3));
+  border:3px solid rgba(255,255,255,0.35);
+  box-shadow:0 8px 32px rgba(0,0,0,0.2);
 }
 .hero h1{font-size:3rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px;position:relative}
 .hero .tagline{font-size:1.2rem;opacity:0.9;margin-bottom:32px;position:relative;font-weight:300}
@@ -65,39 +71,43 @@ section{padding:72px 0}
   gap:24px;
 }
 .project-card{
+  --card-color:#4A90D9;--card-dim:#e8f1fc;
   background:var(--bg);border-radius:var(--radius);padding:32px 28px;
-  border:1px solid var(--rule);transition:all 0.25s;position:relative;
+  border:1px solid var(--rule);border-top:4px solid var(--card-color);
+  transition:all 0.25s;position:relative;
   display:flex;flex-direction:column;text-decoration:none;
 }
 .project-card:hover{
-  transform:translateY(-6px);box-shadow:0 16px 40px rgba(74,144,217,0.12);
-  border-color:var(--accent);text-decoration:none;
+  transform:translateY(-6px);box-shadow:0 16px 40px rgba(0,0,0,0.08);
+  border-color:var(--card-color);border-top-color:var(--card-color);text-decoration:none;
 }
 .project-card.coming-soon{
-  border-style:dashed;background:var(--bg2);cursor:default;
+  border-style:dashed;border-top-style:dashed;background:var(--bg2);cursor:default;
+  --card-color:#adb5bd;--card-dim:var(--bg2);
 }
 .project-card.coming-soon:hover{
-  transform:none;box-shadow:none;border-color:var(--rule);
+  transform:none;box-shadow:none;border-color:var(--rule);border-top-color:var(--rule);
 }
 .project-icon{
   width:52px;height:52px;border-radius:12px;display:flex;align-items:center;
   justify-content:center;font-size:1.6rem;font-weight:700;margin-bottom:20px;
+  background:var(--card-dim);color:var(--card-color);
 }
 .project-card h3{font-size:1.25rem;margin-bottom:8px;color:var(--ink)}
 .project-card .project-desc{color:var(--muted);font-size:0.9rem;line-height:1.6;margin-bottom:16px;flex:1}
 .project-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
 .project-tag{
-  background:var(--accent-dim);color:var(--accent);padding:3px 10px;
+  background:var(--card-dim);color:var(--card-color);padding:3px 10px;
   border-radius:12px;font-size:0.75rem;font-weight:600;
 }
 .project-link{
-  color:var(--accent);font-weight:600;font-size:0.88rem;display:inline-flex;
+  color:var(--card-color);font-weight:600;font-size:0.88rem;display:inline-flex;
   align-items:center;gap:4px;transition:gap 0.2s;
 }
 .project-card:hover .project-link{gap:8px}
 .project-card.coming-soon .project-link{color:var(--muted);cursor:default}
 .project-badge{
-  position:absolute;top:16px;right:16px;background:var(--accent2);color:#fff;
+  position:absolute;top:16px;right:16px;background:var(--card-color);color:#fff;
   padding:3px 10px;border-radius:10px;font-size:0.7rem;font-weight:700;
 }
 .project-badge.soon{background:var(--rule);color:var(--muted)}
@@ -156,9 +166,9 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
     <p class="section-sub">所有公开的开源项目，持续更新中</p>
     <div class="projects-grid">
 
-      <a href="summarizer" class="project-card">
+      <a href="summarizer" class="project-card" style="--card-color:#7C3AED;--card-dim:#f0e8fc">
         <span class="project-badge">在线可用</span>
-        <div class="project-icon" style="background:var(--accent-dim);color:var(--accent)">&#9998;</div>
+        <div class="project-icon">&#9998;</div>
         <h3>Summarizer</h3>
         <p class="project-desc">将粘贴的文本或文件内容自动概括为整洁精炼的要点列表，不遗漏关键信息。支持中英文、在线体验、AI 增强模式。</p>
         <div class="project-tags">
@@ -171,13 +181,13 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 
       <div class="project-card coming-soon">
         <span class="project-badge soon">即将上线</span>
-        <div class="project-icon" style="background:var(--bg2);color:var(--muted)">&#128640;</div>
+        <div class="project-icon">&#128640;</div>
         <h3 style="color:var(--muted)">更多项目</h3>
         <p class="project-desc">新的开源项目正在开发中，敬请期待。</p>
         <div class="project-tags">
-          <span class="project-tag" style="background:var(--bg2);color:var(--muted)">待定</span>
+          <span class="project-tag">待定</span>
         </div>
-        <span class="project-link" style="color:var(--muted)">敬请期待</span>
+        <span class="project-link">敬请期待</span>
       </div>
 
     </div>
@@ -187,15 +197,15 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <div class="container">
   <div class="stats-row">
     <div class="stat-item">
-      <div class="stat-num">1</div>
+      <div class="stat-num" style="color:#E74C3C">1</div>
       <div class="stat-label">开源项目</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num">MIT</div>
+      <div class="stat-num" style="color:#27AE60">MIT</div>
       <div class="stat-label">开源协议</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num">&#8734;</div>
+      <div class="stat-num" style="color:#7C3AED">&#8734;</div>
       <div class="stat-label">持续构建中</div>
     </div>
   </div>
