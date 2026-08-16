@@ -10,7 +10,7 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#ffffff;--bg2:#f7f8fc;--ink:#1a1a2e;--muted:#6c757d;
-  --rule:#e2e5f0;--accent:#4A90D9;--accent2:#36b37e;--accent-dim:#e8f1fc;
+  --rule:#e2e5f0;--accent:#7C3AED;--accent2:#36b37e;--accent-dim:#f0e8fc;
   --radius:12px;--max-w:960px;
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
   --mono:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace;
@@ -22,7 +22,7 @@ a:hover{text-decoration:underline}
 .container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
 
 .hero{
-  background:linear-gradient(135deg,#4A90D9 0%,#357abd 50%,#2d6aa8 100%);
+  background:linear-gradient(135deg,#7C3AED 0%,#6d28d9 50%,#5b21b6 100%);
   color:#fff;padding:100px 24px 80px;text-align:center;position:relative;overflow:hidden;
 }
 .hero::before{
@@ -56,7 +56,7 @@ section{padding:72px 0}
   background:var(--bg2);border-radius:var(--radius);padding:32px 24px;
   transition:transform 0.2s,box-shadow 0.2s;border:1px solid var(--rule);
 }
-.feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(74,144,217,0.1)}
+.feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(124,58,237,0.1)}
 .feature-icon{
   width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;
   font-size:1.5rem;margin-bottom:16px;font-weight:700;
@@ -154,7 +154,7 @@ section{padding:72px 0}
   border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;
   font-family:var(--font);display:inline-flex;align-items:center;gap:8px;
 }
-.btn-summarize:hover{background:#357abd;transform:translateY(-1px);box-shadow:0 6px 20px rgba(74,144,217,0.3)}
+.btn-summarize:hover{background:#6d28d9;transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,58,237,0.3)}
 .btn-summarize:disabled{opacity:0.6;cursor:not-allowed;transform:none}
 .btn-summarize.loading{pointer-events:none;opacity:0.8}
 
@@ -180,7 +180,7 @@ section{padding:72px 0}
   padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;
   font-size:0.82rem;font-weight:600;cursor:pointer;font-family:var(--font);
 }
-.api-key-row button:hover{background:#357abd}
+.api-key-row button:hover{background:#6d28d9}
 .api-key-hint{font-size:0.78rem;color:var(--muted);margin-top:8px;line-height:1.5}
 .api-key-hint code{background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;font-size:0.8rem}
 
