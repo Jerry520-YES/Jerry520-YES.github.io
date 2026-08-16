@@ -43,14 +43,14 @@ a:hover{text-decoration:underline}
 .hero-avatar{
   width:96px;height:96px;border-radius:50%;margin:0 auto 24px;display:flex;
   align-items:center;justify-content:center;font-size:2.4rem;font-weight:800;
-  position:relative;backdrop-filter:blur(8px);
+  position:relative;z-index:2;backdrop-filter:blur(8px);
   background:linear-gradient(135deg,rgba(231,76,60,0.3),rgba(232,150,20,0.3),rgba(39,174,96,0.3),rgba(0,180,216,0.3),rgba(124,58,237,0.3));
   border:3px solid rgba(255,255,255,0.35);
   box-shadow:0 8px 32px rgba(0,0,0,0.2);
 }
-.hero h1{font-size:3rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px;position:relative}
-.hero .tagline{font-size:1.2rem;opacity:0.9;margin-bottom:32px;position:relative;font-weight:300}
-.hero-links{display:flex;gap:16px;justify-content:center;margin-top:32px;position:relative;flex-wrap:wrap}
+.hero h1{font-size:3rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px;position:relative;z-index:2}
+.hero .tagline{font-size:1.2rem;opacity:0.9;margin-bottom:32px;position:relative;z-index:2;font-weight:300}
+.hero-links{display:flex;gap:16px;justify-content:center;margin-top:32px;position:relative;z-index:2;flex-wrap:wrap}
 .btn{
   display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:8px;
   font-size:1rem;font-weight:600;transition:transform 0.2s,box-shadow 0.2s;cursor:pointer;border:none;
