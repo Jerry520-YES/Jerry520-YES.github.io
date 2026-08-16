@@ -4,8 +4,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Summarizer — 文本要点概括工具</title>
-<meta name="description" content="将粘贴的文本或文件内容自动概括为整洁精炼的要点列表，不遗漏关键信息。">
+<title>Jerry520-YES — 开源项目集合</title>
+<meta name="description" content="Jerry520-YES 的个人开源项目集合，包括 Summarizer 等工具。">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -21,23 +21,30 @@ a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
 .container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
 
+/* ===== Hero ===== */
 .hero{
   background:linear-gradient(135deg,#4A90D9 0%,#357abd 50%,#2d6aa8 100%);
-  color:#fff;padding:100px 24px 80px;text-align:center;position:relative;overflow:hidden;
+  color:#fff;padding:120px 24px 100px;text-align:center;position:relative;overflow:hidden;
 }
 .hero::before{
   content:"";position:absolute;top:-50%;right:-20%;width:600px;height:600px;
   background:radial-gradient(circle,rgba(255,255,255,0.08) 0%,transparent 70%);
   border-radius:50%;
 }
-.hero h1{font-size:3.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:16px;position:relative}
-.hero .tagline{font-size:1.35rem;opacity:0.92;margin-bottom:36px;position:relative;font-weight:300}
-.hero-badges{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative}
-.badge{
-  background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);
-  padding:6px 16px;border-radius:20px;font-size:0.85rem;backdrop-filter:blur(4px);
+.hero::after{
+  content:"";position:absolute;bottom:-40%;left:-15%;width:500px;height:500px;
+  background:radial-gradient(circle,rgba(54,179,126,0.08) 0%,transparent 70%);
+  border-radius:50%;
 }
-.hero-cta{display:flex;gap:16px;justify-content:center;margin-top:36px;position:relative;flex-wrap:wrap}
+.hero-avatar{
+  width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,0.15);
+  border:3px solid rgba(255,255,255,0.3);margin:0 auto 24px;display:flex;
+  align-items:center;justify-content:center;font-size:2.4rem;font-weight:800;
+  position:relative;backdrop-filter:blur(8px);
+}
+.hero h1{font-size:3rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px;position:relative}
+.hero .tagline{font-size:1.2rem;opacity:0.9;margin-bottom:32px;position:relative;font-weight:300}
+.hero-links{display:flex;gap:16px;justify-content:center;margin-top:32px;position:relative;flex-wrap:wrap}
 .btn{
   display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:8px;
   font-size:1rem;font-weight:600;transition:transform 0.2s,box-shadow 0.2s;cursor:pointer;border:none;
@@ -47,233 +54,75 @@ a:hover{text-decoration:underline}
 .btn-outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,0.5)}
 .btn-outline:hover{background:rgba(255,255,255,0.1);text-decoration:none;transform:translateY(-2px)}
 
+/* ===== Sections ===== */
 section{padding:72px 0}
 .section-title{font-size:2rem;font-weight:800;text-align:center;margin-bottom:12px}
 .section-sub{text-align:center;color:var(--muted);font-size:1.05rem;margin-bottom:48px}
 
-.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
-.feature-card{
-  background:var(--bg2);border-radius:var(--radius);padding:32px 24px;
-  transition:transform 0.2s,box-shadow 0.2s;border:1px solid var(--rule);
+/* ===== Projects Grid ===== */
+.projects-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:24px;
 }
-.feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(74,144,217,0.1)}
-.feature-icon{
-  width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-  font-size:1.5rem;margin-bottom:16px;font-weight:700;
+.project-card{
+  background:var(--bg);border-radius:var(--radius);padding:32px 28px;
+  border:1px solid var(--rule);transition:all 0.25s;position:relative;
+  display:flex;flex-direction:column;text-decoration:none;
 }
-.feature-card h3{font-size:1.15rem;margin-bottom:8px}
-.feature-card p{color:var(--muted);font-size:0.92rem}
+.project-card:hover{
+  transform:translateY(-6px);box-shadow:0 16px 40px rgba(74,144,217,0.12);
+  border-color:var(--accent);text-decoration:none;
+}
+.project-card.coming-soon{
+  border-style:dashed;background:var(--bg2);cursor:default;
+}
+.project-card.coming-soon:hover{
+  transform:none;box-shadow:none;border-color:var(--rule);
+}
+.project-icon{
+  width:52px;height:52px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:1.6rem;font-weight:700;margin-bottom:20px;
+}
+.project-card h3{font-size:1.25rem;margin-bottom:8px;color:var(--ink)}
+.project-card .project-desc{color:var(--muted);font-size:0.9rem;line-height:1.6;margin-bottom:16px;flex:1}
+.project-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.project-tag{
+  background:var(--accent-dim);color:var(--accent);padding:3px 10px;
+  border-radius:12px;font-size:0.75rem;font-weight:600;
+}
+.project-link{
+  color:var(--accent);font-weight:600;font-size:0.88rem;display:inline-flex;
+  align-items:center;gap:4px;transition:gap 0.2s;
+}
+.project-card:hover .project-link{gap:8px}
+.project-card.coming-soon .project-link{color:var(--muted);cursor:default}
+.project-badge{
+  position:absolute;top:16px;right:16px;background:var(--accent2);color:#fff;
+  padding:3px 10px;border-radius:10px;font-size:0.7rem;font-weight:700;
+}
+.project-badge.soon{background:var(--rule);color:var(--muted)}
 
-.workflow{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;align-items:flex-start}
-.step{
-  flex:1;min-width:180px;max-width:220px;background:var(--bg2);border-radius:var(--radius);
-  padding:28px 20px;text-align:center;position:relative;border:1px solid var(--rule);
+/* ===== Stats ===== */
+.stats-row{
+  display:flex;gap:48px;justify-content:center;flex-wrap:wrap;
+  padding:48px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
 }
-.step-num{
-  width:36px;height:36px;background:var(--accent);color:#fff;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;
-  margin:0 auto 16px;
-}
-.step h3{font-size:1rem;margin-bottom:6px}
-.step p{font-size:0.85rem;color:var(--muted)}
-.step-arrow{display:flex;align-items:center;color:var(--accent);font-size:1.5rem;font-weight:300;padding-top:28px}
+.stat-item{text-align:center}
+.stat-num{font-size:2.5rem;font-weight:800;color:var(--accent);line-height:1}
+.stat-label{font-size:0.85rem;color:var(--muted);margin-top:8px}
 
-/* ===== Interactive Tool ===== */
-.tool-wrapper{
-  background:var(--bg2);border-radius:var(--radius);border:1px solid var(--rule);
-  overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.04);
+/* ===== About ===== */
+.about-content{
+  max-width:640px;margin:0 auto;text-align:center;
 }
-.tool-tabs{display:flex;border-bottom:2px solid var(--rule)}
-.tool-tab{
-  flex:1;padding:16px 24px;cursor:pointer;font-weight:600;font-size:0.95rem;color:var(--muted);
-  border-bottom:3px solid transparent;transition:all 0.2s;user-select:none;text-align:center;
-  background:none;border-top:none;border-left:none;border-right:none;
+.about-content p{color:var(--muted);font-size:1rem;line-height:1.8;margin-bottom:16px}
+.tech-stack{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.tech-badge{
+  background:var(--bg2);border:1px solid var(--rule);padding:6px 14px;
+  border-radius:16px;font-size:0.82rem;color:var(--ink);font-weight:600;
 }
-.tool-tab:hover{color:var(--ink)}
-.tool-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--bg)}
-.tool-panels{padding:28px}
-.tool-panel{display:none}
-.tool-panel.active{display:block}
 
-#input-text{
-  width:100%;min-height:240px;padding:18px;border:2px solid var(--rule);border-radius:10px;
-  font-family:var(--font);font-size:0.92rem;line-height:1.8;resize:vertical;transition:border-color 0.2s;
-  background:var(--bg);color:var(--ink);
-}
-#input-text:focus{outline:none;border-color:var(--accent)}
-#input-text::placeholder{color:#adb5bd}
-
-.upload-zone{
-  min-height:200px;border:2px dashed var(--rule);border-radius:10px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  cursor:pointer;transition:all 0.2s;background:var(--bg);text-align:center;padding:32px;
-}
-.upload-zone:hover{border-color:var(--accent);background:var(--accent-dim)}
-.upload-zone.dragover{border-color:var(--accent);background:var(--accent-dim);transform:scale(1.01)}
-.upload-icon{font-size:2.5rem;margin-bottom:12px;opacity:0.5}
-.upload-zone p{color:var(--ink);font-weight:600;font-size:0.95rem}
-.upload-hint{color:var(--muted);font-size:0.82rem;margin-top:4px;font-weight:400}
-.file-info{
-  display:flex;align-items:center;gap:12px;margin-top:16px;padding:12px 16px;
-  background:var(--accent-dim);border-radius:8px;font-size:0.88rem;
-}
-.file-info .file-name{flex:1;color:var(--ink);font-weight:600}
-.file-info .file-clear{
-  background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.85rem;font-weight:600;
-}
-.file-info .file-clear:hover{text-decoration:underline}
-
-.tool-bar{
-  display:flex;align-items:center;gap:16px;margin-top:20px;flex-wrap:wrap;
-  padding-top:20px;border-top:1px solid var(--rule);
-}
-.tool-bar-left{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.control-group{display:flex;align-items:center;gap:8px}
-.control-group label{font-size:0.85rem;color:var(--muted);font-weight:600;white-space:nowrap}
-.tool-select{
-  padding:8px 14px;border:2px solid var(--rule);border-radius:8px;font-size:0.85rem;
-  background:var(--bg);color:var(--ink);cursor:pointer;font-family:var(--font);
-}
-.tool-select:focus{outline:none;border-color:var(--accent)}
-
-.ai-toggle-wrap{display:flex;align-items:center;gap:8px}
-.ai-toggle{
-  position:relative;width:40px;height:22px;background:var(--rule);border-radius:11px;
-  cursor:pointer;transition:background 0.2s;border:none;
-}
-.ai-toggle.on{background:var(--accent2)}
-.ai-toggle::after{
-  content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;
-  background:#fff;border-radius:50%;transition:transform 0.2s;
-}
-.ai-toggle.on::after{transform:translateX(18px)}
-.ai-toggle-label{font-size:0.85rem;color:var(--muted);font-weight:600;white-space:nowrap}
-
-.btn-summarize{
-  margin-left:auto;padding:12px 32px;background:var(--accent);color:#fff;border:none;
-  border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;
-  font-family:var(--font);display:inline-flex;align-items:center;gap:8px;
-}
-.btn-summarize:hover{background:#357abd;transform:translateY(-1px);box-shadow:0 6px 20px rgba(74,144,217,0.3)}
-.btn-summarize:disabled{opacity:0.6;cursor:not-allowed;transform:none}
-.btn-summarize.loading{pointer-events:none;opacity:0.8}
-
-.spinner{
-  width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);
-  border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.api-key-panel{
-  margin-top:16px;padding:16px;background:var(--bg);border-radius:8px;border:1px solid var(--rule);
-  display:none;
-}
-.api-key-panel.show{display:block}
-.api-key-panel label{font-size:0.82rem;color:var(--muted);font-weight:600;display:block;margin-bottom:8px}
-.api-key-row{display:flex;gap:8px}
-.api-key-row input{
-  flex:1;padding:8px 12px;border:2px solid var(--rule);border-radius:6px;
-  font-size:0.85rem;font-family:var(--mono);background:var(--bg2);
-}
-.api-key-row input:focus{outline:none;border-color:var(--accent)}
-.api-key-row button{
-  padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;
-  font-size:0.82rem;font-weight:600;cursor:pointer;font-family:var(--font);
-}
-.api-key-row button:hover{background:#357abd}
-.api-key-hint{font-size:0.78rem;color:var(--muted);margin-top:8px;line-height:1.5}
-.api-key-hint code{background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;font-size:0.8rem}
-
-.output-area{
-  margin-top:24px;padding:28px;background:var(--bg);border-radius:10px;
-  border:1px solid var(--rule);border-left:4px solid var(--accent2);min-height:180px;
-}
-.output-placeholder{color:var(--muted);text-align:center;padding:40px 0;font-size:0.95rem}
-.output-placeholder .ph-icon{font-size:2rem;opacity:0.3;display:block;margin-bottom:12px}
-
-.output-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.output-header h4{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700}
-.btn-copy{
-  padding:6px 16px;background:var(--accent-dim);color:var(--accent);border:none;border-radius:6px;
-  font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:var(--font);
-}
-.btn-copy:hover{background:var(--accent);color:#fff}
-.btn-copy.copied{background:var(--accent2);color:#fff}
-
-.output-list{list-style:none;padding:0}
-.output-list>li{
-  padding:8px 0 8px 22px;position:relative;font-size:0.92rem;line-height:1.7;color:var(--ink);
-  border-bottom:1px solid var(--rule);
-}
-.output-list>li:last-child{border-bottom:none}
-.output-list>li::before{
-  content:"\2022";color:var(--accent);position:absolute;left:4px;font-weight:700;font-size:1.1rem;
-}
-.output-list li ul{list-style:none;padding:2px 0 2px 0;margin-top:4px}
-.output-list li ul li{
-  padding:3px 0 3px 20px;font-size:0.85rem;color:var(--muted);position:relative;border:none;
-}
-.output-list li ul li::before{content:"\25E6";color:var(--accent2);font-size:0.9rem;font-weight:700}
-
-.output-group-title{
-  font-size:0.8rem;font-weight:700;color:var(--accent);text-transform:uppercase;
-  letter-spacing:0.06em;margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--accent-dim);
-}
-.output-group-title:first-child{margin-top:0}
-
-.output-meta{
-  margin-top:16px;padding-top:12px;border-top:1px solid var(--rule);
-  display:flex;gap:20px;flex-wrap:wrap;font-size:0.78rem;color:var(--muted);
-}
-.output-meta span{display:inline-flex;align-items:center;gap:4px}
-.output-meta strong{color:var(--ink);font-weight:700}
-
-.mode-badge{
-  display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;
-  margin-left:8px;
-}
-.mode-badge.local{background:var(--accent-dim);color:var(--accent)}
-.mode-badge.ai{background:#e6f7ee;color:var(--accent2)}
-
-/* ===== Demo Section ===== */
-.demo-container{background:var(--bg2);border-radius:var(--radius);border:1px solid var(--rule);overflow:hidden}
-.demo-tabs{display:flex;border-bottom:2px solid var(--rule);flex-wrap:wrap}
-.demo-tab{
-  padding:14px 24px;cursor:pointer;font-weight:600;font-size:0.9rem;color:var(--muted);
-  border-bottom:3px solid transparent;transition:all 0.2s;user-select:none;
-}
-.demo-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.demo-content{padding:32px;display:none}
-.demo-content.active{display:block}
-.demo-split{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.demo-panel h4{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:12px}
-.demo-input,.demo-output{
-  background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:20px;
-  font-size:0.88rem;line-height:1.8;min-height:200px;
-}
-.demo-output{border-left:3px solid var(--accent2)}
-.demo-output ul{list-style:none;padding:0}
-.demo-output li{padding:4px 0;position:relative;padding-left:20px}
-.demo-output li::before{content:"\2022";color:var(--accent);position:absolute;left:4px;font-weight:700}
-.demo-output li ul{margin-top:4px;padding-left:0}
-.demo-output li ul li{padding-left:20px;font-size:0.85rem;color:var(--muted)}
-.demo-output li ul li::before{content:"\25E6"}
-.demo-meta{margin-top:12px;font-size:0.78rem;color:var(--muted);font-style:italic}
-
-.usage-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
-.usage-card{background:var(--bg2);border-radius:var(--radius);padding:28px;border:1px solid var(--rule)}
-.usage-card h3{font-size:1.1rem;margin-bottom:16px;color:var(--accent)}
-.code-block{
-  background:#1e2138;color:#a9b1d6;border-radius:8px;padding:16px 20px;
-  font-family:var(--mono);font-size:0.82rem;overflow-x:auto;line-height:1.6;white-space:pre;
-}
-.code-block .cmd{color:#7ee787}
-.code-block .cmt{color:#6c757d}
-.usage-card ul{list-style:none;padding:0}
-.usage-card li{padding:6px 0;font-size:0.9rem}
-.usage-card li strong{color:var(--ink)}
-.usage-card code{background:var(--accent-dim);color:var(--accent);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:0.85rem}
-
+/* ===== Footer ===== */
 footer{background:#1a1a2e;color:#a0a0b8;padding:48px 24px 32px;text-align:center}
 footer a{color:var(--accent)}
 footer .footer-links{display:flex;gap:24px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
@@ -282,298 +131,89 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 
 @media(max-width:768px){
   .hero h1{font-size:2.2rem}
-  .hero .tagline{font-size:1.05rem}
-  .demo-split{grid-template-columns:1fr}
-  .usage-grid{grid-template-columns:1fr}
-  .step-arrow{display:none}
-  .tool-bar{flex-direction:column;align-items:stretch}
-  .btn-summarize{margin-left:0;width:100%;justify-content:center}
-  .tool-bar-left{justify-content:space-between}
+  .hero .tagline{font-size:1rem}
+  .hero-avatar{width:72px;height:72px;font-size:1.8rem}
+  .stats-row{gap:32px}
+  .stat-num{font-size:2rem}
 }
 </style>
 </head>
 <body>
 
 <div class="hero">
-  <h1>Summarizer</h1>
-  <p class="tagline">将任何文本一键转化为整洁精炼的要点列表，不遗漏关键信息</p>
-  <div class="hero-badges">
-    <span class="badge">零遗漏</span>
-    <span class="badge">数据保真</span>
-    <span class="badge">多语言</span>
-    <span class="badge">自适应结构</span>
-  </div>
-  <div class="hero-cta">
-    <a href="#try" class="btn btn-primary">在线体验</a>
-    <a href="https://github.com/Jerry520-YES/article-to-knowledge-cards" target="_blank" class="btn btn-outline">GitHub 仓库</a>
+  <div class="hero-avatar">J</div>
+  <h1>Jerry520-YES</h1>
+  <p class="tagline">开源项目集合 &middot; 用代码解决实际问题</p>
+  <div class="hero-links">
+    <a href="#projects" class="btn btn-primary">浏览项目</a>
+    <a href="https://github.com/Jerry520-YES" target="_blank" class="btn btn-outline">GitHub 主页</a>
   </div>
 </div>
 
-<section id="features">
+<section id="projects">
   <div class="container">
-    <h2 class="section-title">核心特性</h2>
-    <p class="section-sub">为什么选择 Summarizer</p>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon" style="background:var(--accent-dim);color:var(--accent)">&#10003;</div>
-        <h3>零遗漏概括</h3>
-        <p>逐段提取所有关键要点，输出前交叉验证完整性，确保不丢失任何重要信息。</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon" style="background:#e6f7ee;color:var(--accent2)">123</div>
-        <h3>数据保真</h3>
-        <p>保留具体数字、名称、日期和阈值，不四舍五入或丢弃关键数据。</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon" style="background:#fef3e2;color:#e89614">&#65309;</div>
-        <h3>多语言支持</h3>
-        <p>自动匹配源文本语言输出。中文输入输出中文，英文输入输出英文。</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon" style="background:#f0e8fc;color:#7c3aed">&#9881;</div>
-        <h3>自适应结构</h3>
-        <p>长文本自动分组加标题，短文本使用扁平列表，根据内容智能调整。</p>
-      </div>
-    </div>
-  </div>
-</section>
+    <h2 class="section-title">项目</h2>
+    <p class="section-sub">所有公开的开源项目，持续更新中</p>
+    <div class="projects-grid">
 
-<section id="how" style="background:var(--bg2)">
-  <div class="container">
-    <h2 class="section-title">工作流程</h2>
-    <p class="section-sub">四步完成精准概括</p>
-    <div class="workflow">
-      <div class="step">
-        <div class="step-num">1</div>
-        <h3>阅读理解</h3>
-        <p>通读全文，识别主题、结构和所有关键信息</p>
-      </div>
-      <div class="step-arrow">&rarr;</div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <h3>提取要点</h3>
-        <p>逐段提取每个独立观点、事实、数据和行动项</p>
-      </div>
-      <div class="step-arrow">&rarr;</div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <h3>组织精简</h3>
-        <p>按逻辑分组，裁剪冗余，每条要点独立完整</p>
-      </div>
-      <div class="step-arrow">&rarr;</div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <h3>质量检查</h3>
-        <p>交叉验证无遗漏、无冗余、可独立理解</p>
-      </div>
-    </div>
-  </div>
-</section>
+      <a href="summarizer.html" class="project-card">
+        <span class="project-badge">在线可用</span>
+        <div class="project-icon" style="background:var(--accent-dim);color:var(--accent)">&#9998;</div>
+        <h3>Summarizer</h3>
+        <p class="project-desc">将粘贴的文本或文件内容自动概括为整洁精炼的要点列表，不遗漏关键信息。支持中英文、在线体验、AI 增强模式。</p>
+        <div class="project-tags">
+          <span class="project-tag">文本处理</span>
+          <span class="project-tag">NLP</span>
+          <span class="project-tag">在线工具</span>
+        </div>
+        <span class="project-link">查看项目 &rarr;</span>
+      </a>
 
-<!-- ===== Interactive Tool ===== -->
-<section id="try">
-  <div class="container">
-    <h2 class="section-title">在线体验</h2>
-    <p class="section-sub">粘贴文本或上传文件，即时获取要点概括 &mdash; 无需下载、无需跳转</p>
-    <div class="tool-wrapper">
-      <div class="tool-tabs">
-        <button class="tool-tab active" data-mode="paste">粘贴文本</button>
-        <button class="tool-tab" data-mode="upload">上传文件</button>
-      </div>
-      <div class="tool-panels">
-        <div class="tool-panel active" data-panel="paste">
-          <textarea id="input-text" placeholder="在此粘贴需要概括的文本内容...&#10;&#10;支持中文和英文，支持任意长度的文章、报告、文档。"></textarea>
+      <div class="project-card coming-soon">
+        <span class="project-badge soon">即将上线</span>
+        <div class="project-icon" style="background:var(--bg2);color:var(--muted)">&#128640;</div>
+        <h3 style="color:var(--muted)">更多项目</h3>
+        <p class="project-desc">新的开源项目正在开发中，敬请期待。</p>
+        <div class="project-tags">
+          <span class="project-tag" style="background:var(--bg2);color:var(--muted)">待定</span>
         </div>
-        <div class="tool-panel" data-panel="upload">
-          <div class="upload-zone" id="upload-zone">
-            <div class="upload-icon">&#128196;</div>
-            <p>点击选择文件或拖拽到此处</p>
-            <p class="upload-hint">支持 .txt 和 .md 文件，最大 500KB</p>
-            <input type="file" id="file-input" accept=".txt,.md,text/plain,text/markdown" hidden>
-          </div>
-          <div class="file-info" id="file-info" style="display:none">
-            <span class="file-name" id="file-name"></span>
-            <button class="file-clear" id="file-clear">移除</button>
-          </div>
-        </div>
-      </div>
-      <div style="padding:0 28px 28px">
-        <div class="tool-bar">
-          <div class="tool-bar-left">
-            <div class="control-group">
-              <label>概括深度</label>
-              <select class="tool-select" id="summary-depth">
-                <option value="short">精简</option>
-                <option value="medium" selected>标准</option>
-                <option value="detailed">详细</option>
-              </select>
-            </div>
-            <div class="ai-toggle-wrap">
-              <button class="ai-toggle" id="ai-toggle" aria-label="AI增强模式"></button>
-              <span class="ai-toggle-label">AI 增强</span>
-            </div>
-          </div>
-          <button class="btn-summarize" id="btn-summarize">生成概括</button>
-        </div>
-        <div class="api-key-panel" id="api-key-panel">
-          <label>OpenAI API Key（仅存储在浏览器本地，不会上传）</label>
-          <div class="api-key-row">
-            <input type="password" id="api-key-input" placeholder="sk-...">
-            <button id="api-key-save">保存</button>
-          </div>
-          <p class="api-key-hint">
-            AI 增强模式使用 OpenAI API 进行抽象式概括，效果更接近原生 Skill。<br>
-            API Key 仅保存在浏览器 <code>localStorage</code> 中，不会发送到任何第三方服务器。
-          </p>
-        </div>
-      </div>
-    </div>
-    <div class="output-area" id="output-area">
-      <div class="output-placeholder" id="output-placeholder">
-        <span class="ph-icon">&#9998;</span>
-        概括结果将显示在这里...
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="demo" style="background:var(--bg2)">
-  <div class="container">
-    <h2 class="section-title">效果示例</h2>
-    <p class="section-sub">不同类型文章的概括效果</p>
-    <div class="demo-container">
-      <div class="demo-tabs">
-        <div class="demo-tab active" data-tab="news">新闻文章</div>
-        <div class="demo-tab" data-tab="chinese">中文报告</div>
-        <div class="demo-tab" data-tab="tech">技术文档</div>
-        <div class="demo-tab" data-tab="short">会议纪要</div>
-      </div>
-
-      <div class="demo-content active" data-content="news">
-        <div class="demo-split">
-          <div class="demo-panel">
-            <h4>输入 &mdash; 英文新闻</h4>
-            <div class="demo-input">The company announced its Q3 results today. Revenue reached $12.4 million, up 23% year-over-year, driven primarily by enterprise subscriptions which grew 41%. However, the consumer segment declined 8% due to increased competition. CEO Jane Doe stated that the company will launch a new mobile app in Q4 to address the consumer decline. The board approved a $5 million share buyback program. Operating margins improved to 22% from 18% last year.</div>
-          </div>
-          <div class="demo-panel">
-            <h4>输出 &mdash; 要点概括</h4>
-            <div class="demo-output">
-              <ul>
-                <li>Revenue reached $12.4M in Q3, up 23% YoY.
-                  <ul>
-                    <li>Enterprise subscriptions drove growth at +41%.</li>
-                    <li>Consumer segment declined 8% due to competition.</li>
-                  </ul>
-                </li>
-                <li>CEO Jane Doe announced a new mobile app launching in Q4.</li>
-                <li>Board approved a $5M share buyback program.</li>
-                <li>Operating margins improved to 22% (from 18% last year).</li>
-              </ul>
-              <div class="demo-meta">Source: pasted text | Points: 5</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="demo-content" data-content="chinese">
-        <div class="demo-split">
-          <div class="demo-panel">
-            <h4>输入 &mdash; 中文市场报告</h4>
-            <div class="demo-input">2026年上半年，中国新能源汽车销量达到412万辆，同比增长38.7%。新能源汽车在整体汽车市场的渗透率已达到52.3%，首次超过传统燃油车。其中纯电动汽车销量为268万辆，占比65%；插电式混合动力销量为144万辆，占比35%。比亚迪继续领跑市场，上半年销量为128万辆，市场份额31.1%。特斯拉中国销量为42万辆，市场份额10.2%。</div>
-          </div>
-          <div class="demo-panel">
-            <h4>输出 &mdash; 要点概括</h4>
-            <div class="demo-output">
-              <ul>
-                <li>2026年上半年中国新能源汽车销量达412万辆，同比增长38.7%。</li>
-                <li>新能源汽车渗透率达52.3%，首次超过传统燃油车。
-                  <ul>
-                    <li>纯电动汽车销量268万辆，占比65%。</li>
-                    <li>插电式混合动力销量144万辆，占比35%。</li>
-                  </ul>
-                </li>
-                <li>比亚迪领跑：销量128万辆，市场份额31.1%。</li>
-                <li>特斯拉中国：销量42万辆，市场份额10.2%。</li>
-              </ul>
-              <div class="demo-meta">Source: pasted text | Points: 4</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="demo-content" data-content="tech">
-        <div class="demo-split">
-          <div class="demo-panel">
-            <h4>输入 &mdash; 技术文档</h4>
-            <div class="demo-input">The API uses OAuth 2.0 for authentication. Requests must include a Bearer token in the Authorization header. Tokens expire after 3600 seconds and can be refreshed using the /oauth/refresh endpoint. Rate limiting is set to 1000 requests per hour per API key. All responses are in JSON format. Error codes follow HTTP standards: 400 for bad requests, 401 for unauthorized, 429 for rate limit exceeded, and 500 for server errors.</div>
-          </div>
-          <div class="demo-panel">
-            <h4>输出 &mdash; 要点概括</h4>
-            <div class="demo-output">
-              <ul>
-                <li>Authentication uses OAuth 2.0 with Bearer tokens in the Authorization header.</li>
-                <li>Tokens expire after 3600 seconds; refresh via /oauth/refresh.</li>
-                <li>Rate limit: 1000 requests/hour per API key.</li>
-                <li>All responses are JSON.</li>
-                <li>Error codes: 400 (bad request), 401 (unauthorized), 429 (rate limit), 500 (server error).</li>
-              </ul>
-              <div class="demo-meta">Source: pasted text | Points: 5</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="demo-content" data-content="short">
-        <div class="demo-split">
-          <div class="demo-panel">
-            <h4>输入 &mdash; 会议纪要（短文本）</h4>
-            <div class="demo-input">We decided to move the authentication module to JWT-based tokens. Mike will handle the backend implementation by Friday. Lisa needs to update the test suite to cover the new token refresh flow. Tom will configure the CI/CD pipeline to inject the JWT secret as an environment variable. We also agreed to deprecate the old login endpoint by end of month.</div>
-          </div>
-          <div class="demo-panel">
-            <h4>输出 &mdash; 扁平列表</h4>
-            <div class="demo-output">
-              <ul>
-                <li>Decided to move authentication from session cookies to JWT-based tokens.</li>
-                <li>Mike will handle backend implementation by Friday.</li>
-                <li>Lisa needs to update the test suite for token refresh flow.</li>
-                <li>Tom will configure the CI/CD pipeline to inject JWT secret.</li>
-                <li>Agreed to deprecate the old login endpoint by end of month.</li>
-              </ul>
-              <div class="demo-meta">Source: pasted text | Points: 5</div>
-            </div>
-          </div>
-        </div>
+        <span class="project-link" style="color:var(--muted)">敬请期待</span>
       </div>
 
     </div>
   </div>
 </section>
 
-<section id="usage">
-  <div class="container">
-    <h2 class="section-title">使用方法</h2>
-    <p class="section-sub">快速上手 Summarizer</p>
-    <div class="usage-grid">
-      <div class="usage-card">
-        <h3>安装</h3>
-        <div class="code-block"><span class="cmt"># 将技能文件夹复制到技能目录</span>
-<span class="cmd">cp</span> -r summarizer/ ~/.codex/skills/
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-num">1</div>
+      <div class="stat-label">开源项目</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">MIT</div>
+      <div class="stat-label">开源协议</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">&#8734;</div>
+      <div class="stat-label">持续构建中</div>
+    </div>
+  </div>
+</div>
 
-<span class="cmt"># 验证安装</span>
-<span class="cmd">python</span> quick_validate.py summarizer/</div>
-        <p style="margin-top:16px;font-size:0.88rem;color:var(--muted)">输出 <code>Skill is valid!</code> 即表示安装成功。</p>
-      </div>
-      <div class="usage-card">
-        <h3>触发方式</h3>
-        <ul>
-          <li><strong>隐式触发</strong> &mdash; 直接说"帮我概括一下这段内容"并粘贴文本</li>
-          <li><strong>显式触发</strong> &mdash; 使用 <code>$summarizer</code> 前缀</li>
-          <li><strong>文件输入</strong> &mdash; 提供路径，如"概括 article.txt 的内容"</li>
-          <li><strong>网页在线</strong> &mdash; 直接在上方<a href="#try">在线体验</a>区操作</li>
-        </ul>
-        <div style="margin-top:16px;padding:12px 16px;background:var(--accent-dim);border-radius:8px;font-size:0.85rem;color:var(--accent)">
-          支持格式：粘贴文本 &middot; .txt 文件 &middot; .md 文件
-        </div>
+<section id="about" style="background:var(--bg2)">
+  <div class="container">
+    <h2 class="section-title">关于</h2>
+    <p class="section-sub">代码与工具的实践者</p>
+    <div class="about-content">
+      <p>这里是 Jerry520-YES 的个人项目集合站点。每个项目都致力于用简洁的方式解决实际问题——从文本概括到数据处理，所有工具都开源、免费、可直接在线使用。</p>
+      <p>所有项目均采用 MIT 协议开源，欢迎在 GitHub 上 Star、Fork 和贡献。</p>
+      <div class="tech-stack">
+        <span class="tech-badge">Python</span>
+        <span class="tech-badge">JavaScript</span>
+        <span class="tech-badge">HTML / CSS</span>
+        <span class="tech-badge">Git</span>
+        <span class="tech-badge">GitHub Pages</span>
       </div>
     </div>
   </div>
@@ -581,552 +221,13 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 
 <footer>
   <div class="footer-links">
-    <a href="https://github.com/Jerry520-YES/article-to-knowledge-cards" target="_blank">GitHub 仓库</a>
-    <a href="https://github.com/Jerry520-YES" target="_blank">作者主页</a>
-    <a href="#try">在线体验</a>
-    <a href="#features">特性</a>
-    <a href="#demo">示例</a>
+    <a href="https://github.com/Jerry520-YES" target="_blank">GitHub 主页</a>
+    <a href="https://github.com/Jerry520-YES/article-to-knowledge-cards" target="_blank">Summarizer 仓库</a>
+    <a href="#projects">项目</a>
+    <a href="#about">关于</a>
   </div>
-  <p class="copyright">Summarizer Skill &middot; MIT License &middot; 2026 Jerry520-YES</p>
+  <p class="copyright">&copy; 2026 Jerry520-YES &middot; MIT License</p>
 </footer>
 
-<script>
-/* ===== Demo tab switching ===== */
-document.querySelectorAll('.demo-tab').forEach(function(tab){
-  tab.addEventListener('click',function(){
-    document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('active')});
-    document.querySelectorAll('.demo-content').forEach(function(c){c.classList.remove('active')});
-    this.classList.add('active');
-    document.querySelector('[data-content="'+this.dataset.tab+'"]').classList.add('active');
-  });
-});
-
-/* ===== Tool tab switching ===== */
-document.querySelectorAll('.tool-tab').forEach(function(tab){
-  tab.addEventListener('click',function(){
-    document.querySelectorAll('.tool-tab').forEach(function(t){t.classList.remove('active')});
-    document.querySelectorAll('.tool-panel').forEach(function(p){p.classList.remove('active')});
-    this.classList.add('active');
-    document.querySelector('[data-panel="'+this.dataset.mode+'"]').classList.add('active');
-  });
-});
-
-/* ===== File upload handling ===== */
-var uploadedContent = '';
-var uploadZone = document.getElementById('upload-zone');
-var fileInput = document.getElementById('file-input');
-var fileInfo = document.getElementById('file-info');
-var fileName = document.getElementById('file-name');
-var fileClear = document.getElementById('file-clear');
-
-uploadZone.addEventListener('click', function(){ fileInput.click(); });
-fileInput.addEventListener('change', handleFile);
-uploadZone.addEventListener('dragover', function(e){ e.preventDefault(); uploadZone.classList.add('dragover'); });
-uploadZone.addEventListener('dragleave', function(){ uploadZone.classList.remove('dragover'); });
-uploadZone.addEventListener('drop', function(e){
-  e.preventDefault();
-  uploadZone.classList.remove('dragover');
-  if(e.dataTransfer.files.length) handleFileObj(e.dataTransfer.files[0]);
-});
-fileClear.addEventListener('click', function(){
-  uploadedContent = '';
-  fileInput.value = '';
-  fileInfo.style.display = 'none';
-  uploadZone.style.display = 'flex';
-});
-
-function handleFile(e){
-  if(e.target.files.length) handleFileObj(e.target.files[0]);
-}
-function handleFileObj(file){
-  if(file.size > 512000){
-    alert('文件超过 500KB 限制，请选择更小的文件。');
-    return;
-  }
-  var reader = new FileReader();
-  reader.onload = function(e){
-    uploadedContent = e.target.result;
-    fileName.textContent = file.name + ' (' + formatSize(file.size) + ')';
-    fileInfo.style.display = 'flex';
-    uploadZone.style.display = 'none';
-  };
-  reader.readAsText(file, 'UTF-8');
-}
-function formatSize(bytes){
-  if(bytes < 1024) return bytes + ' B';
-  if(bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
-  return (bytes/1048576).toFixed(1) + ' MB';
-}
-
-/* ===== AI toggle & API key ===== */
-var aiToggle = document.getElementById('ai-toggle');
-var apiKeyPanel = document.getElementById('api-key-panel');
-var apiKeyInput = document.getElementById('api-key-input');
-var apiKeySave = document.getElementById('api-key-save');
-var aiMode = false;
-
-if(localStorage.getItem('summarizer_api_key')){
-  apiKeyInput.value = localStorage.getItem('summarizer_api_key');
-}
-
-aiToggle.addEventListener('click', function(){
-  aiMode = !aiMode;
-  aiToggle.classList.toggle('on', aiMode);
-  apiKeyPanel.classList.toggle('show', aiMode);
-  if(aiMode && !apiKeyInput.value){
-    apiKeyInput.focus();
-  }
-});
-apiKeySave.addEventListener('click', function(){
-  var key = apiKeyInput.value.trim();
-  if(key){
-    localStorage.setItem('summarizer_api_key', key);
-    apiKeySave.textContent = '已保存';
-    setTimeout(function(){ apiKeySave.textContent = '保存'; }, 1500);
-  }
-});
-
-/* ===== Summarization Engine (client-side extractive) ===== */
-var Engine = {
-  enStop: new Set(('the a an and or but in on at to for of with by from is are was were be been being have has had do does did will would could should may might can this that these those i you he she it we they what which who when where why how all each every both few more most other some such no nor not only own same so than too very just as if about into through during before after above below up down out off over under again further then once here there also said says one two has have had do did will would should could may might must can cannot its their our your his her my me him them us mine yours hers ours theirs am being been which that who whom whose where when why how').split(' ')),
-
-  zhStop: new Set('的了和是在我有就不人都一上也说到要去你会着没看好自己这那他她它们为从把被让使给以于对与及或但而且如因所之其此可以因为所以但是然而虽然如果就是还是已经正在应该需要可能进行通过关于对于根据按照由于尽管无论除非只要只有即使不过并且以及或者而是不是不会不能不要没有什么怎么哪个哪里多少几个一些这个那个这些那些我们你们他们目前其中此外另外同时首先其次最后因此然后将要应当必须似乎大约也许大概差不多比较更加非常十分特别甚至仍然依然总是经常偶尔有时从来永远然而不过然后一些可能应该需要进行通过关于对于'.split(/\s+/)),
-
-  isZh: function(text){
-    var cjk = (text.match(/[\u4e00-\u9fff]/g) || []).length;
-    return cjk / text.length > 0.12;
-  },
-
-  split: function(text, zh){
-    if(zh){
-      return text.split(/[\u3002\uff01\uff1f\uff1b\n\r]+/)
-        .map(function(s){ return s.trim(); })
-        .filter(function(s){ return s.length > 2; });
-    }
-    return text
-      .replace(/([.!?])\s+/g, '$1\n')
-      .replace(/([.!?])$/g, '$1\n')
-      .split(/\n+/)
-      .map(function(s){ return s.trim(); })
-      .filter(function(s){ return s.length > 3; });
-  },
-
-  tokenize: function(text, zh){
-    var self = this;
-    if(zh){
-      var chars = text.replace(/[^\u4e00-\u9fff]/g, '');
-      var tokens = [];
-      for(var i = 0; i < chars.length - 1; i++){
-        var bg = chars.substr(i, 2);
-        if(!self.zhStop.has(bg[0]) && !self.zhStop.has(bg[1])){
-          tokens.push(bg);
-        }
-      }
-      return tokens;
-    }
-    return (text.toLowerCase().match(/[a-z]{2,}/g) || [])
-      .filter(function(w){ return !self.enStop.has(w); });
-  },
-
-  stripMarkdown: function(text){
-    return text
-      .replace(/^#{1,6}\s+/gm, '')
-      .replace(/\*\*(.+?)\*\*/g, '$1')
-      .replace(/\*(.+?)\*/g, '$1')
-      .replace(/`(.+?)`/g, '$1')
-      .replace(/\[(.+?)\]\(.+?\)/g, '$1')
-      .replace(/^\s*[-*+]\s+/gm, '')
-      .replace(/^\s*\d+\.\s+/gm, '')
-      .replace(/^>\s+/gm, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-  },
-
-  hasNumbers: function(s){
-    return /\d/.test(s);
-  },
-
-  clean: function(s){
-    return s.replace(/^[\s\u2022\u00b7\-\d+\u3002\u3001\uff0c,]+/, '')
-            .replace(/[\u3002.]+$/, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-  },
-
-  summarize: function(text, depth){
-    var self = this;
-    text = self.stripMarkdown(text);
-
-    if(!text || text.trim().length < 10){
-      return { points: [], stats: { chars: 0, count: 0, reduction: 0 } };
-    }
-
-    var zh = self.isZh(text);
-    var sentences = self.split(text, zh);
-
-    if(sentences.length === 0){
-      return { points: [], stats: { chars: text.length, count: 0, reduction: 0 } };
-    }
-    if(sentences.length <= 3){
-      var pts = sentences.map(function(s){ return self.clean(s); }).filter(Boolean);
-      return { points: pts, stats: { chars: text.length, count: pts.length, reduction: 0 } };
-    }
-
-    /* word frequencies */
-    var freq = {};
-    var allTokens = self.tokenize(text, zh);
-    var total = allTokens.length || 1;
-    allTokens.forEach(function(t){ freq[t] = (freq[t] || 0) + 1; });
-    Object.keys(freq).forEach(function(k){ freq[k] = freq[k] / total; });
-
-    /* score sentences */
-    var scored = sentences.map(function(sentence, idx){
-      var tokens = self.tokenize(sentence, zh);
-      if(tokens.length === 0) return { sentence: sentence, score: 0, idx: idx };
-
-      var sum = tokens.reduce(function(acc, t){ return acc + (freq[t] || 0); }, 0);
-      var score = sum / Math.sqrt(tokens.length);
-
-      if(idx < 2) score *= 1.15;
-      if(idx === sentences.length - 1) score *= 1.05;
-      if(sentence.length < 15) score *= 0.7;
-      if(sentence.length > 200) score *= 0.85;
-      if(self.hasNumbers(sentence)) score *= 1.12;
-
-      return { sentence: sentence, score: score, idx: idx };
-    });
-
-    /* select top N */
-    var ratio;
-    if(depth === 'short') ratio = 0.20;
-    else if(depth === 'detailed') ratio = 0.45;
-    else ratio = 0.30;
-
-    var numPoints = Math.max(3, Math.ceil(sentences.length * ratio));
-    numPoints = Math.min(numPoints, sentences.length);
-
-    var top = scored.slice().sort(function(a, b){ return b.score - a.score; })
-      .slice(0, numPoints)
-      .sort(function(a, b){ return a.idx - b.idx; });
-
-    var points = top.map(function(t){ return self.clean(t.sentence); }).filter(Boolean);
-
-    /* group for long texts */
-    var grouped = null;
-    if(points.length > 8 && depth === 'detailed'){
-      grouped = self.groupByPosition(points);
-    }
-
-    var totalChars = points.reduce(function(acc, p){ return acc + p.length; }, 0);
-    var reduction = Math.round((1 - totalChars / text.length) * 100);
-
-    return {
-      points: points,
-      grouped: grouped,
-      stats: { chars: text.length, count: points.length, reduction: Math.max(0, reduction) }
-    };
-  },
-
-  groupByPosition: function(points){
-    var third = Math.ceil(points.length / 3);
-    return [
-      { title: '核心要点', items: points.slice(0, third) },
-      { title: '关键细节', items: points.slice(third, third * 2) },
-      { title: '补充信息', items: points.slice(third * 2) }
-    ];
-  }
-};
-
-/* ===== AI summarization via OpenAI API ===== */
-function summarizeWithAI(text, depth, apiKey, callback){
-  var depthMap = {
-    short: '3-6',
-    medium: '5-10',
-    detailed: '8-15'
-  };
-  var prompt = 'Summarize the following text into ' + depthMap[depth] + ' concise bullet points. ' +
-    'Follow these rules strictly:\n' +
-    '1. Extract ALL key points without omission - do not skip any important information.\n' +
-    '2. Preserve specific numbers, names, dates, and thresholds exactly as they appear.\n' +
-    '3. Match the language of the source text (Chinese in -> Chinese out, English in -> English out).\n' +
-    '4. Each bullet point should be self-contained and independently understandable.\n' +
-    '5. For long texts, group related points under section headers.\n' +
-    '6. Use markdown bullet format: "- point text".\n\n' +
-    'Text to summarize:\n\n' + text;
-
-  fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + apiKey
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are a precise text summarizer. Your output is ONLY bullet points in markdown format, nothing else.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.3,
-      max_tokens: 1500
-    })
-  })
-  .then(function(resp){
-    if(!resp.ok) throw new Error('API Error: ' + resp.status + ' ' + resp.statusText);
-    return resp.json();
-  })
-  .then(function(data){
-    var content = data.choices[0].message.content.trim();
-    callback(null, content);
-  })
-  .catch(function(err){
-    callback(err.message || 'AI request failed', null);
-  });
-}
-
-function parseAIBullets(content){
-  var lines = content.split('\n');
-  var groups = [];
-  var currentGroup = null;
-  var currentItems = [];
-
-  lines.forEach(function(line){
-    var trimmed = line.trim();
-    if(!trimmed) return;
-
-    /* Section header */
-    if(/^#{1,4}\s+/.test(trimmed) || /^\*\*.+\*\*$/.test(trimmed)){
-      if(currentItems.length > 0){
-        groups.push({ title: currentGroup, items: currentItems });
-        currentItems = [];
-      }
-      currentGroup = trimmed.replace(/^#{1,4}\s+/, '').replace(/^\*\*/, '').replace(/\*\*$/, '');
-    }
-    /* Bullet point */
-    else if(/^[-*+]\s+/.test(trimmed)){
-      currentItems.push(trimmed.replace(/^[-*+]\s+/, ''));
-    }
-    /* Sub-bullet */
-    else if(/^\s+[-*+]\s+/.test(line)){
-      if(currentItems.length > 0){
-        currentItems[currentItems.length - 1] += '\n  ' + trimmed;
-      }
-    }
-  });
-
-  if(currentItems.length > 0){
-    groups.push({ title: currentGroup, items: currentItems });
-  }
-
-  /* If no groups with titles, just return flat list */
-  var allItems = [];
-  groups.forEach(function(g){
-    g.items.forEach(function(item){ allItems.push(item); });
-  });
-
-  return { groups: groups, allItems: allItems };
-}
-
-/* ===== UI: Summarize button ===== */
-var btnSummarize = document.getElementById('btn-summarize');
-var outputArea = document.getElementById('output-area');
-var outputPlaceholder = document.getElementById('output-placeholder');
-
-btnSummarize.addEventListener('click', function(){
-  var text = '';
-  var activePanel = document.querySelector('.tool-panel.active').dataset.panel;
-
-  if(activePanel === 'paste'){
-    text = document.getElementById('input-text').value;
-  } else {
-    text = uploadedContent;
-  }
-
-  if(!text || text.trim().length < 10){
-    alert('请输入至少 10 个字符的文本内容。');
-    return;
-  }
-
-  var depth = document.getElementById('summary-depth').value;
-
-  /* loading state */
-  btnSummarize.classList.add('loading');
-  btnSummarize.disabled = true;
-  btnSummarize.innerHTML = '<span class="spinner"></span> 概括中...';
-  outputArea.innerHTML = '<div class="output-placeholder"><span class="ph-icon">&#9203;</span>正在分析文本...</div>';
-
-  if(aiMode){
-    var apiKey = apiKeyInput.value.trim();
-    if(!apiKey){
-      alert('请先输入 OpenAI API Key。');
-      resetButton();
-      outputArea.innerHTML = '<div class="output-placeholder" id="output-placeholder"><span class="ph-icon">&#9998;</span>概括结果将显示在这里...</div>';
-      return;
-    }
-    summarizeWithAI(text, depth, apiKey, function(err, content){
-      if(err){
-        outputArea.innerHTML = '<div class="output-placeholder" style="color:#e74c3c"><span class="ph-icon">&#9888;</span>AI 请求失败：' + err + '<br><br>请检查 API Key 是否正确，或尝试关闭 AI 增强模式使用本地概括。</div>';
-      } else {
-        var parsed = parseAIBullets(content);
-        var origLen = text.length;
-        var outLen = content.length;
-        var reduction = Math.round((1 - outLen / origLen) * 100);
-        renderAIOutput(parsed, origLen, Math.max(0, reduction));
-      }
-      resetButton();
-    });
-  } else {
-    /* local extractive summarization */
-    setTimeout(function(){
-      var result = Engine.summarize(text, depth);
-      renderLocalOutput(result);
-      resetButton();
-    }, 400);
-  }
-});
-
-function resetButton(){
-  btnSummarize.classList.remove('loading');
-  btnSummarize.disabled = false;
-  btnSummarize.innerHTML = '生成概括';
-}
-
-function renderLocalOutput(result){
-  if(result.points.length === 0){
-    outputArea.innerHTML = '<div class="output-placeholder" id="output-placeholder"><span class="ph-icon">&#9998;</span>文本太短，无法提取要点。请输入更长的文本。</div>';
-    return;
-  }
-
-  var html = '<div class="output-header"><h4>概括结果 <span class="mode-badge local">本地引擎</span></h4></div>';
-
-  if(result.grouped){
-    result.grouped.forEach(function(g){
-      html += '<div class="output-group-title">' + escapeHtml(g.title) + '</div>';
-      html += '<ul class="output-list">';
-      g.items.forEach(function(item){
-        html += '<li>' + escapeHtml(item) + '</li>';
-      });
-      html += '</ul>';
-    });
-  } else {
-    html += '<ul class="output-list">';
-    result.points.forEach(function(p){
-      html += '<li>' + escapeHtml(p) + '</li>';
-    });
-    html += '</ul>';
-  }
-
-  html += renderStats(result.stats, 'local');
-  outputArea.innerHTML = html;
-}
-
-function renderAIOutput(parsed, origLen, reduction){
-  var html = '<div class="output-header"><h4>概括结果 <span class="mode-badge ai">AI 增强</span></h4></div>';
-
-  var hasGroups = parsed.groups.some(function(g){ return g.title; });
-
-  if(hasGroups){
-    parsed.groups.forEach(function(g){
-      if(g.title){
-        html += '<div class="output-group-title">' + escapeHtml(g.title) + '</div>';
-      }
-      html += '<ul class="output-list">';
-      g.items.forEach(function(item){
-        var parts = item.split('\n');
-        html += '<li>' + escapeHtml(parts[0]);
-        if(parts.length > 1){
-          html += '<ul>';
-          for(var i = 1; i < parts.length; i++){
-            html += '<li>' + escapeHtml(parts[i].replace(/^\s+/, '')) + '</li>';
-          }
-          html += '</ul>';
-        }
-        html += '</li>';
-      });
-      html += '</ul>';
-    });
-  } else {
-    html += '<ul class="output-list">';
-    parsed.allItems.forEach(function(item){
-      var parts = item.split('\n');
-      html += '<li>' + escapeHtml(parts[0]);
-      if(parts.length > 1){
-        html += '<ul>';
-        for(var i = 1; i < parts.length; i++){
-          html += '<li>' + escapeHtml(parts[i].replace(/^\s+/, '')) + '</li>';
-        }
-        html += '</ul>';
-      }
-      html += '</li>';
-    });
-    html += '</ul>';
-  }
-
-  html += renderStats({ chars: origLen, count: parsed.allItems.length, reduction: reduction }, 'ai');
-  outputArea.innerHTML = html;
-}
-
-function renderStats(stats, mode){
-  return '<div class="output-meta">' +
-    '<span>原文：<strong>' + stats.chars.toLocaleString() + '</strong> 字符</span>' +
-    '<span>要点：<strong>' + stats.count + '</strong> 条</span>' +
-    '<span>压缩：<strong>' + stats.reduction + '%</strong></span>' +
-    '<span>引擎：<strong>' + (mode === 'ai' ? 'OpenAI' : '本地提取') + '</strong></span>' +
-    '</div>';
-}
-
-function escapeHtml(str){
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-/* ===== Copy button ===== */
-outputArea.addEventListener('click', function(e){
-  if(e.target && e.target.classList.contains('btn-copy')){
-    var list = outputArea.querySelector('.output-list');
-    if(!list) return;
-    var text = '';
-    var groups = outputArea.querySelectorAll('.output-group-title');
-    if(groups.length > 0){
-      outputArea.querySelectorAll('.output-group-title').forEach(function(g){
-        text += '\n## ' + g.textContent + '\n';
-        var nextEl = g.nextElementSibling;
-        if(nextEl && nextEl.tagName === 'UL'){
-          nextEl.querySelectorAll(':scope > li').forEach(function(li){
-            text += '- ' + li.childNodes[0] ? li.childNodes[0].textContent.trim() : li.textContent.trim();
-            text += '\n';
-          });
-        }
-      });
-    } else {
-      list.querySelectorAll(':scope > li').forEach(function(li){
-        text += '- ' + li.textContent.trim() + '\n';
-      });
-    }
-    navigator.clipboard.writeText(text.trim()).then(function(){
-      e.target.textContent = '已复制';
-      e.target.classList.add('copied');
-      setTimeout(function(){
-        e.target.textContent = '复制';
-        e.target.classList.remove('copied');
-      }, 1500);
-    });
-  }
-});
-
-/* Add copy button dynamically when output is rendered */
-var observer = new MutationObserver(function(){
-  var header = outputArea.querySelector('.output-header');
-  if(header && !header.querySelector('.btn-copy')){
-    var btn = document.createElement('button');
-    btn.className = 'btn-copy';
-    btn.textContent = '复制';
-    header.appendChild(btn);
-  }
-});
-observer.observe(outputArea, { childList: true, subtree: true });
-</script>
 </body>
 </html>
