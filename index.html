@@ -40,16 +40,6 @@ a:hover{text-decoration:underline}
   content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(180deg,transparent 0%,rgba(26,26,46,0.3) 100%);
 }
-.hero-avatar{
-  width:120px;height:120px;border-radius:50%;margin:0 auto 24px;
-  position:relative;z-index:2;overflow:hidden;
-  background-image:url('avatar.jpg');
-  background-size:cover;
-  background-position:center top;
-  background-repeat:no-repeat;
-  border:3px solid rgba(255,255,255,0.35);
-  box-shadow:0 8px 32px rgba(0,0,0,0.2);
-}
 .hero h1{font-size:3rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px;position:relative;z-index:2}
 .hero .tagline{font-size:1.2rem;opacity:0.9;margin-bottom:32px;position:relative;z-index:2;font-weight:300}
 .hero-links{display:flex;gap:16px;justify-content:center;margin-top:32px;position:relative;z-index:2;flex-wrap:wrap}
@@ -144,7 +134,6 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 @media(max-width:768px){
   .hero h1{font-size:2.2rem}
   .hero .tagline{font-size:1rem}
-  .hero-avatar{width:100px;height:100px}
   .stats-row{gap:32px}
   .stat-num{font-size:2rem}
 }
@@ -153,7 +142,6 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <body>
 
 <div class="hero">
-  <div class="hero-avatar"></div>
   <h1>Jerry520-YES</h1>
   <p class="tagline">开源项目集合 &middot; 用代码解决实际问题</p>
   <div class="hero-links">
