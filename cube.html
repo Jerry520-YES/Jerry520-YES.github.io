@@ -402,12 +402,20 @@ function buildCube(n){
       // 只创建表面小方块
       if(i!==0&&i!==n-1&&j!==0&&j!==n-1&&k!==0&&k!==n-1) continue;
       const px=i-half,py=j-half,pz=k-half;
-      const mats=[makeMaterial(null)];
+      // 6面材质：[+x,-x,+y,-y,+z,-z] → [R,L,U,D,F,B]，非外表面为黑
+      const mats=[
+        makeMaterial(i===n-1?'R':null),
+        makeMaterial(i===0?'L':null),
+        makeMaterial(j===n-1?'U':null),
+        makeMaterial(j===0?'D':null),
+        makeMaterial(k===n-1?'F':null),
+        makeMaterial(k===0?'B':null),
+      ];
       const geo=makeRoundedBox(cubieSize,cubieSize,cubieSize,0.16);
       const mesh=new THREE.Mesh(geo,mats);
       mesh.position.set(px,py,pz);
-    // 贴纸：在彩色面上加一个略大的平面增强观感（黑色基底 + 彩色贴纸）
-    addStickerPlanes(mesh,n,i,j,k);
+    // 记录贴纸信息（用面材质替代贴纸网格）
+    addStickerInfo(mesh,n,i,j,k);
     scene.add(mesh);
     cubies.push(mesh);
   }
@@ -423,31 +431,17 @@ function buildCube(n){
   updateKbdDepthUI();
   setStatus('就绪 · 键盘操作');
 }
-function addStickerPlanes(mesh,n,i,j,k){
-  // 在每个外表面贴一个彩色小平面，基底保持黑色 → 现代魔方贴纸感
-  const half=(n-1)/2;
-  const s=0.72;
+function addStickerInfo(mesh,n,i,j,k){
   const faces=[];
-  if(i===n-1)faces.push({dir:new THREE.Vector3(1,0,0),name:'R'});
-  if(i===0)faces.push({dir:new THREE.Vector3(-1,0,0),name:'L'});
-  if(j===n-1)faces.push({dir:new THREE.Vector3(0,1,0),name:'U'});
-  if(j===0)faces.push({dir:new THREE.Vector3(0,-1,0),name:'D'});
-  if(k===n-1)faces.push({dir:new THREE.Vector3(0,0,1),name:'F'});
-  if(k===0)faces.push({dir:new THREE.Vector3(0,0,-1),name:'B'});
-  mesh.material.forEach(m=>{m.color.set(BODY_COLOR);m.userData={};});
+  if(i===n-1)faces.push({dir:new THREE.Vector3(1,0,0),name:'R',matIdx:0});
+  if(i===0)faces.push({dir:new THREE.Vector3(-1,0,0),name:'L',matIdx:1});
+  if(j===n-1)faces.push({dir:new THREE.Vector3(0,1,0),name:'U',matIdx:2});
+  if(j===0)faces.push({dir:new THREE.Vector3(0,-1,0),name:'D',matIdx:3});
+  if(k===n-1)faces.push({dir:new THREE.Vector3(0,0,1),name:'F',matIdx:4});
+  if(k===0)faces.push({dir:new THREE.Vector3(0,0,-1),name:'B',matIdx:5});
+  if(!mesh.userData.stickers)mesh.userData.stickers=[];
   faces.forEach(f=>{
-    const g=makeRoundedRect(s,s,0.12);
-    const m=new THREE.MeshBasicMaterial({color:FACE_COLOR[f.name]});
-    m.userData={faceName:f.name};
-    const p=new THREE.Mesh(g,m);
-    // 定位到面外侧
-    const off=0.481;
-    p.position.copy(f.dir).multiplyScalar(off);
-    p.lookAt(f.dir.clone().multiplyScalar(2).add(p.position));
-    mesh.add(p);
-    // 记录到 mesh.userData 便于拾取/读取
-    if(!mesh.userData.stickers)mesh.userData.stickers=[];
-    mesh.userData.stickers.push({mesh:p,name:f.name,normalLocal:f.dir.clone()});
+    mesh.userData.stickers.push({mesh:mesh,matIdx:f.matIdx,name:f.name,normalLocal:f.dir.clone()});
   });
 }
 
@@ -1150,7 +1144,7 @@ function applyPainterStateToCube(){
       for(const s of stickers){
         const nw=s.normalLocal.clone().applyQuaternion(cubie.quaternion);
         if(nw.dot(normal)>0.9){
-          s.mesh.material.color.set(FACE_COLOR[color]);
+          cubie.material[s.matIdx].color.set(FACE_COLOR[color]);
           s.name=color;
           break;
         }
