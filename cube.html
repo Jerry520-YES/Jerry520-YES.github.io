@@ -76,6 +76,12 @@ section{padding:48px 0}
 .replay-ctrl{display:flex;gap:6px;align-items:center}
 .replay-ctrl .btn{flex:0 0 auto;padding:8px 12px}
 .speed-sel{flex:1;padding:7px 8px;border:1.5px solid var(--rule);border-radius:8px;font-size:0.8rem;font-family:var(--font);background:#fff;color:var(--ink)}
+.kbd-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.kbd-grid kbd{display:flex;align-items:center;justify-content:center;padding:7px 0;border:1.5px solid var(--rule);border-radius:6px;background:#fff;font-family:var(--mono);font-size:0.82rem;font-weight:700;color:var(--accent2);cursor:default;transition:all 0.1s}
+.kbd-grid kbd.active{background:var(--accent);color:#fff;border-color:var(--accent2);box-shadow:0 2px 8px rgba(74,144,217,0.4)}
+.kbd-hint{font-size:0.72rem;color:var(--muted);line-height:1.8}
+.kbd-hint kbd{font-family:var(--mono)}
+.kbd-mini{display:inline-block;padding:1px 5px;border:1px solid var(--rule);border-radius:3px;background:#fff;font-size:0.7rem;color:var(--ink)}
 
 /* ===== Painter ===== */
 #painter-section{background:var(--bg2)}
@@ -141,7 +147,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <section id="stage-section">
   <div class="container">
     <h2 class="section-title">3D 魔方</h2>
-    <p class="section-sub">沿表面直线拖拽 = 转一层 · 斜向拖拽 = 旋转视角 · 滚轮 / 双指缩放</p>
+    <p class="section-sub">键盘操作转层 · 拖拽旋转视角 · 滚轮缩放</p>
     <div class="stage-layout">
       <div id="cube-canvas-wrap">
         <div id="cube-canvas"></div>
@@ -149,7 +155,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
           <div id="timer">0.<span class="ms">000</span></div>
           <div id="status">就绪 · 拖拽方块开始</div>
         </div>
-        <div class="hint-bar">沿方块表面直线拖拽 = 转一层 · 斜向 / 空白处拖拽 = 旋转视角</div>
+        <div class="hint-bar">键盘 U D L R F B 转层（Shift = 逆转）· 数字键选层 · 拖拽旋转视角</div>
       </div>
       <div id="control-panel">
         <div class="panel-group">
@@ -172,6 +178,15 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
             <button class="btn btn-ghost" id="btn-undo">撤销</button>
             <button class="btn btn-danger" id="btn-clear-history">清空记录</button>
           </div>
+        </div>
+        <div class="panel-group">
+          <span class="panel-label">键盘控制 · 层深度 <span id="kbd-depth">1</span></span>
+          <div class="kbd-grid">
+            <kbd>U</kbd><kbd>D</kbd><kbd>L</kbd><kbd>R</kbd><kbd>F</kbd><kbd>B</kbd>
+          </div>
+          <div class="kbd-hint">字母键 = 顺时针 · Shift+字母 = 逆时针</div>
+          <div class="kbd-hint">数字 <kbd class="kbd-mini">1</kbd>–<kbd class="kbd-mini"><span id="kbd-max-depth">2</span></kbd> = 切换层深度</div>
+          <div class="kbd-hint"><kbd class="kbd-mini">↑↓←→</kbd> 旋转视角 · <kbd class="kbd-mini">空格</kbd> 计时 · <kbd class="kbd-mini">Z</kbd> 撤销</div>
         </div>
         <div class="panel-group">
           <span class="panel-label">计时 / 回放</span>
@@ -275,6 +290,8 @@ let solverWorker=null, solverReady=false;
 let camRot={theta:Math.PI*0.32,phi:Math.PI*0.32};
 let camDist=7;
 let pendingDrag=null;
+let kbdDepth=1;
+let kbdMaxDepth=2;
 
 /* ---------- DOM ---------- */
 const $=id=>document.getElementById(id);
@@ -379,7 +396,10 @@ function buildCube(n){
   scrambleSeq=[];
   updateHistoryBox();
   resetTimer();
-  setStatus('就绪 · 拖拽方块开始');
+  kbdDepth=1;
+  kbdMaxDepth=Math.ceil(n/2);
+  updateKbdDepthUI();
+  setStatus('就绪 · 键盘操作');
 }
 function addStickerPlanes(mesh,n,i,j,k){
   // 在每个外表面贴一个彩色小平面，基底保持黑色 → 现代魔方贴纸感
@@ -552,168 +572,27 @@ function nearestAxis(v){
 function onPointerDown(e){
   if(isAnimating||isReplaying)return;
   e.preventDefault();
-  const ndc=getPointerNDC(e);
-  const hit=pickCubie(ndc);
-  if(hit){
-    pendingDrag={
-      type:'pending',
-      hit,
-      startPoint:hit.point.clone(),
-      normalAxisIdx:hit.normalAxisIdx,
-      normalSign:hit.normalSign,
-      sx:e.clientX,sy:e.clientY,
-      theta0:camRot.theta,phi0:camRot.phi
-    };
-  } else {
-    pendingDrag={type:'view',sx:e.clientX,sy:e.clientY,theta0:camRot.theta,phi0:camRot.phi};
-  }
+  pendingDrag={type:'view',sx:e.clientX,sy:e.clientY,theta0:camRot.theta,phi0:camRot.phi};
   renderer.domElement.setPointerCapture&&renderer.domElement.setPointerCapture(e.pointerId);
 }
-function commitToLayer(d,move,planeNormal){
-  const normalIdx=d.normalAxisIdx;
-  const tAxes=[0,1,2].filter(i=>i!==normalIdx);
-  const proj0=Math.abs(move.dot(AXIS_VEC[tAxes[0]]));
-  const proj1=Math.abs(move.dot(AXIS_VEC[tAxes[1]]));
-  const axisIdx = proj0 > proj1 ? tAxes[0] : tAxes[1];
-  const layerVal=d.hit.cubie.position.toArray()[axisIdx];
-  d.rotInfo={axisIdx,layer:layerVal};
-  const pivot=new THREE.Group();
-  scene.add(pivot);
-  d.pivot=pivot;
-  d.layerCubies=cubies.filter(c=>Math.abs(c.position.toArray()[axisIdx]-layerVal)<0.15);
-  d.layerCubies.forEach(c=>pivot.attach(c));
-  d.type='layer';
-}
 function onPointerMove(e){
-  if(!pendingDrag)return;
-  if(pendingDrag.type==='view'){
-    const dx=e.clientX-pendingDrag.sx,dy=e.clientY-pendingDrag.sy;
-    camRot.theta=pendingDrag.theta0-dx*0.009;
-    camRot.phi=Math.max(0.12,Math.min(Math.PI-0.12,pendingDrag.phi0-dy*0.009));
-    updateCamera();
-    return;
-  }
-  if(pendingDrag.type==='pending'){
-    const sdx=e.clientX-pendingDrag.sx,sdy=e.clientY-pendingDrag.sy;
-    const screenDist=Math.sqrt(sdx*sdx+sdy*sdy);
-    if(screenDist<8)return;
-    const ndc=getPointerNDC(e);
-    raycaster.setFromCamera(ndc,camera);
-    const planeNormal=AXIS_VEC[pendingDrag.normalAxisIdx].clone().multiplyScalar(pendingDrag.normalSign);
-    const start=pendingDrag.startPoint;
-    const plane=new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal,start);
-    const cur=new THREE.Vector3();
-    if(!raycaster.ray.intersectPlane(plane,cur))return;
-    const move=cur.clone().sub(start);
-    if(move.length()<0.04)return;
-    const normalIdx=pendingDrag.normalAxisIdx;
-    const tAxes=[0,1,2].filter(i=>i!==normalIdx);
-    const p0=Math.abs(move.dot(AXIS_VEC[tAxes[0]]));
-    const p1=Math.abs(move.dot(AXIS_VEC[tAxes[1]]));
-    const total=p0+p1;
-    if(total<0.001)return;
-    const align=Math.abs(p0-p1)/total;
-    if(align>0.2){
-      commitToLayer(pendingDrag,move,planeNormal);
-    }else{
-      pendingDrag.type='view';
-      const dx=e.clientX-pendingDrag.sx,dy=e.clientY-pendingDrag.sy;
-      camRot.theta=pendingDrag.theta0-dx*0.009;
-      camRot.phi=Math.max(0.12,Math.min(Math.PI-0.12,pendingDrag.phi0-dy*0.009));
-      updateCamera();
-      return;
-    }
-  }
-  if(pendingDrag.type==='layer'){
-    const ndc=getPointerNDC(e);
-    raycaster.setFromCamera(ndc,camera);
-    const planeNormal=AXIS_VEC[pendingDrag.normalAxisIdx].clone().multiplyScalar(pendingDrag.normalSign);
-    const start=pendingDrag.startPoint;
-    const plane=new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal,start);
-    const cur=new THREE.Vector3();
-    if(!raycaster.ray.intersectPlane(plane,cur))return;
-    const move=cur.clone().sub(start);
-    const axisIdx=pendingDrag.rotInfo.axisIdx;
-    const axisVec=AXIS_VEC[axisIdx];
-    const tangent=axisVec.clone().cross(planeNormal);
-    const proj=move.dot(tangent);
-    const startArr=start.toArray();
-    let radiusSq=0;
-    for(let i=0;i<3;i++){ if(i!==axisIdx) radiusSq+=startArr[i]*startArr[i]; }
-    const radius=Math.max(0.5,Math.sqrt(radiusSq));
-    let angle=proj/radius;
-    angle=Math.max(-Math.PI*0.75,Math.min(Math.PI*0.75,angle));
-    pendingDrag.pivot.quaternion.setFromAxisAngle(axisVec,angle);
-    pendingDrag.currentAngle=angle;
-  }
+  if(!pendingDrag||pendingDrag.type!=='view')return;
+  const dx=e.clientX-pendingDrag.sx,dy=e.clientY-pendingDrag.sy;
+  camRot.theta=pendingDrag.theta0-dx*0.009;
+  camRot.phi=Math.max(0.12,Math.min(Math.PI-0.12,pendingDrag.phi0-dy*0.009));
+  updateCamera();
 }
 function onPointerUp(e){
   if(!pendingDrag){return;}
-  const d=pendingDrag;
   pendingDrag=null;
   try{renderer.domElement.releasePointerCapture(e.pointerId);}catch(_){}
-  if(d.type==='view')return;
-  if(!d.rotInfo){
-    // 没有产生有效转动
-    return;
-  }
-  // snap 到 90°
-  let angle=d.currentAngle||0;
-  const snap=Math.round(angle/(Math.PI/2));
-  if(snap===0){
-    // 回到原位
-    animatePivot(d.pivot,d.rotInfo.axisIdx,0,0,120,()=>{ bakePivot(d,0); });
-    return;
-  }
-  const target=snap*(Math.PI/2);
-  animatePivot(d.pivot,d.rotInfo.axisIdx,d.currentAngle,target,160,()=>{
-    bakePivot(d,snap);
-  });
 }
 // 动画 pivot 从 from 到 to
-function animatePivot(pivot,axisIdx,from,to,dur,done){
-  isAnimating=true;
-  const t0=performance.now();
-  const axis=AXIS_VEC[axisIdx];
-  function step(){
-    const t=Math.min(1,(performance.now()-t0)/dur);
-    const e=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; // easeInOut
-    const a=from+(to-from)*e;
-    pivot.quaternion.setFromAxisAngle(axis,a);
-    if(t<1)requestAnimationFrame(step);
-    else{ isAnimating=false; done&&done(); }
-  }
-  step();
-}
-// bake pivot 到子物体
-function bakePivot(d,snap){
-  const pivot=d.pivot;
-  const axisIdx=d.rotInfo.axisIdx;
-  const layer=d.rotInfo.layer;
-  pivot.updateMatrixWorld(true);
-  const kids=[...pivot.children];
-  kids.forEach(c=>scene.attach(c));
-  scene.remove(pivot);
-  // snap 位置和朝向
-  kids.forEach(c=>{
-    c.position.set(snapHalf(c.position.x),snapHalf(c.position.y),snapHalf(c.position.z));
-    snapQuaternion(c);
-  });
-  // 记录历史：pivot 绕 +axis 转了 snap*90°，dir=sign(snap)
-  if(snap!==0){
-    const dir=Math.sign(snap);
-    const notation=moveNotation(axisIdx,layer,dir);
-    history.push({axis:axisIdx,layer,dir,notation});
-    updateHistoryBox();
-    onUserMove();
-  }
-}
 function snapHalf(v){return Math.round(v*2)/2;}
 function snapQuaternion(obj){
   const m=new THREE.Matrix4().makeRotationFromQuaternion(obj.quaternion);
   const e=m.elements;
   for(let i=0;i<16;i++)e[i]=Math.round(e[i]);
-  // 修正行列可能产生的误差（确保正交）
   obj.quaternion.setFromRotationMatrix(m);
 }
 
@@ -1260,6 +1139,69 @@ function applyPainterStateToCube(){
 }
 
 /* ============================================================
+   键盘控制
+   ============================================================ */
+const FACE_KEY_MAP={
+  'u':{axis:1,side:1,name:'U'},
+  'd':{axis:1,side:-1,name:'D'},
+  'r':{axis:0,side:1,name:'R'},
+  'l':{axis:0,side:-1,name:'L'},
+  'f':{axis:2,side:1,name:'F'},
+  'b':{axis:2,side:-1,name:'B'},
+};
+function updateKbdDepthUI(){
+  $('kbd-depth').textContent=kbdDepth;
+  $('kbd-max-depth').textContent=kbdMaxDepth;
+}
+function flashKey(name){
+  document.querySelectorAll('.kbd-grid kbd').forEach(k=>{
+    if(k.textContent===name)k.classList.add('active');
+  });
+  setTimeout(()=>document.querySelectorAll('.kbd-grid kbd').forEach(k=>k.classList.remove('active')),200);
+}
+function onKeyDown(e){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;
+  if(isAnimating||isReplaying)return;
+  const key=e.key.toLowerCase();
+  const shift=e.shiftKey;
+  if(FACE_KEY_MAP[key]){
+    e.preventDefault();
+    const f=FACE_KEY_MAP[key];
+    const half=(N-1)/2;
+    const layer=f.side*(half-(kbdDepth-1));
+    if(Math.abs(layer)>half+0.01)return;
+    const dir=shift?f.side:-f.side;
+    flashKey(f.name);
+    rotateLayerProgram(f.axis,layer,dir,180,()=>{
+      history.push({axis:f.axis,layer,dir,notation:moveNotation(f.axis,layer,dir)});
+      updateHistoryBox();
+      onUserMove();
+    });
+    return;
+  }
+  if(key>='1'&&key<='9'){
+    e.preventDefault();
+    const d=parseInt(key);
+    if(d>=1&&d<=kbdMaxDepth){
+      kbdDepth=d;
+      updateKbdDepthUI();
+    }
+    return;
+  }
+  if(key==='z'){e.preventDefault();undo();return;}
+  if(key==='s'&&!shift){e.preventDefault();scramble();return;}
+  if(key===' '){
+    e.preventDefault();
+    if(timer.running)stopTimer();else startTimer();
+    return;
+  }
+  if(key==='arrowleft'){e.preventDefault();camRot.theta-=0.15;updateCamera();return;}
+  if(key==='arrowright'){e.preventDefault();camRot.theta+=0.15;updateCamera();return;}
+  if(key==='arrowup'){e.preventDefault();camRot.phi=Math.max(0.12,camRot.phi-0.15);updateCamera();return;}
+  if(key==='arrowdown'){e.preventDefault();camRot.phi=Math.min(Math.PI-0.12,camRot.phi+0.15);updateCamera();return;}
+}
+
+/* ============================================================
    事件绑定
    ============================================================ */
 function bindEvents(){
@@ -1295,6 +1237,7 @@ function bindEvents(){
   });
   $('btn-paint-clear').addEventListener('click',clearPainter);
   $('btn-solve').addEventListener('click',solveFromPainter);
+  window.addEventListener('keydown',onKeyDown);
 }
 
 /* ============================================================
