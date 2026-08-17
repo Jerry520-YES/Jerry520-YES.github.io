@@ -1159,6 +1159,26 @@ function flashKey(name){
   });
   setTimeout(()=>document.querySelectorAll('.kbd-grid kbd').forEach(k=>k.classList.remove('active')),200);
 }
+let viewKeys={arrowleft:false,arrowright:false,arrowup:false,arrowdown:false};
+let viewSpinLoop=0;
+function spinView(){
+  const sp=0.035;
+  if(viewKeys.arrowleft)camRot.theta-=sp;
+  if(viewKeys.arrowright)camRot.theta+=sp;
+  if(viewKeys.arrowup)camRot.phi=Math.max(0.12,camRot.phi-sp);
+  if(viewKeys.arrowdown)camRot.phi=Math.min(Math.PI-0.12,camRot.phi+sp);
+  updateCamera();
+  const any=Object.values(viewKeys).some(v=>v);
+  if(any){
+    viewSpinLoop=requestAnimationFrame(spinView);
+  }else{
+    viewSpinLoop=0;
+  }
+}
+function onKeyUp(e){
+  const key=e.key.toLowerCase();
+  if(key in viewKeys)viewKeys[key]=false;
+}
 function onKeyDown(e){
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;
   if(isAnimating||isReplaying)return;
@@ -1195,10 +1215,13 @@ function onKeyDown(e){
     if(timer.running)stopTimer();else startTimer();
     return;
   }
-  if(key==='arrowleft'){e.preventDefault();camRot.theta-=0.15;updateCamera();return;}
-  if(key==='arrowright'){e.preventDefault();camRot.theta+=0.15;updateCamera();return;}
-  if(key==='arrowup'){e.preventDefault();camRot.phi=Math.max(0.12,camRot.phi-0.15);updateCamera();return;}
-  if(key==='arrowdown'){e.preventDefault();camRot.phi=Math.min(Math.PI-0.12,camRot.phi+0.15);updateCamera();return;}
+  const arrows=['arrowleft','arrowright','arrowup','arrowdown'];
+  if(arrows.includes(key)){
+    e.preventDefault();
+    viewKeys[key]=true;
+    if(!viewSpinLoop)viewSpinLoop=requestAnimationFrame(spinView);
+    return;
+  }
 }
 
 /* ============================================================
@@ -1238,6 +1261,7 @@ function bindEvents(){
   $('btn-paint-clear').addEventListener('click',clearPainter);
   $('btn-solve').addEventListener('click',solveFromPainter);
   window.addEventListener('keydown',onKeyDown);
+  window.addEventListener('keyup',onKeyUp);
 }
 
 /* ============================================================
