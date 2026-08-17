@@ -67,18 +67,18 @@ section{padding:72px 0}
 .section-sub{text-align:center;color:var(--muted);font-size:1.05rem;margin-bottom:48px}
 
 /* ===== Features ===== */
-.features-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .feature-card{
-  background:var(--bg2);border-radius:var(--radius);padding:32px 24px;
+  background:var(--bg2);border-radius:var(--radius);padding:24px 20px;
   transition:transform 0.2s,box-shadow 0.2s;border:1px solid var(--rule);
 }
 .feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(26,188,156,0.1)}
 .feature-icon{
-  width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-  font-size:1.5rem;margin-bottom:16px;font-weight:700;
+  width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;margin-bottom:14px;font-weight:700;
 }
-.feature-card h3{font-size:1.15rem;margin-bottom:8px}
-.feature-card p{color:var(--muted);font-size:0.92rem}
+.feature-card h3{font-size:1.05rem;margin-bottom:6px}
+.feature-card p{color:var(--muted);font-size:0.82rem;line-height:1.6}
 
 /* ===== Tool ===== */
 .tool-wrapper{
@@ -617,33 +617,48 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
     <div class="features-grid">
       <div class="feature-card">
         <div class="feature-icon" style="background:var(--accent-dim);color:var(--accent)">&#9881;</div>
-        <h3>凯撒密码 &amp; ROT13</h3>
-        <p>最古老的加密方式之一，将每个字母在字母表中固定移位 N 位。ROT13 为其特例（固定移位 13 位），加解密为同一操作。</p>
+        <h3>Caesar 凯撒密码</h3>
+        <p>古罗马移位密码，每个字母在字母表中固定移位 N 位。支持滑块调整和字母映射预览。</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:#e6f7ee;color:var(--ok)">&#128225;</div>
-        <h3>摩斯密码 &amp; 培根密码</h3>
-        <p>摩斯密码用点和划表示字符，培根密码将字母编码为 5 位 A/B 二进制序列。两种经典编码方式，无需密钥。</p>
+        <h3>Morse 摩斯密码</h3>
+        <p>国际通用电报编码，用点和划表示字符。支持音频播放和速度调节。</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:#fef3e2;color:var(--warn)">&#128276;</div>
         <h3>Enigma 密码机</h3>
-        <p>二战时期德军使用的转子密码机。可交互配置转子选择、初始位置、环设置、反射器和插接板，完整模拟历史机械加密。</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon" style="background:#e8f1fc;color:#4A90D9">&#128273;</div>
-        <h3>维吉尼亚 &amp; Playfair</h3>
-        <p>维吉尼亚使用字母密钥进行多表替换，Playfair 构建 5&times;5 矩阵对字母对加密。两种密钥驱动的经典多表密码。</p>
+        <p>二战转子密码机，交互式配置转子、位置、环设置和插接板。完整模拟历史机械加密。</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:#fdf0ef;color:var(--danger)">&#9728;</div>
-        <h3>Atbash &amp; Rail Fence</h3>
-        <p>Atbash 反向映射字母表（A&harr;Z），Rail Fence 按之字形栏排列置换。两种无密钥和密钥驱动的置换密码。</p>
+        <h3>Atbash 埃特巴什</h3>
+        <p>最古老的替换密码，A&harr;Z, B&harr;Y 反向映射。无密钥，加解密为同一操作。</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon" style="background:#f0e8fc;color:#7c3aed">&#128274;</div>
-        <h3>隐私至上</h3>
-        <p>所有加密解密运算均在浏览器本地完成，不发送任何数据到服务器。你的文本和密钥永远不离开你的设备。</p>
+        <div class="feature-icon" style="background:#e8f1fc;color:#4A90D9">&#128214;</div>
+        <h3>Baconian 培根密码</h3>
+        <p>弗朗西斯&middot;培根发明的隐写密码，每字母编码为 5 位 A/B 二进制序列。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#f0e8fc;color:#7c3aed">&#8635;</div>
+        <h3>ROT13</h3>
+        <p>凯撒密码特例（固定移位 13 位），加解密同一操作。广泛用于隐藏剧透和谜底。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#fff8e1;color:#E89614">&#9776;</div>
+        <h3>Rail Fence 栅栏密码</h3>
+        <p>之字形置换密码，明文沿多栏排列后逐行读出。支持栏数滑块和排列预览。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#e0f7fa;color:#00B4D8">&#128273;</div>
+        <h3>Vigenère 维吉尼亚</h3>
+        <p>多表替换密码，字母密钥循环对齐明文。支持方表显示和密钥对齐预览。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#f3e8fc;color:#7C3AED">&#9822;</div>
+        <h3>Playfair 普莱费尔</h3>
+        <p>双字母替换密码，5&times;5 密钥矩阵加密字母对。支持矩阵实时生成显示。</p>
       </div>
     </div>
   </div>
