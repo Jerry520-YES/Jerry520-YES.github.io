@@ -45,13 +45,13 @@ section{padding:48px 0}
 
 /* ===== Stage layout ===== */
 .stage-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
-#cube-canvas-wrap{position:relative;background:linear-gradient(180deg,#0f1220 0%,#1a1a2e 100%);border-radius:var(--radius);overflow:hidden;aspect-ratio:1/1;min-height:380px;border:1px solid var(--rule);touch-action:none}
+#cube-canvas-wrap{position:relative;background:linear-gradient(180deg,#e8eef5 0%,#d4dde8 100%);border-radius:var(--radius);overflow:hidden;aspect-ratio:1/1;min-height:380px;border:1px solid var(--rule);touch-action:none}
 #cube-canvas{position:absolute;inset:0}
 #hud{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;z-index:5}
-#timer{font-family:var(--mono);font-size:2.1rem;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,0.6);letter-spacing:0.02em}
+#timer{font-family:var(--mono);font-size:2.1rem;font-weight:700;color:#1a1a2e;text-shadow:0 1px 3px rgba(255,255,255,0.8);letter-spacing:0.02em}
 #timer .ms{font-size:1.3rem;opacity:0.85}
-#status{font-size:0.8rem;color:rgba(255,255,255,0.8);background:rgba(0,0,0,0.35);padding:6px 12px;border-radius:16px;backdrop-filter:blur(6px);max-width:60%;text-align:right}
-.hint-bar{position:absolute;bottom:12px;left:14px;right:14px;text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.55);pointer-events:none;z-index:5}
+#status{font-size:0.8rem;color:rgba(26,26,46,0.7);background:rgba(255,255,255,0.6);padding:6px 12px;border-radius:16px;backdrop-filter:blur(6px);max-width:60%;text-align:right}
+.hint-bar{position:absolute;bottom:12px;left:14px;right:14px;text-align:center;font-size:0.75rem;color:rgba(26,26,46,0.4);pointer-events:none;z-index:5}
 
 /* ===== Control panel ===== */
 #control-panel{background:var(--bg2);border:1px solid var(--rule);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:16px;position:sticky;top:72px}
@@ -357,7 +357,7 @@ function animate(){
    构建魔方
    ============================================================ */
 function makeMaterial(faceName){
-  const m=new THREE.MeshBasicMaterial({color:faceName?FACE_COLOR[faceName]:BODY_COLOR});
+  const m=new THREE.MeshLambertMaterial({color:faceName?FACE_COLOR[faceName]:BODY_COLOR});
   m.userData=faceName?{faceName}:{};
   return m;
 }
@@ -373,7 +373,7 @@ function makeRoundedBox(w,h,d,r){
   shape.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);
   shape.lineTo(-w/2,-h/2+r);
   shape.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);
-  const geo=new THREE.ExtrudeGeometry(shape,{depth:d-2*r,bevelEnabled:true,bevelThickness:r,bevelSize:r,bevelSegments:2,steps:1});
+  const geo=new THREE.ExtrudeGeometry(shape,{depth:d-2*r,bevelEnabled:true,bevelThickness:r,bevelSize:r,bevelSegments:4,steps:1});
   geo.translate(0,0,-d/2+r);
   return geo;
 }
@@ -402,7 +402,7 @@ function buildCube(n){
       if(i!==0&&i!==n-1&&j!==0&&j!==n-1&&k!==0&&k!==n-1) continue;
       const px=i-half,py=j-half,pz=k-half;
       const mats=[makeMaterial(null)];
-      const geo=makeRoundedBox(cubieSize,cubieSize,cubieSize,0.1);
+      const geo=makeRoundedBox(cubieSize,cubieSize,cubieSize,0.16);
       const mesh=new THREE.Mesh(geo,mats);
       mesh.position.set(px,py,pz);
     // 贴纸：在彩色面上加一个略大的平面增强观感（黑色基底 + 彩色贴纸）
