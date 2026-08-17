@@ -4,8 +4,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cipher — 加密解密工具 | Jerry520-YES</title>
-<meta name="description" content="支持 AES-256、Vigenère、Caesar、XOR 等多种算法的在线加密解密工具，自定义密钥，全程浏览器本地处理。">
+<title>Cipher — 经典密码工具 | Jerry520-YES</title>
+<meta name="description" content="支持凯撒密码、摩斯密码、Enigma 密码机的在线加密解密工具，交互式密钥配置，全程浏览器本地处理。">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -15,6 +15,7 @@
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
   --mono:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace;
   --danger:#E74C3C;--warn:#E89614;--ok:#27AE60;
+  --dark:#1a1a2e;
 }
 html{scroll-behavior:smooth}
 body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1.7;font-size:16px}
@@ -86,28 +87,24 @@ section{padding:72px 0}
 }
 .tool-panel{padding:28px}
 
-/* Algorithm selector */
+/* Algorithm chips */
 .algo-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
 .algo-chip{
-  padding:8px 16px;border:2px solid var(--rule);border-radius:8px;cursor:pointer;
-  font-size:0.85rem;font-weight:600;color:var(--muted);background:var(--bg);
+  padding:10px 20px;border:2px solid var(--rule);border-radius:8px;cursor:pointer;
+  font-size:0.88rem;font-weight:600;color:var(--muted);background:var(--bg);
   transition:all 0.2s;user-select:none;font-family:var(--font);
 }
 .algo-chip:hover{border-color:var(--accent);color:var(--accent)}
-.algo-chip.active{
-  border-color:var(--accent);background:var(--accent);color:#fff;
-}
+.algo-chip.active{border-color:var(--accent);background:var(--accent);color:#fff}
 .algo-desc{
-  padding:12px 16px;background:var(--accent-dim);border-radius:8px;
-  font-size:0.85rem;color:var(--accent2);margin-bottom:20px;line-height:1.6;
+  padding:14px 16px;background:var(--accent-dim);border-radius:8px;
+  font-size:0.85rem;color:var(--accent2);margin-bottom:20px;line-height:1.7;
 }
 .algo-desc strong{color:var(--accent2)}
 
 /* Mode toggle */
 .mode-row{display:flex;align-items:center;gap:16px;margin-bottom:20px}
-.mode-toggle{
-  display:inline-flex;border:2px solid var(--accent);border-radius:8px;overflow:hidden;
-}
+.mode-toggle{display:inline-flex;border:2px solid var(--accent);border-radius:8px;overflow:hidden}
 .mode-btn{
   padding:8px 24px;border:none;background:var(--bg);color:var(--accent);
   font-weight:700;font-size:0.9rem;cursor:pointer;transition:all 0.2s;font-family:var(--font);
@@ -115,39 +112,74 @@ section{padding:72px 0}
 .mode-btn.active{background:var(--accent);color:#fff}
 .mode-btn:hover:not(.active){background:var(--accent-dim)}
 
-/* Key input */
-.key-row{
-  display:flex;align-items:center;gap:12px;margin-bottom:20px;
-}
+/* Key input (Caesar) */
+.key-row{display:flex;align-items:center;gap:12px;margin-bottom:20px}
 .key-row.hidden{display:none}
 .key-label{font-size:0.85rem;color:var(--muted);font-weight:600;white-space:nowrap;min-width:50px}
-.key-input-wrap{flex:1;position:relative;display:flex;align-items:center}
 .key-input{
-  flex:1;width:100%;padding:10px 40px 10px 14px;border:2px solid var(--rule);
-  border-radius:8px;font-size:0.9rem;font-family:var(--mono);background:var(--bg);
-  color:var(--ink);transition:border-color 0.2s;
+  flex:1;padding:10px 14px;border:2px solid var(--rule);border-radius:8px;
+  font-size:0.9rem;font-family:var(--mono);background:var(--bg);color:var(--ink);
+  transition:border-color 0.2s;
 }
 .key-input:focus{outline:none;border-color:var(--accent)}
-.key-toggle-vis{
-  position:absolute;right:8px;background:none;border:none;cursor:pointer;
-  font-size:1rem;color:var(--muted);padding:4px;
-}
-.key-toggle-vis:hover{color:var(--accent)}
-.key-strength{
-  display:inline-flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:600;white-space:nowrap;
-}
-.strength-bar{display:inline-flex;gap:2px}
-.strength-bar span{width:6px;height:16px;border-radius:2px;background:var(--rule);transition:background 0.2s}
-.strength-bar.s1 span:nth-child(1){background:var(--danger)}
-.strength-bar.s2 span:nth-child(-n+2){background:var(--warn)}
-.strength-bar.s3 span:nth-child(-n+3){background:var(--accent)}
-.strength-bar.s4 span{background:var(--ok)}
+.key-input::placeholder{color:#adb5bd;font-family:var(--font)}
 
-/* Text areas */
-.text-area-group{margin-bottom:16px}
-.text-area-label{
-  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+/* ===== Enigma Panel ===== */
+.enigma-panel{
+  margin-bottom:20px;padding:24px;background:var(--bg);border-radius:10px;
+  border:2px solid var(--rule);display:none;
 }
+.enigma-panel.show{display:block}
+.enigma-section{margin-bottom:20px}
+.enigma-section:last-child{margin-bottom:0}
+.enigma-section>label{
+  display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.06em;color:var(--muted);margin-bottom:10px;
+}
+.enigma-row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.enigma-slot{flex:1;min-width:90px;text-align:center}
+.enigma-slot .slot-label{display:block;font-size:0.72rem;color:var(--muted);margin-bottom:6px;font-weight:600}
+
+.rotor-select,.reflector-select{
+  width:100%;padding:8px 12px;border:2px solid var(--rule);border-radius:6px;
+  font-size:0.9rem;font-weight:600;background:var(--bg);color:var(--ink);cursor:pointer;
+  font-family:var(--font);text-align:center;
+}
+.rotor-select:focus,.reflector-select:focus{outline:none;border-color:var(--accent)}
+
+.rotor-wheel{display:flex;flex-direction:column;align-items:center;gap:4px}
+.wheel-btn{
+  width:44px;height:22px;border:1px solid var(--rule);background:var(--bg2);
+  border-radius:4px;cursor:pointer;font-size:0.65rem;color:var(--accent);
+  display:flex;align-items:center;justify-content:center;transition:all 0.15s;
+}
+.wheel-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.wheel-display{
+  width:52px;height:52px;background:var(--dark);color:var(--accent);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;font-weight:800;font-family:var(--mono);
+  border:2px solid var(--accent);box-shadow:0 2px 12px rgba(26,188,156,0.2);
+}
+
+.ring-input{
+  width:100%;padding:8px 12px;border:2px solid var(--rule);border-radius:6px;
+  font-size:0.9rem;font-weight:600;background:var(--bg);color:var(--ink);
+  text-align:center;font-family:var(--mono);
+}
+.ring-input:focus{outline:none;border-color:var(--accent)}
+
+.plugboard-input{
+  width:100%;padding:10px 14px;border:2px solid var(--rule);border-radius:8px;
+  font-size:0.9rem;font-family:var(--mono);background:var(--bg);color:var(--ink);
+  transition:border-color 0.2s;
+}
+.plugboard-input:focus{outline:none;border-color:var(--accent)}
+.plugboard-input::placeholder{color:#adb5bd;font-family:var(--font)}
+.plugboard-hint{font-size:0.78rem;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* ===== Text areas ===== */
+.text-area-group{margin-bottom:16px}
+.text-area-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .text-area-label label{font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)}
 .text-area-label .char-count{font-size:0.78rem;color:var(--muted)}
 textarea.cipher-text{
@@ -158,10 +190,8 @@ textarea.cipher-text{
 textarea.cipher-text:focus{outline:none;border-color:var(--accent)}
 textarea.cipher-text::placeholder{color:#adb5bd;font-family:var(--font)}
 
-/* Action buttons */
-.action-row{
-  display:flex;gap:12px;align-items:center;margin:20px 0;flex-wrap:wrap;
-}
+/* ===== Action buttons ===== */
+.action-row{display:flex;gap:12px;align-items:center;margin:20px 0;flex-wrap:wrap}
 .btn-action{
   flex:1;min-width:200px;padding:14px 32px;background:var(--accent);color:#fff;border:none;
   border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;
@@ -178,22 +208,17 @@ textarea.cipher-text::placeholder{color:#adb5bd;font-family:var(--font)}
 .btn-swap:hover{background:var(--accent-dim)}
 .btn-clear{
   padding:14px 18px;background:var(--bg);color:var(--muted);border:2px solid var(--rule);
-  border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s;
-  font-family:var(--font);
+  border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:var(--font);
 }
 .btn-clear:hover{border-color:var(--muted);color:var(--ink)}
 
-.spinner{
-  width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);
-  border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;
-}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Output */
+/* ===== Output ===== */
 .output-area{
   margin-top:8px;padding:24px;background:var(--bg);border-radius:10px;
-  border:1px solid var(--rule);border-left:4px solid var(--accent2);min-height:120px;
-  position:relative;
+  border:1px solid var(--rule);border-left:4px solid var(--accent2);min-height:120px;position:relative;
 }
 .output-placeholder{color:var(--muted);text-align:center;padding:30px 0;font-size:0.95rem}
 .output-placeholder .ph-icon{font-size:2rem;opacity:0.3;display:block;margin-bottom:12px}
@@ -203,6 +228,7 @@ textarea.cipher-text::placeholder{color:#adb5bd;font-family:var(--font)}
 }
 .output-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .output-header h4{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700}
+.mode-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;margin-left:8px;background:var(--accent-dim);color:var(--accent)}
 .btn-copy{
   padding:6px 16px;background:var(--accent-dim);color:var(--accent);border:none;border-radius:6px;
   font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:var(--font);
@@ -215,17 +241,12 @@ textarea.cipher-text::placeholder{color:#adb5bd;font-family:var(--font)}
 }
 .output-meta span{display:inline-flex;align-items:center;gap:4px}
 .output-meta strong{color:var(--ink);font-weight:700}
-.output-error{
-  color:var(--danger);padding:16px;background:#fdf0ef;border-radius:8px;
-  border:1px solid #f5c6cb;font-size:0.88rem;line-height:1.6;
-}
+.output-error{color:var(--danger);padding:16px;background:#fdf0ef;border-radius:8px;border:1px solid #f5c6cb;font-size:0.88rem;line-height:1.6}
 .output-error .err-icon{font-size:1.2rem;display:block;margin-bottom:8px}
 
 /* ===== Algorithm Reference ===== */
 .algo-table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--rule)}
-.algo-table{
-  width:100%;border-collapse:collapse;font-size:0.88rem;min-width:600px;
-}
+.algo-table{width:100%;border-collapse:collapse;font-size:0.88rem;min-width:600px}
 .algo-table th{
   background:var(--accent);color:#fff;padding:14px 16px;text-align:left;
   font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.04em;
@@ -243,10 +264,7 @@ textarea.cipher-text::placeholder{color:#adb5bd;font-family:var(--font)}
 /* ===== Demo ===== */
 .demo-container{background:var(--bg2);border-radius:var(--radius);border:1px solid var(--rule);overflow:hidden}
 .demo-tabs{display:flex;border-bottom:2px solid var(--rule);flex-wrap:wrap}
-.demo-tab{
-  padding:14px 24px;cursor:pointer;font-weight:600;font-size:0.9rem;color:var(--muted);
-  border-bottom:3px solid transparent;transition:all 0.2s;user-select:none;
-}
+.demo-tab{padding:14px 24px;cursor:pointer;font-weight:600;font-size:0.9rem;color:var(--muted);border-bottom:3px solid transparent;transition:all 0.2s;user-select:none}
 .demo-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .demo-content{padding:32px;display:none}
 .demo-content.active{display:block}
@@ -257,23 +275,10 @@ textarea.cipher-text::placeholder{color:#adb5bd;font-family:var(--font)}
   font-family:var(--mono);font-size:0.82rem;line-height:1.7;min-height:100px;word-break:break-all;
 }
 .demo-box.output{border-left:3px solid var(--accent2)}
-.demo-info{
-  margin-top:12px;padding:10px 14px;background:var(--accent-dim);border-radius:6px;
-  font-size:0.82rem;color:var(--accent2);
-}
-
-/* ===== Security Note ===== */
-.security-note{
-  max-width:640px;margin:0 auto;text-align:center;
-}
-.security-note p{color:var(--muted);font-size:1rem;line-height:1.8;margin-bottom:16px}
-.security-note .note-box{
-  display:inline-block;padding:12px 24px;background:#fff4e6;border:1px solid #f5d7b5;
-  border-radius:8px;font-size:0.88rem;color:#8a6d3b;text-align:left;line-height:1.7;
-}
+.demo-info{margin-top:12px;padding:10px 14px;background:var(--accent-dim);border-radius:6px;font-size:0.82rem;color:var(--accent2);line-height:1.6}
 
 /* ===== Footer ===== */
-footer{background:#1a1a2e;color:#a0a0b8;padding:48px 24px 32px;text-align:center}
+footer{background:var(--dark);color:#a0a0b8;padding:48px 24px 32px;text-align:center}
 footer a{color:var(--accent)}
 footer .footer-links{display:flex;gap:24px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
 footer .footer-links a{color:#fff;font-size:0.9rem}
@@ -288,7 +293,8 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
   .btn-action,.btn-swap,.btn-clear{width:100%;justify-content:center}
   .key-row{flex-direction:column;align-items:stretch}
   .key-label{min-width:auto}
-  .key-strength{margin-top:4px}
+  .enigma-row{flex-direction:column}
+  .enigma-slot{min-width:auto}
 }
 </style>
 </head>
@@ -303,14 +309,11 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 
 <div class="hero">
   <h1>Cipher</h1>
-  <p class="tagline">多算法加密解密工具 &middot; 自定义密钥 &middot; 全程浏览器本地处理</p>
+  <p class="tagline">经典密码工具 &middot; 凯撒 &middot; 摩斯 &middot; Enigma 密码机</p>
   <div class="hero-badges">
-    <span class="badge">AES-256</span>
-    <span class="badge">Vigenère</span>
     <span class="badge">Caesar</span>
-    <span class="badge">XOR</span>
-    <span class="badge">Base64</span>
-    <span class="badge">ROT13</span>
+    <span class="badge">Morse Code</span>
+    <span class="badge">Enigma</span>
   </div>
   <div class="hero-cta">
     <a href="#try" class="btn btn-primary">立即使用</a>
@@ -321,27 +324,27 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <section id="features">
   <div class="container">
     <h2 class="section-title">核心特性</h2>
-    <p class="section-sub">为什么选择 Cipher</p>
+    <p class="section-sub">三种经典密码算法</p>
     <div class="features-grid">
       <div class="feature-card">
-        <div class="feature-icon" style="background:var(--accent-dim);color:var(--accent)">&#128274;</div>
-        <h3>AES-256 加密</h3>
-        <p>采用 AES-256-GCM 军事级加密标准，通过 PBKDF2 从密钥派生加密密钥，100,000 次迭代，安全性有保障。</p>
+        <div class="feature-icon" style="background:var(--accent-dim);color:var(--accent)">&#9881;</div>
+        <h3>凯撒密码</h3>
+        <p>最古老的加密方式之一，将每个字母在字母表中固定移位 N 位。简单易懂，是密码学入门的经典案例。</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon" style="background:#e6f7ee;color:var(--ok)">&#9881;</div>
-        <h3>六种算法</h3>
-        <p>涵盖现代加密（AES）、经典密码（Vigenère、Caesar）、编码工具（Base64、ROT13）和对称加密（XOR），满足不同场景需求。</p>
+        <div class="feature-icon" style="background:#e6f7ee;color:var(--ok)">&#128225;</div>
+        <h3>摩斯密码</h3>
+        <p>国际通用电报编码，用点（&middot;）和划（&mdash;）表示字母和数字。支持中英文混合编码，实用且经典。</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon" style="background:#fef3e2;color:var(--warn)">&#128737;</div>
+        <div class="feature-icon" style="background:#fef3e2;color:var(--warn)">&#128276;</div>
+        <h3>Enigma 密码机</h3>
+        <p>二战时期德军使用的转子密码机。可交互配置转子选择、初始位置、环设置、反射器和插接板，完整模拟历史机械加密。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#f0e8fc;color:#7c3aed">&#128274;</div>
         <h3>隐私至上</h3>
         <p>所有加密解密运算均在浏览器本地完成，不发送任何数据到服务器。你的文本和密钥永远不离开你的设备。</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon" style="background:#f0e8fc;color:#7c3aed">&#9889;</div>
-        <h3>即时处理</h3>
-        <p>无需等待，输入即处理。支持中英文文本，密钥强度实时检测，一键复制结果，操作流畅高效。</p>
       </div>
     </div>
   </div>
@@ -351,18 +354,15 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <section id="try" style="background:var(--bg2)">
   <div class="container">
     <h2 class="section-title">加密 / 解密</h2>
-    <p class="section-sub">选择算法、输入文本和密钥，即时完成加解密 &mdash; 全程本地处理</p>
+    <p class="section-sub">选择算法，输入文本和密钥，即时完成加解密 &mdash; 全程本地处理</p>
     <div class="tool-wrapper">
       <div class="tool-panel">
 
-        <!-- Algorithm selector -->
+        <!-- Algorithm chips -->
         <div class="algo-row">
-          <button class="algo-chip active" data-algo="aes">AES-256</button>
-          <button class="algo-chip" data-algo="vigenere">Vigenère</button>
-          <button class="algo-chip" data-algo="caesar">Caesar</button>
-          <button class="algo-chip" data-algo="xor">XOR</button>
-          <button class="algo-chip" data-algo="base64">Base64</button>
-          <button class="algo-chip" data-algo="rot13">ROT13</button>
+          <button class="algo-chip active" data-algo="caesar">Caesar 凯撒密码</button>
+          <button class="algo-chip" data-algo="morse">Morse 摩斯密码</button>
+          <button class="algo-chip" data-algo="enigma">Enigma 密码机</button>
         </div>
         <div class="algo-desc" id="algo-desc"></div>
 
@@ -374,18 +374,110 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
           </div>
         </div>
 
-        <!-- Key input -->
+        <!-- Key input (Caesar shift) -->
         <div class="key-row" id="key-row">
-          <label class="key-label" id="key-label">密钥</label>
-          <div class="key-input-wrap">
-            <input type="password" class="key-input" id="key-input" placeholder="输入密钥 / 密码..." autocomplete="off">
-            <button class="key-toggle-vis" id="key-vis" title="显示/隐藏密钥">&#128065;</button>
+          <label class="key-label" id="key-label">移位数</label>
+          <input type="number" class="key-input" id="key-input" placeholder="输入数字 1-25..." min="1" max="25" value="3" autocomplete="off">
+        </div>
+
+        <!-- Enigma configuration panel -->
+        <div class="enigma-panel" id="enigma-panel">
+          <div class="enigma-section">
+            <label>转子选择 (Rotor Selection)</label>
+            <div class="enigma-row">
+              <div class="enigma-slot">
+                <span class="slot-label">左转子</span>
+                <select class="rotor-select" data-slot="0">
+                  <option value="I">Rotor I</option>
+                  <option value="II">Rotor II</option>
+                  <option value="III" selected>Rotor III</option>
+                  <option value="IV">Rotor IV</option>
+                  <option value="V">Rotor V</option>
+                </select>
+              </div>
+              <div class="enigma-slot">
+                <span class="slot-label">中转子</span>
+                <select class="rotor-select" data-slot="1">
+                  <option value="I">Rotor I</option>
+                  <option value="II" selected>Rotor II</option>
+                  <option value="III">Rotor III</option>
+                  <option value="IV">Rotor IV</option>
+                  <option value="V">Rotor V</option>
+                </select>
+              </div>
+              <div class="enigma-slot">
+                <span class="slot-label">右转子</span>
+                <select class="rotor-select" data-slot="2">
+                  <option value="I" selected>Rotor I</option>
+                  <option value="II">Rotor II</option>
+                  <option value="III">Rotor III</option>
+                  <option value="IV">Rotor IV</option>
+                  <option value="V">Rotor V</option>
+                </select>
+              </div>
+            </div>
           </div>
-          <div class="key-strength" id="key-strength" style="display:none">
-            <span class="strength-text" id="strength-text">弱</span>
-            <span class="strength-bar" id="strength-bar">
-              <span></span><span></span><span></span><span></span>
-            </span>
+
+          <div class="enigma-section">
+            <label>初始位置 (Initial Position) — 点击上下箭头调整</label>
+            <div class="enigma-row">
+              <div class="enigma-slot">
+                <span class="slot-label">左</span>
+                <div class="rotor-wheel">
+                  <button class="wheel-btn" data-rotor="0" data-dir="up">&#9650;</button>
+                  <div class="wheel-display" id="wheel-0">A</div>
+                  <button class="wheel-btn" data-rotor="0" data-dir="down">&#9660;</button>
+                </div>
+              </div>
+              <div class="enigma-slot">
+                <span class="slot-label">中</span>
+                <div class="rotor-wheel">
+                  <button class="wheel-btn" data-rotor="1" data-dir="up">&#9650;</button>
+                  <div class="wheel-display" id="wheel-1">A</div>
+                  <button class="wheel-btn" data-rotor="1" data-dir="down">&#9660;</button>
+                </div>
+              </div>
+              <div class="enigma-slot">
+                <span class="slot-label">右</span>
+                <div class="rotor-wheel">
+                  <button class="wheel-btn" data-rotor="2" data-dir="up">&#9650;</button>
+                  <div class="wheel-display" id="wheel-2">A</div>
+                  <button class="wheel-btn" data-rotor="2" data-dir="down">&#9660;</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="enigma-section">
+            <label>环设置 (Ring Setting)</label>
+            <div class="enigma-row">
+              <div class="enigma-slot">
+                <span class="slot-label">左</span>
+                <input type="number" class="ring-input" data-rotor="0" min="1" max="26" value="1">
+              </div>
+              <div class="enigma-slot">
+                <span class="slot-label">中</span>
+                <input type="number" class="ring-input" data-rotor="1" min="1" max="26" value="1">
+              </div>
+              <div class="enigma-slot">
+                <span class="slot-label">右</span>
+                <input type="number" class="ring-input" data-rotor="2" min="1" max="26" value="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="enigma-section">
+            <label>反射器 (Reflector)</label>
+            <select class="reflector-select" id="reflector-select">
+              <option value="B" selected>Reflector B</option>
+              <option value="C">Reflector C</option>
+            </select>
+          </div>
+
+          <div class="enigma-section">
+            <label>插接板 (Plugboard) — 可选</label>
+            <input type="text" class="plugboard-input" id="plugboard-input" placeholder="例如: AT BS DE (字母对，空格分隔)" autocomplete="off">
+            <p class="plugboard-hint">输入字母对（每对 2 个字母），用空格分隔。例如 "AT BS DE" 表示 A&harr;T, B&harr;S, D&harr;E。最多 10 对。</p>
           </div>
         </div>
 
@@ -395,7 +487,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
             <label id="input-label">明文输入</label>
             <span class="char-count" id="input-count">0 字符</span>
           </div>
-          <textarea class="cipher-text" id="input-text" placeholder="在此输入需要加密或解密的文本...&#10;&#10;支持中文和英文，支持任意长度的文本。"></textarea>
+          <textarea class="cipher-text" id="input-text" placeholder="在此输入需要加密或解密的文本...&#10;&#10;Caesar / Enigma: 仅处理英文字母 (A-Z)&#10;Morse: 支持字母、数字和标点"></textarea>
         </div>
 
         <!-- Action buttons -->
@@ -428,7 +520,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <section id="algorithms">
   <div class="container">
     <h2 class="section-title">算法说明</h2>
-    <p class="section-sub">六种加密与编码算法的对比</p>
+    <p class="section-sub">三种经典密码算法的对比</p>
     <div class="algo-table-wrap">
       <table class="algo-table">
         <thead>
@@ -436,52 +528,31 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
             <th>算法</th>
             <th>类型</th>
             <th>密钥</th>
-            <th>安全性</th>
-            <th>适用场景</th>
+            <th>时代</th>
+            <th>特点</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td class="algo-name">AES-256-GCM<div class="algo-type">Advanced Encryption Standard</div></td>
-            <td>现代对称加密</td>
-            <td>密码短语</td>
-            <td><span class="security-dots"><span class="on">&#9733;</span><span class="on">&#9733;</span><span class="on">&#9733;</span><span class="on">&#9733;</span><span class="on">&#9733;</span></span></td>
-            <td>真实数据加密、敏感信息保护</td>
-          </tr>
-          <tr>
-            <td class="algo-name">Vigenère<div class="algo-type">Polyalphabetic Cipher</div></td>
-            <td>经典多表密码</td>
-            <td>关键词</td>
-            <td><span class="security-dots"><span class="on">&#9733;</span><span class="on">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span></span></td>
-            <td>教育演示、轻量混淆</td>
-          </tr>
-          <tr>
             <td class="algo-name">Caesar<div class="algo-type">Shift Cipher</div></td>
             <td>经典移位密码</td>
-            <td>移位数(1-25)</td>
-            <td><span class="security-dots"><span class="on">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span></span></td>
-            <td>教学示例、趣味加密</td>
+            <td>移位数 (1-25)</td>
+            <td>古罗马</td>
+            <td>每个字母固定移位，简单易懂</td>
           </tr>
           <tr>
-            <td class="algo-name">XOR<div class="algo-type">Exclusive OR</div></td>
-            <td>对称加密</td>
-            <td>密钥文本</td>
-            <td><span class="security-dots"><span class="on">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span></span></td>
-            <td>简单数据混淆、调试</td>
-          </tr>
-          <tr>
-            <td class="algo-name">Base64<div class="algo-type">Encoding</div></td>
-            <td>编码方案</td>
+            <td class="algo-name">Morse Code<div class="algo-type">Telegraph Code</div></td>
+            <td>电报编码</td>
             <td>无</td>
-            <td><span class="security-dots"><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span></span></td>
-            <td>数据传输编码、非加密用途</td>
+            <td>19世纪</td>
+            <td>用点和划表示字符，国际通用</td>
           </tr>
           <tr>
-            <td class="algo-name">ROT13<div class="algo-type">Self-inverse</div></td>
-            <td>字母替换</td>
-            <td>无</td>
-            <td><span class="security-dots"><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span><span class="off">&#9733;</span></span></td>
-            <td>文本隐藏、防剧透</td>
+            <td class="algo-name">Enigma<div class="algo-type">Rotor Machine</div></td>
+            <td>转子机械密码</td>
+            <td>转子+位置+环+插接板</td>
+            <td>二战时期</td>
+            <td>交互式密钥配置，互反加密</td>
           </tr>
         </tbody>
       </table>
@@ -496,86 +567,56 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
     <p class="section-sub">不同算法的加密效果演示</p>
     <div class="demo-container">
       <div class="demo-tabs">
-        <div class="demo-tab active" data-tab="aes-demo">AES-256</div>
-        <div class="demo-tab" data-tab="caesar-demo">Caesar</div>
-        <div class="demo-tab" data-tab="vigenere-demo">Vigenère</div>
-        <div class="demo-tab" data-tab="base64-demo">Base64</div>
+        <div class="demo-tab active" data-tab="caesar-demo">Caesar</div>
+        <div class="demo-tab" data-tab="morse-demo">Morse</div>
+        <div class="demo-tab" data-tab="enigma-demo">Enigma</div>
       </div>
 
-      <div class="demo-content active" data-content="aes-demo">
+      <div class="demo-content active" data-content="caesar-demo">
         <div class="demo-split">
           <div class="demo-panel">
             <h4>明文 &mdash; 输入</h4>
-            <div class="demo-box">Hello, World! 这是一段需要加密的秘密消息。</div>
-            <div class="demo-info">密钥：MySecretPass2026</div>
-          </div>
-          <div class="demo-panel">
-            <h4>密文 &mdash; AES-256-GCM 输出</h4>
-            <div class="demo-box output">d6m8YkP3Rq...（每次加密结果不同，含随机盐和 IV）</div>
-            <div class="demo-info">Base64 编码 &middot; 含 16 字节盐 + 12 字节 IV + 密文 + 认证标签</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="demo-content" data-content="caesar-demo">
-        <div class="demo-split">
-          <div class="demo-panel">
-            <h4>明文 &mdash; 输入</h4>
-            <div class="demo-box">Attack at Dawn!</div>
-            <div class="demo-info">移位数：3</div>
+            <div class="demo-box">ATTACK AT DAWN</div>
+            <div class="demo-info">移位数：3（每个字母向前移动 3 位）</div>
           </div>
           <div class="demo-panel">
             <h4>密文 &mdash; Caesar (shift=3)</h4>
-            <div class="demo-box output">Dwwdfn dw Gdzq!</div>
-            <div class="demo-info">每个字母向前移动 3 位，非字母字符保持不变</div>
+            <div class="demo-box output">DWWDFN DW GDZQ</div>
+            <div class="demo-info">A&rarr;D, T&rarr;W, C&rarr;F &middot; 非字母字符保持不变</div>
           </div>
         </div>
       </div>
 
-      <div class="demo-content" data-content="vigenere-demo">
-        <div class="demo-split">
-          <div class="demo-panel">
-            <h4>明文 &mdash; 输入</h4>
-            <div class="demo-box">HELLO WORLD</div>
-            <div class="demo-info">关键词：KEY</div>
-          </div>
-          <div class="demo-panel">
-            <h4>密文 &mdash; Vigenère</h4>
-            <div class="demo-box output">RIJVS GSPVH</div>
-            <div class="demo-info">每个字母按关键词对应位置偏移，非字母字符保持不变</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="demo-content" data-content="base64-demo">
+      <div class="demo-content" data-content="morse-demo">
         <div class="demo-split">
           <div class="demo-panel">
             <h4>原文 &mdash; 输入</h4>
-            <div class="demo-box">Hello, 世界！</div>
-            <div class="demo-info">无密钥</div>
+            <div class="demo-box">SOS HELLO WORLD</div>
+            <div class="demo-info">无密钥 &middot; 国际摩斯密码标准</div>
           </div>
           <div class="demo-panel">
-            <h4>编码 &mdash; Base64</h4>
-            <div class="demo-box output">SGVsbG8sIOS4lueVjO+8gg==</div>
-            <div class="demo-info">UTF-8 编码后转为 Base64，可逆</div>
+            <h4>编码 &mdash; Morse Code</h4>
+            <div class="demo-box output">... --- ... / .... . .-.. .-.. --- / .-- --- .-. .-.. -..</div>
+            <div class="demo-info">点(&middot;)和划(&mdash;)表示字符，空格用 / 分隔</div>
           </div>
         </div>
       </div>
 
-    </div>
-  </div>
-</section>
-
-<!-- ===== Security Note ===== -->
-<section id="security" style="background:var(--bg2)">
-  <div class="container">
-    <h2 class="section-title">安全须知</h2>
-    <p class="section-sub">使用前请了解</p>
-    <div class="security-note">
-      <p>Cipher 工具的所有运算均在你的浏览器本地完成，文本和密钥不会发送到任何服务器。</p>
-      <div class="note-box">
-        &#9888; <strong>注意：</strong>AES-256 是真正的加密算法，适合保护敏感数据。Caesar、Vigenère、XOR 等为经典/简单算法，仅适用于教学和轻量场景，请勿用于真实安全需求。Base64 和 ROT13 是编码方案，不是加密，可被轻易还原。
+      <div class="demo-content" data-content="enigma-demo">
+        <div class="demo-split">
+          <div class="demo-panel">
+            <h4>明文 &mdash; 输入</h4>
+            <div class="demo-box">HELLO ENIGMA</div>
+            <div class="demo-info">转子: III-II-I &middot; 位置: AAA &middot; 环: 111 &middot; 反射器: B &middot; 无插接板</div>
+          </div>
+          <div class="demo-panel">
+            <h4>密文 &mdash; Enigma 输出</h4>
+            <div class="demo-box output">LOJMB OULQAB</div>
+            <div class="demo-info">互反加密：相同设置加密&harr;解密 &middot; 每个字符加密后转子自动步进</div>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 </section>
@@ -592,35 +633,27 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 
 <script>
 /* ===== Algorithm metadata ===== */
-var ALGOS = {
-  aes:{
-    name:'AES-256-GCM',needsKey:true,keyLabel:'密码短语',keyPlaceholder:'输入密码短语（建议 12 位以上）...',
-    desc:'<strong>AES-256-GCM</strong> — 军事级对称加密标准。使用 PBKDF2 从密码短语派生 256 位密钥，每次加密生成随机盐和 IV，输出包含认证标签的 Base64 编码。支持中文密钥。'
-  },
-  vigenere:{
-    name:'Vigenère',needsKey:true,keyLabel:'关键词',keyPlaceholder:'输入关键词（仅字母）...',
-    desc:'<strong>Vigenère 维吉尼亚密码</strong> — 经典多表替换密码，使用关键词逐字母偏移。安全性高于 Caesar，但对现代计算而言可被频率分析破解。仅处理英文字母。'
-  },
+var ALGOS={
   caesar:{
-    name:'Caesar',needsKey:true,keyLabel:'移位数',keyPlaceholder:'输入数字 1-25...',
-    desc:'<strong>Caesar 凯撒密码</strong> — 最古老的加密方式之一，将每个字母在字母表中固定移位 N 位。简单易懂，但仅有 25 种可能，极易暴力破解。仅处理英文字母。'
+    name:'Caesar',needsKey:true,keyType:'number',
+    keyLabel:'移位数',keyPlaceholder:'输入数字 1-25...',
+    desc:'<strong>Caesar 凯撒密码</strong> — 古罗马凯撒大帝使用的加密方式，将每个字母在字母表中固定移位 N 位。仅处理英文字母 (A-Z)，非字母字符保持不变。简单易懂，是密码学入门的经典案例。'
   },
-  xor:{
-    name:'XOR',needsKey:true,keyLabel:'密钥',keyPlaceholder:'输入密钥文本...',
-    desc:'<strong>XOR 异或加密</strong> — 将文本与密钥逐字节异或运算，输出 Base64 编码。对称操作：加密和解密使用相同流程。支持中文密钥。'
+  morse:{
+    name:'Morse Code',needsKey:false,keyType:'none',
+    keyLabel:'',keyPlaceholder:'',
+    desc:'<strong>Morse 摩斯密码</strong> — 国际通用电报编码，用点（&middot;）和划（&mdash;）的组合表示字母、数字和标点。编码与解码为互逆操作，无密钥。字符间空格分隔，单词间用 / 分隔。'
   },
-  base64:{
-    name:'Base64',needsKey:false,keyLabel:'',keyPlaceholder:'',
-    desc:'<strong>Base64 编码</strong> — 将二进制数据转为 ASCII 字符串。这不是加密，而是编码方案，可被轻易还原。常用于数据传输和存储。'
-  },
-  rot13:{
-    name:'ROT13',needsKey:false,keyLabel:'',keyPlaceholder:'',
-    desc:'<strong>ROT13</strong> — Caesar 的特例，固定移位 13 位。由于英文字母共 26 个，加密和解密是同一操作。仅处理英文字母。'
+  enigma:{
+    name:'Enigma',needsKey:true,keyType:'enigma',
+    keyLabel:'',keyPlaceholder:'',
+    desc:'<strong>Enigma 密码机</strong> — 二战时期德军使用的转子密码机。通过配置转子选择、初始位置、环设置、反射器和插接板构建密钥。<strong>互反加密</strong>：相同设置下，加密和解密是同一操作。每加密一个字符，转子自动步进。仅处理英文字母 (A-Z)。'
   }
 };
 
-var currentAlgo='aes';
+var currentAlgo='caesar';
 var currentMode='encrypt';
+var enigmaPositions=[0,0,0]; /* A=0, B=1, ... Z=25 */
 
 /* ===== Algorithm chip switching ===== */
 document.querySelectorAll('.algo-chip').forEach(function(chip){
@@ -636,24 +669,29 @@ function updateAlgoUI(){
   var info=ALGOS[currentAlgo];
   document.getElementById('algo-desc').innerHTML=info.desc;
   var keyRow=document.getElementById('key-row');
-  var keyInput=document.getElementById('key-input');
-  var keyLabel=document.getElementById('key-label');
-  var keyStrength=document.getElementById('key-strength');
+  var enigmaPanel=document.getElementById('enigma-panel');
 
-  if(info.needsKey){
+  if(info.keyType==='number'){
     keyRow.classList.remove('hidden');
-    keyLabel.textContent=info.keyLabel;
-    keyInput.placeholder=info.keyPlaceholder;
-    keyInput.value='';
-    if(currentAlgo==='aes'){
-      keyStrength.style.display='inline-flex';
-    }else{
-      keyStrength.style.display='none';
-    }
+    enigmaPanel.classList.remove('show');
+  }else if(info.keyType==='enigma'){
+    keyRow.classList.add('hidden');
+    enigmaPanel.classList.add('show');
   }else{
     keyRow.classList.add('hidden');
-    keyStrength.style.display='none';
+    enigmaPanel.classList.remove('show');
   }
+
+  /* Update mode labels */
+  var modeBtns=document.querySelectorAll('.mode-btn');
+  if(currentAlgo==='morse'){
+    modeBtns[0].textContent='编码';
+    modeBtns[1].textContent='解码';
+  }else{
+    modeBtns[0].textContent='加密';
+    modeBtns[1].textContent='解密';
+  }
+
   updateLabels();
   clearOutput();
 }
@@ -673,47 +711,28 @@ function updateLabels(){
   var inputLabel=document.getElementById('input-label');
   var outputLabel=document.getElementById('output-label');
   var btnAction=document.getElementById('btn-action');
-  if(currentMode==='encrypt'){
-    inputLabel.textContent='明文输入';
-    outputLabel.textContent='密文输出';
-    btnAction.textContent='加密';
-  }else{
-    inputLabel.textContent='密文输入';
-    outputLabel.textContent='明文输出';
-    btnAction.textContent='解密';
-  }
+  var isEncode=(currentMode==='encrypt');
+  var verb=isEncode?'加密':'解密';
+  if(currentAlgo==='morse'){verb=isEncode?'编码':'解码'}
+  inputLabel.textContent=isEncode?'明文输入':'密文输入';
+  outputLabel.textContent=isEncode?'密文输出':'明文输出';
+  btnAction.textContent=verb;
 }
 
-/* ===== Key visibility toggle ===== */
-var keyInput=document.getElementById('key-input');
-var keyVis=document.getElementById('key-vis');
-keyVis.addEventListener('click',function(){
-  if(keyInput.type==='password'){
-    keyInput.type='text';
-    keyVis.textContent='\u{1F648}';
-  }else{
-    keyInput.type='password';
-    keyVis.textContent='\u{1F441}';
-  }
-});
-
-/* ===== Key strength meter (AES only) ===== */
-keyInput.addEventListener('input',function(){
-  if(currentAlgo!=='aes') return;
-  var val=keyInput.value;
-  var score=0;
-  if(val.length>=8) score++;
-  if(val.length>=12) score++;
-  if(/[a-z]/.test(val)&&/[A-Z]/.test(val)) score++;
-  if(/\d/.test(val)) score++;
-  if(/[^a-zA-Z0-9]/.test(val)) score++;
-  score=Math.min(score,4);
-
-  var bar=document.getElementById('strength-bar');
-  var text=document.getElementById('strength-text');
-  bar.className='strength-bar s'+score;
-  var labels=['','弱','一般','良好','强'];
-  text.textContent=labels[score]||'弱';
+/* ===== Enigma rotor wheel interaction ===== */
+document.querySelectorAll('.wheel-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var rotorIdx=parseInt(this.dataset.rotor,10);
+    var dir=this.dataset.dir;
+    if(dir==='up'){
+      enigmaPositions[rotorIdx]=(enigmaPositions[rotorIdx]+1)%26;
+    }else{
+      enigmaPositions[rotorIdx]=(enigmaPositions[rotorIdx]+25)%26;
+    }
+    var letter=String.fromCharCode(enigmaPositions[rotorIdx]+65);
+    document.getElementById('wheel-'+rotorIdx).textContent=letter;
+    clearOutput();
+  });
 });
 
 /* ===== Char count ===== */
@@ -725,23 +744,22 @@ inputText.addEventListener('input',function(){
 /* ===== Clear & Swap ===== */
 document.getElementById('btn-clear').addEventListener('click',function(){
   inputText.value='';
-  keyInput.value='';
   document.getElementById('input-count').textContent='0 字符';
   clearOutput();
   inputText.focus();
 });
 
 document.getElementById('btn-swap').addEventListener('click',function(){
-  var output=document.getElementById('output-content');
-  if(!output) return;
-  var text=output.textContent;
+  var content=document.getElementById('output-content');
+  if(!content)return;
+  var text=content.textContent;
   inputText.value=text;
   document.getElementById('input-count').textContent=text.length+' 字符';
   clearOutput();
   inputText.focus();
 });
 
-/* ===== Demo tab switching ===== */
+/* ===== Demo tabs ===== */
 document.querySelectorAll('.demo-tab').forEach(function(tab){
   tab.addEventListener('click',function(){
     document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('active')});
@@ -751,64 +769,9 @@ document.querySelectorAll('.demo-tab').forEach(function(tab){
   });
 });
 
-/* ===== Cipher Implementations ===== */
-
-/* --- AES-256-GCM via Web Crypto API --- */
-async function aesEncrypt(text,passphrase){
-  var enc=new TextEncoder();
-  var salt=crypto.getRandomValues(new Uint8Array(16));
-  var iv=crypto.getRandomValues(new Uint8Array(12));
-
-  var keyMaterial=await crypto.subtle.importKey(
-    'raw',enc.encode(passphrase),'PBKDF2',false,['deriveKey']
-  );
-  var key=await crypto.subtle.deriveKey(
-    {name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},
-    keyMaterial,
-    {name:'AES-GCM',length:256},
-    false,
-    ['encrypt']
-  );
-  var encrypted=await crypto.subtle.encrypt(
-    {name:'AES-GCM',iv:iv},
-    key,
-    enc.encode(text)
-  );
-
-  var combined=new Uint8Array(salt.length+iv.length+encrypted.byteLength);
-  combined.set(salt,0);
-  combined.set(iv,salt.length);
-  combined.set(new Uint8Array(encrypted),salt.length+iv.length);
-
-  return base64Encode(combined);
-}
-
-async function aesDecrypt(base64,passphrase){
-  var combined=base64Decode(base64);
-  var salt=combined.slice(0,16);
-  var iv=combined.slice(16,28);
-  var data=combined.slice(28);
-
-  var enc=new TextEncoder();
-  var keyMaterial=await crypto.subtle.importKey(
-    'raw',enc.encode(passphrase),'PBKDF2',false,['deriveKey']
-  );
-  var key=await crypto.subtle.deriveKey(
-    {name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},
-    keyMaterial,
-    {name:'AES-GCM',length:256},
-    false,
-    ['decrypt']
-  );
-  var decrypted=await crypto.subtle.decrypt(
-    {name:'AES-GCM',iv:iv},
-    key,
-    data
-  );
-  return new TextDecoder().decode(decrypted);
-}
-
-/* --- Caesar Cipher --- */
+/* ============================================================
+   CAESAR CIPHER
+   ============================================================ */
 function caesarEncrypt(text,shift){
   shift=((shift%26)+26)%26;
   return text.replace(/[a-zA-Z]/g,function(c){
@@ -820,102 +783,187 @@ function caesarDecrypt(text,shift){
   return caesarEncrypt(text,26-shift);
 }
 
-/* --- Vigenère Cipher --- */
-function vigenereEncrypt(text,key){
-  key=key.toUpperCase().replace(/[^A-Z]/g,'');
-  if(!key) return text;
-  var ki=0;
-  return text.replace(/[a-zA-Z]/g,function(c){
-    var base=c<='Z'?65:97;
-    var shift=key.charCodeAt(ki%key.length)-65;
-    ki++;
-    return String.fromCharCode((c.charCodeAt(0)-base+shift)%26+base);
+/* ============================================================
+   MORSE CODE
+   ============================================================ */
+var MORSE_MAP={
+  'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.',
+  'F':'..-.','G':'--.','H':'....','I':'..','J':'.---',
+  'K':'-.-','L':'.-..','M':'--','N':'-.','O':'---',
+  'P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-',
+  'U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--',
+  'Z':'--..',
+  '0':'-----','1':'.----','2':'..---','3':'...--',
+  '4':'....-','5':'.....','6':'-....','7':'--...',
+  '8':'---..','9':'----.',
+  '.':'.-.-.-',',':'--..--','?':'..--..','!':'-.-.--',
+  '/':'-..-.','-':'-....-','(':'-.--.',')':'-.--.-',
+  '=':'-...-',':':'---...',';':'-.-.-.','&':'.-...',
+  '@':'.--.-.'
+};
+var MORSE_REVERSE={};
+Object.keys(MORSE_MAP).forEach(function(k){MORSE_REVERSE[MORSE_MAP[k]]=k});
+
+function morseEncode(text){
+  var words=text.toUpperCase().split(/\s+/);
+  var encodedWords=words.map(function(word){
+    var chars=word.split('');
+    var morseChars=chars.map(function(c){
+      if(MORSE_MAP[c])return MORSE_MAP[c];
+      return c;
+    });
+    return morseChars.join(' ');
   });
+  return encodedWords.join(' / ');
 }
-function vigenereDecrypt(text,key){
-  key=key.toUpperCase().replace(/[^A-Z]/g,'');
-  if(!key) return text;
-  var ki=0;
-  return text.replace(/[a-zA-Z]/g,function(c){
-    var base=c<='Z'?65:97;
-    var shift=key.charCodeAt(ki%key.length)-65;
-    ki++;
-    return String.fromCharCode((c.charCodeAt(0)-base-shift+26)%26+base);
+
+function morseDecode(morse){
+  var words=morse.trim().split(/\s*\/\s*/);
+  var decodedWords=words.map(function(word){
+    var codes=word.trim().split(/\s+/);
+    var chars=codes.map(function(code){
+      if(MORSE_REVERSE[code])return MORSE_REVERSE[code];
+      return code;
+    });
+    return chars.join('');
   });
+  return decodedWords.join(' ');
 }
 
-/* --- XOR Cipher --- */
-function xorEncrypt(text,key){
-  if(!key) throw new Error('XOR 加密需要密钥');
-  var textBytes=new TextEncoder().encode(text);
-  var keyBytes=new TextEncoder().encode(key);
-  var result=new Uint8Array(textBytes.length);
-  for(var i=0;i<textBytes.length;i++){
-    result[i]=textBytes[i]^keyBytes[i%keyBytes.length];
-  }
-  return base64Encode(result);
+/* ============================================================
+   ENIGMA MACHINE
+   ============================================================ */
+var ENIGMA_ROTORS={
+  I:  {wiring:'EKMFLGDQVZNTOWYHXUSPAIBRCJ',notch:16},
+  II: {wiring:'AJDKSIRUXBLHWTMCQGZNPYFVOE',notch:4},
+  III:{wiring:'BDFHJLCPRTXVZNYEIWGAKMUSQO',notch:21},
+  IV: {wiring:'ESOVPZJAYQUIRHXLNFTGKDCMWB',notch:9},
+  V:  {wiring:'VZBRGITYUPSDNHLXAWMJQOFECK',notch:25}
+};
+var ENIGMA_REFLECTORS={
+  B:'YRUHQSLDPXNGOKMIEBFZCWVJAT',
+  C:'FVPJIAOYEDRZXWGCTKUQSBNMHL'
+};
+
+function charToNum(c){return c.charCodeAt(0)-65}
+function numToChar(n){return String.fromCharCode((n%26+26)%26+65)}
+
+function rotorForward(input,rotor){
+  var contact=(input-rotor.position-rotor.ring+52)%26;
+  var output=charToNum(rotor.wiring[contact]);
+  return(output+rotor.position+rotor.ring)%26;
 }
-function xorDecrypt(base64,key){
-  if(!key) throw new Error('XOR 解密需要密钥');
-  var data=base64Decode(base64);
-  var keyBytes=new TextEncoder().encode(key);
-  var result=new Uint8Array(data.length);
-  for(var i=0;i<data.length;i++){
-    result[i]=data[i]^keyBytes[i%keyBytes.length];
-  }
-  return new TextDecoder().decode(result);
+function rotorBackward(input,rotor){
+  var entry=(input-rotor.position-rotor.ring+52)%26;
+  var entryChar=numToChar(entry);
+  var contact=rotor.wiring.indexOf(entryChar);
+  return(contact+rotor.position+rotor.ring)%26;
 }
 
-/* --- Base64 --- */
-function base64Encode(bytes){
-  var binary='';
-  bytes=bytes||new TextEncoder().encode('');
-  for(var i=0;i<bytes.length;i++){
-    binary+=String.fromCharCode(bytes[i]);
+function stepRotors(rotors){
+  var left=rotors[0],middle=rotors[1],right=rotors[2];
+  if(middle.position===middle.notch){
+    left.position=(left.position+1)%26;
+    middle.position=(middle.position+1)%26;
+  }else if(right.position===right.notch){
+    middle.position=(middle.position+1)%26;
   }
-  return btoa(binary);
-}
-function base64Decode(str){
-  var binary=atob(str.trim());
-  var bytes=new Uint8Array(binary.length);
-  for(var i=0;i<binary.length;i++){
-    bytes[i]=binary.charCodeAt(i);
-  }
-  return bytes;
-}
-function base64EncodeText(text){
-  return base64Encode(new TextEncoder().encode(text));
-}
-function base64DecodeText(str){
-  return new TextDecoder().decode(base64Decode(str));
+  right.position=(right.position+1)%26;
 }
 
-/* --- ROT13 --- */
-function rot13(text){
-  return text.replace(/[a-zA-Z]/g,function(c){
-    var base=c<='Z'?65:97;
-    return String.fromCharCode((c.charCodeAt(0)-base+13)%26+base);
+function plugboardSwap(input,pairs){
+  if(!pairs||pairs.length===0)return input;
+  var c=numToChar(input);
+  for(var i=0;i<pairs.length;i++){
+    if(pairs[i][0]===c)return charToNum(pairs[i][1]);
+    if(pairs[i][1]===c)return charToNum(pairs[i][0]);
+  }
+  return input;
+}
+
+function parsePlugboard(text){
+  if(!text||!text.trim())return[];
+  var pairs=[];
+  var tokens=text.trim().toUpperCase().split(/\s+/);
+  for(var i=0;i<tokens.length&&pairs.length<10;i++){
+    var t=tokens[i].replace(/[^A-Z]/g,'');
+    if(t.length===2&&t[0]!==t[1]){
+      var dup=false;
+      for(var j=0;j<pairs.length;j++){
+        if(pairs[j].indexOf(t[0])>=0||pairs[j].indexOf(t[1])>=0){dup=true;break}
+      }
+      if(!dup)pairs.push([t[0],t[1]]);
+    }
+  }
+  return pairs;
+}
+
+function enigmaEncrypt(text,settings){
+  var rotors=settings.rotorNames.map(function(name,i){
+    var r=ENIGMA_ROTORS[name];
+    return{wiring:r.wiring,notch:r.notch,position:settings.positions[i],ring:settings.rings[i]};
   });
+  var reflector=ENIGMA_REFLECTORS[settings.reflector];
+  var pairs=parsePlugboard(settings.plugboard);
+
+  var result='';
+  for(var i=0;i<text.length;i++){
+    var c=text[i].toUpperCase();
+    if(c>='A'&&c<='Z'){
+      stepRotors(rotors);
+      var input=charToNum(c);
+      input=plugboardSwap(input,pairs);
+      for(var r=2;r>=0;r--){input=rotorForward(input,rotors[r])}
+      input=charToNum(reflector[input]);
+      for(var r=0;r<3;r++){input=rotorBackward(input,rotors[r])}
+      input=plugboardSwap(input,pairs);
+      result+=numToChar(input);
+    }else{
+      result+=c;
+    }
+  }
+  var finalPositions=rotors.map(function(r){return numToChar(r.position)});
+  return{result:result,finalPositions:finalPositions};
 }
 
-/* ===== Main action handler ===== */
+function getEnigmaSettings(){
+  var rotorNames=[
+    document.querySelector('.rotor-select[data-slot="0"]').value,
+    document.querySelector('.rotor-select[data-slot="1"]').value,
+    document.querySelector('.rotor-select[data-slot="2"]').value
+  ];
+  var positions=enigmaPositions.slice();
+  var rings=[
+    parseInt(document.querySelector('.ring-input[data-rotor="0"]').value,10)||1,
+    parseInt(document.querySelector('.ring-input[data-rotor="1"]').value,10)||1,
+    parseInt(document.querySelector('.ring-input[data-rotor="2"]').value,10)||1
+  ];
+  rings=rings.map(function(r){return Math.max(1,Math.min(26,r))-1});
+  var reflector=document.getElementById('reflector-select').value;
+  var plugboard=document.getElementById('plugboard-input').value;
+  return{rotorNames:rotorNames,positions:positions,rings:rings,reflector:reflector,plugboard:plugboard};
+}
+
+/* ============================================================
+   MAIN ACTION HANDLER
+   ============================================================ */
 var btnAction=document.getElementById('btn-action');
 var outputArea=document.getElementById('output-area');
 
-btnAction.addEventListener('click',async function(){
+btnAction.addEventListener('click',function(){
   var text=inputText.value;
   if(!text||!text.trim()){
     alert('请输入需要'+(currentMode==='encrypt'?'加密':'解密')+'的文本。');
     return;
   }
 
-  var key=keyInput.value;
   var info=ALGOS[currentAlgo];
-
-  if(info.needsKey&&!key){
-    alert('请输入'+info.keyLabel+'。');
-    keyInput.focus();
-    return;
+  if(info.needsKey&&info.keyType==='number'){
+    var shift=parseInt(document.getElementById('key-input').value,10);
+    if(isNaN(shift)||shift<1||shift>25){
+      alert('移位数必须是 1-25 之间的数字。');
+      return;
+    }
   }
 
   btnAction.classList.add('loading');
@@ -923,98 +971,83 @@ btnAction.addEventListener('click',async function(){
   btnAction.innerHTML='<span class="spinner"></span> 处理中...';
 
   try{
-    var result='';
     var startTime=performance.now();
+    var result='';
+    var extraMeta='';
 
-    if(currentAlgo==='aes'){
-      if(currentMode==='encrypt'){
-        result=await aesEncrypt(text,key);
-      }else{
-        result=await aesDecrypt(text.trim(),key);
-      }
-    }else if(currentAlgo==='caesar'){
-      var shift=parseInt(key,10);
-      if(isNaN(shift)||shift<1||shift>25){
-        throw new Error('移位数必须是 1-25 之间的数字');
-      }
+    if(currentAlgo==='caesar'){
+      var shift=parseInt(document.getElementById('key-input').value,10);
       result=currentMode==='encrypt'?caesarEncrypt(text,shift):caesarDecrypt(text,shift);
-    }else if(currentAlgo==='vigenere'){
-      var cleanKey=key.toUpperCase().replace(/[^A-Z]/g,'');
-      if(!cleanKey) throw new Error('关键词必须包含至少一个英文字母');
-      result=currentMode==='encrypt'?vigenereEncrypt(text,key):vigenereDecrypt(text,key);
-    }else if(currentAlgo==='xor'){
-      result=currentMode==='encrypt'?xorEncrypt(text,key):xorDecrypt(text.trim(),key);
-    }else if(currentAlgo==='base64'){
-      result=currentMode==='encrypt'?base64EncodeText(text):base64DecodeText(text.trim());
-    }else if(currentAlgo==='rot13'){
-      result=rot13(text);
+    }else if(currentAlgo==='morse'){
+      result=currentMode==='encrypt'?morseEncode(text):morseDecode(text);
+    }else if(currentAlgo==='enigma'){
+      var settings=getEnigmaSettings();
+      var enigmaResult=enigmaEncrypt(text,settings);
+      result=enigmaResult.result;
+      extraMeta='转子终位: '+enigmaResult.finalPositions.join('');
     }
 
     var elapsed=Math.round(performance.now()-startTime);
-    renderOutput(result,elapsed);
+    renderOutput(result,elapsed,extraMeta);
   }catch(err){
     renderError(err.message||err.toString());
   }
 
   btnAction.classList.remove('loading');
   btnAction.disabled=false;
-  btnAction.textContent=currentMode==='encrypt'?'加密':'解密';
+  btnAction.textContent=currentMode==='encrypt'?
+    (currentAlgo==='morse'?'编码':'加密'):
+    (currentAlgo==='morse'?'解码':'解密');
 });
 
-function renderOutput(result,elapsed){
+function renderOutput(result,elapsed,extraMeta){
   var inputLen=inputText.value.length;
   var outputLen=result.length;
-  var compression=inputLen>0?Math.round((1-outputLen/inputLen)*100):0;
 
-  outputArea.innerHTML=
-    '<div class="output-header">'+
-      '<h4>'+(currentMode==='encrypt'?'密文输出':'明文输出')+'<span class="mode-badge" style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;margin-left:8px;background:var(--accent-dim);color:var(--accent)">'+ALGOS[currentAlgo].name+'</span></h4>'+
-      '<button class="btn-copy">复制</button>'+
-    '</div>'+
+  var modeText=currentMode==='encrypt'?
+    (currentAlgo==='morse'?'编码输出':'密文输出'):
+    (currentAlgo==='morse'?'解码输出':'明文输出');
+
+  var html='<div class="output-header">'+
+    '<h4>'+modeText+'<span class="mode-badge">'+ALGOS[currentAlgo].name+'</span></h4>'+
+    '<button class="btn-copy">复制</button></div>'+
     '<div class="output-content">'+escapeHtml(result)+'</div>'+
     '<div class="output-meta">'+
       '<span>输入：<strong>'+inputLen.toLocaleString()+'</strong> 字符</span>'+
       '<span>输出：<strong>'+outputLen.toLocaleString()+'</strong> 字符</span>'+
-      (compression!==0?'<span>变化：<strong>'+(compression>0?'+':'')+compression+'%</strong></span>':'')+
       '<span>耗时：<strong>'+elapsed+'ms</strong></span>'+
+      (extraMeta?'<span>'+escapeHtml(extraMeta)+'</span>':'')+
     '</div>';
 
+  outputArea.innerHTML=html;
   document.getElementById('output-count').textContent=outputLen+' 字符';
 }
 
 function renderError(msg){
-  outputArea.innerHTML=
-    '<div class="output-error">'+
-      '<span class="err-icon">&#9888;</span>'+
-      '<strong>'+(currentMode==='encrypt'?'加密':'解密')+'失败</strong><br>'+
-      escapeHtml(msg)+
-      (currentMode==='decrypt'?'<br><br>请检查：输入文本是否完整、密钥是否正确、算法是否匹配。':'')+
-    '</div>';
+  outputArea.innerHTML='<div class="output-error">'+
+    '<span class="err-icon">&#9888;</span>'+
+    '<strong>'+(currentMode==='encrypt'?'加密':'解密')+'失败</strong><br>'+
+    escapeHtml(msg)+'</div>';
   document.getElementById('output-count').textContent='0 字符';
 }
 
 function clearOutput(){
-  outputArea.innerHTML=
-    '<div class="output-placeholder">'+
-      '<span class="ph-icon">&#128272;</span>'+
-      '加密 / 解密结果将显示在这里...'+
-    '</div>';
+  outputArea.innerHTML='<div class="output-placeholder">'+
+    '<span class="ph-icon">&#128272;</span>'+
+    '加密 / 解密结果将显示在这里...</div>';
   document.getElementById('output-count').textContent='0 字符';
 }
 
 function escapeHtml(str){
-  return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 /* ===== Copy button ===== */
 outputArea.addEventListener('click',function(e){
   if(e.target&&e.target.classList.contains('btn-copy')){
     var content=outputArea.querySelector('.output-content');
-    if(!content) return;
+    if(!content)return;
     var text=content.textContent;
     navigator.clipboard.writeText(text).then(function(){
       e.target.textContent='已复制';
