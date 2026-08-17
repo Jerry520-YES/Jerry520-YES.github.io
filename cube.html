@@ -264,7 +264,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 const FACE_NAMES = ['U','R','F','D','L','B'];
 // WCA 标准配色
 const FACE_COLOR = {U:'#FFFFFF',D:'#FFD500',F:'#009B48',B:'#0046AD',R:'#B71234',L:'#FF5800'};
-const BODY_COLOR = '#141414';
+const BODY_COLOR = '#2a2a2e';
 // Three.js 几何面顺序 [+x,-x,+y,-y,+z,-z] 对应的面名（若该面是外表面）
 const GEO_FACE_AXIS = [
   {axis:'x',sign:1,name:'R'},
@@ -310,9 +310,10 @@ function initThree(){
   canvasWrap.appendChild(renderer.domElement);
 
   // 灯光
-  scene.add(new THREE.AmbientLight(0xffffff,0.78));
-  const d1=new THREE.DirectionalLight(0xffffff,0.5);d1.position.set(5,8,6);scene.add(d1);
-  const d2=new THREE.DirectionalLight(0xffffff,0.28);d2.position.set(-6,-3,-4);scene.add(d2);
+  scene.add(new THREE.AmbientLight(0xffffff,0.55));
+  const d1=new THREE.DirectionalLight(0xffffff,0.8);d1.position.set(5,8,6);scene.add(d1);
+  const d2=new THREE.DirectionalLight(0xffffff,0.4);d2.position.set(-6,-3,-4);scene.add(d2);
+  const d3=new THREE.DirectionalLight(0xffffff,0.3);d3.position.set(0,-5,8);scene.add(d3);
 
   raycaster=new THREE.Raycaster();
 
@@ -357,7 +358,7 @@ function animate(){
    构建魔方
    ============================================================ */
 function makeMaterial(faceName){
-  const m=new THREE.MeshBasicMaterial({color:faceName?FACE_COLOR[faceName]:BODY_COLOR});
+  const m=new THREE.MeshLambertMaterial({color:faceName?FACE_COLOR[faceName]:BODY_COLOR});
   m.userData=faceName?{faceName}:{};
   return m;
 }
