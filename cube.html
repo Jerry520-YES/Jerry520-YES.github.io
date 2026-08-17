@@ -361,29 +361,50 @@ function makeMaterial(faceName){
   m.userData=faceName?{faceName}:{};
   return m;
 }
+function makeRoundedBox(w,h,d,r){
+  r=Math.min(r,w/2-0.001,h/2-0.001,d/2-0.001);
+  const shape=new THREE.Shape();
+  shape.moveTo(-w/2+r,-h/2);
+  shape.lineTo(w/2-r,-h/2);
+  shape.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);
+  shape.lineTo(w/2,h/2-r);
+  shape.quadraticCurveTo(w/2,h/2,w/2-r,h/2);
+  shape.lineTo(-w/2+r,h/2);
+  shape.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);
+  shape.lineTo(-w/2,-h/2+r);
+  shape.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);
+  const geo=new THREE.ExtrudeGeometry(shape,{depth:d-2*r,bevelEnabled:true,bevelThickness:r,bevelSize:r,bevelSegments:2,steps:1});
+  geo.translate(0,0,-d/2+r);
+  return geo;
+}
+function makeRoundedRect(w,h,r){
+  const shape=new THREE.Shape();
+  shape.moveTo(-w/2+r,-h/2);
+  shape.lineTo(w/2-r,-h/2);
+  shape.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);
+  shape.lineTo(w/2,h/2-r);
+  shape.quadraticCurveTo(w/2,h/2,w/2-r,h/2);
+  shape.lineTo(-w/2+r,h/2);
+  shape.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);
+  shape.lineTo(-w/2,-h/2+r);
+  shape.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);
+  return new THREE.ShapeGeometry(shape);
+}
 function buildCube(n){
   // 清除
   cubies.forEach(c=>scene.remove(c));
   cubies=[];
   N=n;
   const half=(n-1)/2;
-  const cubieSize=0.96;
-  const stickerInset=0.12;
+  const cubieSize=0.94;
   for(let i=0;i<n;i++)for(let j=0;j<n;j++)for(let k=0;k<n;k++){
-    // 只创建表面小方块
-    if(i!==0&&i!==n-1&&j!==0&&j!==n-1&&k!==0&&k!==n-1) continue;
-    const px=i-half,py=j-half,pz=k-half;
-    const mats=[
-      makeMaterial(i===n-1?'R':null),
-      makeMaterial(i===0?'L':null),
-      makeMaterial(j===n-1?'U':null),
-      makeMaterial(j===0?'D':null),
-      makeMaterial(k===n-1?'F':null),
-      makeMaterial(k===0?'B':null),
-    ];
-    const geo=new THREE.BoxGeometry(cubieSize,cubieSize,cubieSize);
-    const mesh=new THREE.Mesh(geo,mats);
-    mesh.position.set(px,py,pz);
+      // 只创建表面小方块
+      if(i!==0&&i!==n-1&&j!==0&&j!==n-1&&k!==0&&k!==n-1) continue;
+      const px=i-half,py=j-half,pz=k-half;
+      const mats=[makeMaterial(null)];
+      const geo=makeRoundedBox(cubieSize,cubieSize,cubieSize,0.1);
+      const mesh=new THREE.Mesh(geo,mats);
+      mesh.position.set(px,py,pz);
     // 贴纸：在彩色面上加一个略大的平面增强观感（黑色基底 + 彩色贴纸）
     addStickerPlanes(mesh,n,i,j,k);
     scene.add(mesh);
@@ -404,7 +425,7 @@ function buildCube(n){
 function addStickerPlanes(mesh,n,i,j,k){
   // 在每个外表面贴一个彩色小平面，基底保持黑色 → 现代魔方贴纸感
   const half=(n-1)/2;
-  const s=0.84;
+  const s=0.72;
   const faces=[];
   if(i===n-1)faces.push({dir:new THREE.Vector3(1,0,0),name:'R'});
   if(i===0)faces.push({dir:new THREE.Vector3(-1,0,0),name:'L'});
@@ -412,10 +433,9 @@ function addStickerPlanes(mesh,n,i,j,k){
   if(j===0)faces.push({dir:new THREE.Vector3(0,-1,0),name:'D'});
   if(k===n-1)faces.push({dir:new THREE.Vector3(0,0,1),name:'F'});
   if(k===0)faces.push({dir:new THREE.Vector3(0,0,-1),name:'B'});
-  // 把几何体材质全设为黑色（body），用贴纸平面表示颜色
   mesh.material.forEach(m=>{m.color.set(BODY_COLOR);m.userData={};});
   faces.forEach(f=>{
-    const g=new THREE.PlaneGeometry(s,s);
+    const g=makeRoundedRect(s,s,0.12);
     const m=new THREE.MeshBasicMaterial({color:FACE_COLOR[f.name]});
     m.userData={faceName:f.name};
     const p=new THREE.Mesh(g,m);
