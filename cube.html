@@ -551,15 +551,15 @@ function nearestAxis(v){
 }
 function onPointerDown(e){
   if(isAnimating||isReplaying)return;
+  e.preventDefault();
   const ndc=getPointerNDC(e);
   const hit=pickCubie(ndc);
   if(hit){
-    // 开始转动层
-    pendingDrag={type:'layer',hit,startPoint:hit.point,normalAxisIdx:hit.normalAxisIdx,normalSign:hit.normalSign};
+    pendingDrag={type:'layer',hit,startPoint:hit.point.clone(),normalAxisIdx:hit.normalAxisIdx,normalSign:hit.normalSign};
     renderer.domElement.setPointerCapture&&renderer.domElement.setPointerCapture(e.pointerId);
   } else {
-    // 旋转视角
     pendingDrag={type:'view',sx:e.clientX,sy:e.clientY,theta0:camRot.theta,phi0:camRot.phi};
+    renderer.domElement.setPointerCapture&&renderer.domElement.setPointerCapture(e.pointerId);
   }
 }
 function onPointerMove(e){
@@ -570,40 +570,39 @@ function onPointerMove(e){
     camRot.phi=Math.max(0.12,Math.min(Math.PI-0.12,pendingDrag.phi0-dy*0.009));
     updateCamera();
   } else if(pendingDrag.type==='layer'){
-    // 计算当前转动角度（实时跟随）
     const ndc=getPointerNDC(e);
     raycaster.setFromCamera(ndc,camera);
-    // 与起始点所在的切面平面求交
     const planeNormal=AXIS_VEC[pendingDrag.normalAxisIdx].clone().multiplyScalar(pendingDrag.normalSign);
     const start=pendingDrag.startPoint;
     const plane=new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal,start);
     const cur=new THREE.Vector3();
     if(!raycaster.ray.intersectPlane(plane,cur))return;
     const move=cur.clone().sub(start);
-    // move × normal → 转轴
-    const cross=move.clone().cross(planeNormal);
-    const ax=nearestAxis(cross);
-    if(Math.abs(cross.toArray()[ax.idx])<0.02)return; // 太小不动
-    // 切向 = axis × normal
-    const axisVec=AXIS_VEC[ax.idx].clone().multiplyScalar(Math.sign(cross.toArray()[ax.idx]));
-    const tangent=axisVec.clone().cross(planeNormal);
-    const proj=move.dot(tangent);
-    // 转动半径 ≈ 1（cubie 到转轴距离约 1）
-    let angle=proj/1.0;
-    // 限制角度范围
-    angle=Math.max(-Math.PI*0.6,Math.min(Math.PI*0.6,angle));
+
     if(!pendingDrag.rotInfo){
-      // layer 用被点击 cubie 的中心坐标（而非射线交点坐标）
+      const cross=move.clone().cross(planeNormal);
+      const ax=nearestAxis(cross);
+      if(Math.abs(cross.toArray()[ax.idx])<0.15)return;
       const layerVal=pendingDrag.hit.cubie.position.toArray()[ax.idx];
       pendingDrag.rotInfo={axisIdx:ax.idx,layer:layerVal};
-      // 创建 pivot
       const pivot=new THREE.Group();
       scene.add(pivot);
       pendingDrag.pivot=pivot;
       pendingDrag.layerCubies=cubies.filter(c=>Math.abs(c.position.toArray()[ax.idx]-layerVal)<0.15);
       pendingDrag.layerCubies.forEach(c=>pivot.attach(c));
     }
-    pendingDrag.pivot.quaternion.setFromAxisAngle(AXIS_VEC[ax.idx], angle);
+
+    const axisIdx=pendingDrag.rotInfo.axisIdx;
+    const axisVec=AXIS_VEC[axisIdx];
+    const tangent=axisVec.clone().cross(planeNormal);
+    const proj=move.dot(tangent);
+    const startArr=start.toArray();
+    let radiusSq=0;
+    for(let i=0;i<3;i++){ if(i!==axisIdx) radiusSq+=startArr[i]*startArr[i]; }
+    const radius=Math.max(0.5,Math.sqrt(radiusSq));
+    let angle=proj/radius;
+    angle=Math.max(-Math.PI*0.6,Math.min(Math.PI*0.6,angle));
+    pendingDrag.pivot.quaternion.setFromAxisAngle(axisVec,angle);
     pendingDrag.currentAngle=angle;
   }
 }
@@ -611,6 +610,7 @@ function onPointerUp(e){
   if(!pendingDrag){return;}
   const d=pendingDrag;
   pendingDrag=null;
+  try{renderer.domElement.releasePointerCapture(e.pointerId);}catch(_){}
   if(d.type==='view')return;
   if(!d.rotInfo){
     // 没有产生有效转动
