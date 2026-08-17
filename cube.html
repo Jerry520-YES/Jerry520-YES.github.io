@@ -357,7 +357,7 @@ function animate(){
    构建魔方
    ============================================================ */
 function makeMaterial(faceName){
-  const m=new THREE.MeshLambertMaterial({color:faceName?FACE_COLOR[faceName]:BODY_COLOR});
+  const m=new THREE.MeshBasicMaterial({color:faceName?FACE_COLOR[faceName]:BODY_COLOR});
   m.userData=faceName?{faceName}:{};
   return m;
 }
