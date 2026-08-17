@@ -141,7 +141,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <section id="stage-section">
   <div class="container">
     <h2 class="section-title">3D 魔方</h2>
-    <p class="section-sub">拖拽魔方表面转动一层 · 拖拽空白处旋转视角 · 滚轮 / 双指缩放</p>
+    <p class="section-sub">沿表面直线拖拽 = 转一层 · 斜向拖拽 = 旋转视角 · 滚轮 / 双指缩放</p>
     <div class="stage-layout">
       <div id="cube-canvas-wrap">
         <div id="cube-canvas"></div>
@@ -149,7 +149,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
           <div id="timer">0.<span class="ms">000</span></div>
           <div id="status">就绪 · 拖拽方块开始</div>
         </div>
-        <div class="hint-bar">提示：在方块表面拖拽 = 转层，在空白处拖拽 = 旋转视角</div>
+        <div class="hint-bar">沿方块表面直线拖拽 = 转一层 · 斜向 / 空白处拖拽 = 旋转视角</div>
       </div>
       <div id="control-panel">
         <div class="panel-group">
@@ -555,12 +555,34 @@ function onPointerDown(e){
   const ndc=getPointerNDC(e);
   const hit=pickCubie(ndc);
   if(hit){
-    pendingDrag={type:'layer',hit,startPoint:hit.point.clone(),normalAxisIdx:hit.normalAxisIdx,normalSign:hit.normalSign};
-    renderer.domElement.setPointerCapture&&renderer.domElement.setPointerCapture(e.pointerId);
+    pendingDrag={
+      type:'pending',
+      hit,
+      startPoint:hit.point.clone(),
+      normalAxisIdx:hit.normalAxisIdx,
+      normalSign:hit.normalSign,
+      sx:e.clientX,sy:e.clientY,
+      theta0:camRot.theta,phi0:camRot.phi
+    };
   } else {
     pendingDrag={type:'view',sx:e.clientX,sy:e.clientY,theta0:camRot.theta,phi0:camRot.phi};
-    renderer.domElement.setPointerCapture&&renderer.domElement.setPointerCapture(e.pointerId);
   }
+  renderer.domElement.setPointerCapture&&renderer.domElement.setPointerCapture(e.pointerId);
+}
+function commitToLayer(d,move,planeNormal){
+  const normalIdx=d.normalAxisIdx;
+  const tAxes=[0,1,2].filter(i=>i!==normalIdx);
+  const proj0=Math.abs(move.dot(AXIS_VEC[tAxes[0]]));
+  const proj1=Math.abs(move.dot(AXIS_VEC[tAxes[1]]));
+  const axisIdx = proj0 > proj1 ? tAxes[0] : tAxes[1];
+  const layerVal=d.hit.cubie.position.toArray()[axisIdx];
+  d.rotInfo={axisIdx,layer:layerVal};
+  const pivot=new THREE.Group();
+  scene.add(pivot);
+  d.pivot=pivot;
+  d.layerCubies=cubies.filter(c=>Math.abs(c.position.toArray()[axisIdx]-layerVal)<0.15);
+  d.layerCubies.forEach(c=>pivot.attach(c));
+  d.type='layer';
 }
 function onPointerMove(e){
   if(!pendingDrag)return;
@@ -569,7 +591,12 @@ function onPointerMove(e){
     camRot.theta=pendingDrag.theta0-dx*0.009;
     camRot.phi=Math.max(0.12,Math.min(Math.PI-0.12,pendingDrag.phi0-dy*0.009));
     updateCamera();
-  } else if(pendingDrag.type==='layer'){
+    return;
+  }
+  if(pendingDrag.type==='pending'){
+    const sdx=e.clientX-pendingDrag.sx,sdy=e.clientY-pendingDrag.sy;
+    const screenDist=Math.sqrt(sdx*sdx+sdy*sdy);
+    if(screenDist<8)return;
     const ndc=getPointerNDC(e);
     raycaster.setFromCamera(ndc,camera);
     const planeNormal=AXIS_VEC[pendingDrag.normalAxisIdx].clone().multiplyScalar(pendingDrag.normalSign);
@@ -578,20 +605,34 @@ function onPointerMove(e){
     const cur=new THREE.Vector3();
     if(!raycaster.ray.intersectPlane(plane,cur))return;
     const move=cur.clone().sub(start);
-
-    if(!pendingDrag.rotInfo){
-      const cross=move.clone().cross(planeNormal);
-      const ax=nearestAxis(cross);
-      if(Math.abs(cross.toArray()[ax.idx])<0.15)return;
-      const layerVal=pendingDrag.hit.cubie.position.toArray()[ax.idx];
-      pendingDrag.rotInfo={axisIdx:ax.idx,layer:layerVal};
-      const pivot=new THREE.Group();
-      scene.add(pivot);
-      pendingDrag.pivot=pivot;
-      pendingDrag.layerCubies=cubies.filter(c=>Math.abs(c.position.toArray()[ax.idx]-layerVal)<0.15);
-      pendingDrag.layerCubies.forEach(c=>pivot.attach(c));
+    if(move.length()<0.04)return;
+    const normalIdx=pendingDrag.normalAxisIdx;
+    const tAxes=[0,1,2].filter(i=>i!==normalIdx);
+    const p0=Math.abs(move.dot(AXIS_VEC[tAxes[0]]));
+    const p1=Math.abs(move.dot(AXIS_VEC[tAxes[1]]));
+    const total=p0+p1;
+    if(total<0.001)return;
+    const align=Math.abs(p0-p1)/total;
+    if(align>0.2){
+      commitToLayer(pendingDrag,move,planeNormal);
+    }else{
+      pendingDrag.type='view';
+      const dx=e.clientX-pendingDrag.sx,dy=e.clientY-pendingDrag.sy;
+      camRot.theta=pendingDrag.theta0-dx*0.009;
+      camRot.phi=Math.max(0.12,Math.min(Math.PI-0.12,pendingDrag.phi0-dy*0.009));
+      updateCamera();
+      return;
     }
-
+  }
+  if(pendingDrag.type==='layer'){
+    const ndc=getPointerNDC(e);
+    raycaster.setFromCamera(ndc,camera);
+    const planeNormal=AXIS_VEC[pendingDrag.normalAxisIdx].clone().multiplyScalar(pendingDrag.normalSign);
+    const start=pendingDrag.startPoint;
+    const plane=new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal,start);
+    const cur=new THREE.Vector3();
+    if(!raycaster.ray.intersectPlane(plane,cur))return;
+    const move=cur.clone().sub(start);
     const axisIdx=pendingDrag.rotInfo.axisIdx;
     const axisVec=AXIS_VEC[axisIdx];
     const tangent=axisVec.clone().cross(planeNormal);
@@ -601,7 +642,7 @@ function onPointerMove(e){
     for(let i=0;i<3;i++){ if(i!==axisIdx) radiusSq+=startArr[i]*startArr[i]; }
     const radius=Math.max(0.5,Math.sqrt(radiusSq));
     let angle=proj/radius;
-    angle=Math.max(-Math.PI*0.6,Math.min(Math.PI*0.6,angle));
+    angle=Math.max(-Math.PI*0.75,Math.min(Math.PI*0.75,angle));
     pendingDrag.pivot.quaternion.setFromAxisAngle(axisVec,angle);
     pendingDrag.currentAngle=angle;
   }
