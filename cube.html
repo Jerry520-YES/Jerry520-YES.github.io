@@ -386,20 +386,24 @@ function assignBoxMaterialGroups(geo){
     const idx=[];for(let i=0;i<geo.attributes.position.count;i++)idx.push(i);
     geo.setIndex(idx);
   }
+  const pos=geo.attributes.position;
   const normal=geo.attributes.normal;
   const idx=geo.index;
   const fc=idx.count/3;
   const faces=[];
   for(let i=0;i<fc;i++){
     const a=idx.getX(i*3),b=idx.getX(i*3+1),c=idx.getX(i*3+2);
-    const nx=(normal.getX(a)+normal.getX(b)+normal.getX(c))/3;
-    const ny=(normal.getY(a)+normal.getY(b)+normal.getY(c))/3;
-    const nz=(normal.getZ(a)+normal.getZ(b)+normal.getZ(c))/3;
-    const ax=Math.abs(nx),ay=Math.abs(ny),az=Math.abs(nz);
+    // 用法线绝对值确定轴方向，用面心位置确定正负方向
+    const nx=Math.abs((normal.getX(a)+normal.getX(b)+normal.getX(c))/3);
+    const ny=Math.abs((normal.getY(a)+normal.getY(b)+normal.getY(c))/3);
+    const nz=Math.abs((normal.getZ(a)+normal.getZ(b)+normal.getZ(c))/3);
+    const cx=(pos.getX(a)+pos.getX(b)+pos.getX(c))/3;
+    const cy=(pos.getY(a)+pos.getY(b)+pos.getY(c))/3;
+    const cz=(pos.getZ(a)+pos.getZ(b)+pos.getZ(c))/3;
     let mi;
-    if(ax>=ay&&ax>=az) mi=nx>0?0:1;
-    else if(ay>=ax&&ay>=az) mi=ny>0?2:3;
-    else mi=nz>0?4:5;
+    if(nx>=ny&&nx>=nz) mi=cx>0?0:1;
+    else if(ny>=nx&&ny>=nz) mi=cy>0?2:3;
+    else mi=cz>0?4:5;
     faces.push({a,b,c,mi});
   }
   faces.sort((p,q)=>p.mi-q.mi);
