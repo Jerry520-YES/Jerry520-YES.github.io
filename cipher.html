@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cipher — 经典密码工具 | Jerry520-YES</title>
-<meta name="description" content="支持凯撒密码、摩斯密码、Enigma 密码机的在线加密解密工具，交互式密钥配置，全程浏览器本地处理。">
+<meta name="description" content="支持凯撒密码、摩斯密码、Enigma 密码机、Atbash、培根密码、ROT13、栅栏密码、维吉尼亚、Playfair 九种经典密码的在线加密解密工具，交互式密钥配置，全程浏览器本地处理。">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -309,11 +309,17 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 
 <div class="hero">
   <h1>Cipher</h1>
-  <p class="tagline">经典密码工具 &middot; 凯撒 &middot; 摩斯 &middot; Enigma 密码机</p>
+  <p class="tagline">九种经典密码 &middot; 从古罗马到二战 &middot; 交互式密钥配置</p>
   <div class="hero-badges">
     <span class="badge">Caesar</span>
     <span class="badge">Morse Code</span>
     <span class="badge">Enigma</span>
+    <span class="badge">Atbash</span>
+    <span class="badge">Baconian</span>
+    <span class="badge">ROT13</span>
+    <span class="badge">Rail Fence</span>
+    <span class="badge">Vigenère</span>
+    <span class="badge">Playfair</span>
   </div>
   <div class="hero-cta">
     <a href="#try" class="btn btn-primary">立即使用</a>
@@ -324,22 +330,32 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <section id="features">
   <div class="container">
     <h2 class="section-title">核心特性</h2>
-    <p class="section-sub">三种经典密码算法</p>
+    <p class="section-sub">九种经典密码算法</p>
     <div class="features-grid">
       <div class="feature-card">
         <div class="feature-icon" style="background:var(--accent-dim);color:var(--accent)">&#9881;</div>
-        <h3>凯撒密码</h3>
-        <p>最古老的加密方式之一，将每个字母在字母表中固定移位 N 位。简单易懂，是密码学入门的经典案例。</p>
+        <h3>凯撒密码 &amp; ROT13</h3>
+        <p>最古老的加密方式之一，将每个字母在字母表中固定移位 N 位。ROT13 为其特例（固定移位 13 位），加解密为同一操作。</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:#e6f7ee;color:var(--ok)">&#128225;</div>
-        <h3>摩斯密码</h3>
-        <p>国际通用电报编码，用点（&middot;）和划（&mdash;）表示字母和数字。支持中英文混合编码，实用且经典。</p>
+        <h3>摩斯密码 &amp; 培根密码</h3>
+        <p>摩斯密码用点和划表示字符，培根密码将字母编码为 5 位 A/B 二进制序列。两种经典编码方式，无需密钥。</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:#fef3e2;color:var(--warn)">&#128276;</div>
         <h3>Enigma 密码机</h3>
         <p>二战时期德军使用的转子密码机。可交互配置转子选择、初始位置、环设置、反射器和插接板，完整模拟历史机械加密。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#e8f1fc;color:#4A90D9">&#128273;</div>
+        <h3>维吉尼亚 &amp; Playfair</h3>
+        <p>维吉尼亚使用字母密钥进行多表替换，Playfair 构建 5&times;5 矩阵对字母对加密。两种密钥驱动的经典多表密码。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#fdf0ef;color:var(--danger)">&#9728;</div>
+        <h3>Atbash &amp; Rail Fence</h3>
+        <p>Atbash 反向映射字母表（A&harr;Z），Rail Fence 按之字形栏排列置换。两种无密钥和密钥驱动的置换密码。</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:#f0e8fc;color:#7c3aed">&#128274;</div>
@@ -363,6 +379,12 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
           <button class="algo-chip active" data-algo="caesar">Caesar 凯撒密码</button>
           <button class="algo-chip" data-algo="morse">Morse 摩斯密码</button>
           <button class="algo-chip" data-algo="enigma">Enigma 密码机</button>
+          <button class="algo-chip" data-algo="atbash">Atbash 埃特巴什</button>
+          <button class="algo-chip" data-algo="baconian">Baconian 培根密码</button>
+          <button class="algo-chip" data-algo="rot13">ROT13</button>
+          <button class="algo-chip" data-algo="railfence">Rail Fence 栅栏密码</button>
+          <button class="algo-chip" data-algo="vigenere">Vigenère 维吉尼亚</button>
+          <button class="algo-chip" data-algo="playfair">Playfair 普莱费尔</button>
         </div>
         <div class="algo-desc" id="algo-desc"></div>
 
@@ -487,7 +509,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
             <label id="input-label">明文输入</label>
             <span class="char-count" id="input-count">0 字符</span>
           </div>
-          <textarea class="cipher-text" id="input-text" placeholder="在此输入需要加密或解密的文本...&#10;&#10;Caesar / Enigma: 仅处理英文字母 (A-Z)&#10;Morse: 支持字母、数字和标点"></textarea>
+          <textarea class="cipher-text" id="input-text" placeholder="在此输入需要加密或解密的文本...&#10;&#10;Caesar / Atbash / ROT13 / Rail Fence: 英文字母 (A-Z)&#10;Morse: 支持字母、数字和标点&#10;Vigenère / Playfair: 英文字母密钥&#10;Baconian: 每字母编码为 5 位 A/B 序列"></textarea>
         </div>
 
         <!-- Action buttons -->
@@ -520,7 +542,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <section id="algorithms">
   <div class="container">
     <h2 class="section-title">算法说明</h2>
-    <p class="section-sub">三种经典密码算法的对比</p>
+    <p class="section-sub">九种经典密码算法的对比</p>
     <div class="algo-table-wrap">
       <table class="algo-table">
         <thead>
@@ -554,6 +576,48 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
             <td>二战时期</td>
             <td>交互式密钥配置，互反加密</td>
           </tr>
+          <tr>
+            <td class="algo-name">Atbash<div class="algo-type">Substitution Cipher</div></td>
+            <td>反向替换密码</td>
+            <td>无</td>
+            <td>古希伯来</td>
+            <td>A&harr;Z, B&harr;Y 反向映射，加解密同一操作</td>
+          </tr>
+          <tr>
+            <td class="algo-name">Baconian<div class="algo-type">Steganographic Cipher</div></td>
+            <td>二进制隐写密码</td>
+            <td>无</td>
+            <td>17世纪</td>
+            <td>每字母编码为 5 位 A/B 序列</td>
+          </tr>
+          <tr>
+            <td class="algo-name">ROT13<div class="algo-type">Shift Cipher</div></td>
+            <td>固定移位密码</td>
+            <td>无</td>
+            <td>20世纪</td>
+            <td>凯撒移位 13 位，加解密同一操作</td>
+          </tr>
+          <tr>
+            <td class="algo-name">Rail Fence<div class="algo-type">Transposition Cipher</div></td>
+            <td>置换密码</td>
+            <td>栏数 (2-10)</td>
+            <td>古希腊</td>
+            <td>Zigzag 排列，逐行读取</td>
+          </tr>
+          <tr>
+            <td class="algo-name">Vigenère<div class="algo-type">Polyalphabetic Cipher</div></td>
+            <td>多表替换密码</td>
+            <td>字母密钥</td>
+            <td>16世纪</td>
+            <td>密钥字母循环对齐，多表移位</td>
+          </tr>
+          <tr>
+            <td class="algo-name">Playfair<div class="algo-type">Digraph Cipher</div></td>
+            <td>双字母替换密码</td>
+            <td>字母密钥</td>
+            <td>19世纪</td>
+            <td>5&times;5 矩阵，字母对加密</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -570,6 +634,12 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
         <div class="demo-tab active" data-tab="caesar-demo">Caesar</div>
         <div class="demo-tab" data-tab="morse-demo">Morse</div>
         <div class="demo-tab" data-tab="enigma-demo">Enigma</div>
+        <div class="demo-tab" data-tab="atbash-demo">Atbash</div>
+        <div class="demo-tab" data-tab="baconian-demo">Baconian</div>
+        <div class="demo-tab" data-tab="rot13-demo">ROT13</div>
+        <div class="demo-tab" data-tab="railfence-demo">Rail Fence</div>
+        <div class="demo-tab" data-tab="vigenere-demo">Vigenère</div>
+        <div class="demo-tab" data-tab="playfair-demo">Playfair</div>
       </div>
 
       <div class="demo-content active" data-content="caesar-demo">
@@ -617,6 +687,96 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
         </div>
       </div>
 
+      <div class="demo-content" data-content="atbash-demo">
+        <div class="demo-split">
+          <div class="demo-panel">
+            <h4>明文 &mdash; 输入</h4>
+            <div class="demo-box">HELLO WORLD</div>
+            <div class="demo-info">无密钥 &middot; 加密与解密为同一操作</div>
+          </div>
+          <div class="demo-panel">
+            <h4>密文 &mdash; Atbash</h4>
+            <div class="demo-box output">SVOOL DLIOW</div>
+            <div class="demo-info">H&rarr;S, E&rarr;V, L&rarr;O, O&rarr;L &middot; 字母表反向映射</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-content" data-content="baconian-demo">
+        <div class="demo-split">
+          <div class="demo-panel">
+            <h4>明文 &mdash; 输入</h4>
+            <div class="demo-box">HELLO</div>
+            <div class="demo-info">无密钥 &middot; 每字母编码为 5 位 A/B 序列</div>
+          </div>
+          <div class="demo-panel">
+            <h4>密文 &mdash; Baconian</h4>
+            <div class="demo-box output">AABBB AABAA ABABB ABABB ABBBA</div>
+            <div class="demo-info">H=AABBB, E=AABAA, L=ABABB &middot; 基于二进制 5 位编码</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-content" data-content="rot13-demo">
+        <div class="demo-split">
+          <div class="demo-panel">
+            <h4>明文 &mdash; 输入</h4>
+            <div class="demo-box">HELLO WORLD</div>
+            <div class="demo-info">无密钥 &middot; 固定移位 13 位</div>
+          </div>
+          <div class="demo-panel">
+            <h4>密文 &mdash; ROT13</h4>
+            <div class="demo-box output">URYYB JBEYQ</div>
+            <div class="demo-info">H&rarr;U, E&rarr;R, L&rarr;Y, O&rarr;B &middot; 加解密为同一操作</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-content" data-content="railfence-demo">
+        <div class="demo-split">
+          <div class="demo-panel">
+            <h4>明文 &mdash; 输入</h4>
+            <div class="demo-box">HELLOWORLD</div>
+            <div class="demo-info">栏数：3 &middot; Zigzag 之字形排列</div>
+          </div>
+          <div class="demo-panel">
+            <h4>密文 &mdash; Rail Fence (rails=3)</h4>
+            <div class="demo-box output">HOLELWRDLO</div>
+            <div class="demo-info">逐行读取：HOL + ELWRD + LO</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-content" data-content="vigenere-demo">
+        <div class="demo-split">
+          <div class="demo-panel">
+            <h4>明文 &mdash; 输入</h4>
+            <div class="demo-box">HELLO</div>
+            <div class="demo-info">密钥：KEY &middot; 字母对齐循环移位</div>
+          </div>
+          <div class="demo-panel">
+            <h4>密文 &mdash; Vigenère (key=KEY)</h4>
+            <div class="demo-box output">RIJVS</div>
+            <div class="demo-info">H+K=R, E+E=I, L+Y=J, L+K=V, O+E=S</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-content" data-content="playfair-demo">
+        <div class="demo-split">
+          <div class="demo-panel">
+            <h4>明文 &mdash; 输入</h4>
+            <div class="demo-box">HELLO</div>
+            <div class="demo-info">密钥：PLAYFAIR &middot; 字母对: HE LX LO</div>
+          </div>
+          <div class="demo-panel">
+            <h4>密文 &mdash; Playfair (key=PLAYFAIR)</h4>
+            <div class="demo-box output">KGYVRV</div>
+            <div class="demo-info">5&times;5 矩阵 &middot; HE&minus;同行右移, LX&minus;矩形互换, LO&minus;同列下移</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -636,7 +796,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 var ALGOS={
   caesar:{
     name:'Caesar',needsKey:true,keyType:'number',
-    keyLabel:'移位数',keyPlaceholder:'输入数字 1-25...',
+    keyLabel:'移位数',keyPlaceholder:'输入数字 1-25...',keyMin:1,keyMax:25,keyDefault:'3',keyInputType:'number',
     desc:'<strong>Caesar 凯撒密码</strong> — 古罗马凯撒大帝使用的加密方式，将每个字母在字母表中固定移位 N 位。仅处理英文字母 (A-Z)，非字母字符保持不变。简单易懂，是密码学入门的经典案例。'
   },
   morse:{
@@ -648,6 +808,36 @@ var ALGOS={
     name:'Enigma',needsKey:true,keyType:'enigma',
     keyLabel:'',keyPlaceholder:'',
     desc:'<strong>Enigma 密码机</strong> — 二战时期德军使用的转子密码机。通过配置转子选择、初始位置、环设置、反射器和插接板构建密钥。<strong>互反加密</strong>：相同设置下，加密和解密是同一操作。每加密一个字符，转子自动步进。仅处理英文字母 (A-Z)。'
+  },
+  atbash:{
+    name:'Atbash',needsKey:false,keyType:'none',
+    keyLabel:'',keyPlaceholder:'',
+    desc:'<strong>Atbash 埃特巴什密码</strong> — 最古老的替换密码之一，将每个字母映射为字母表中的反向字母（A&harr;Z, B&harr;Y, C&harr;X, ...）。无密钥，加密与解密为同一操作。仅处理英文字母 (A-Z)。'
+  },
+  baconian:{
+    name:'Baconian',needsKey:false,keyType:'none',
+    keyLabel:'',keyPlaceholder:'',
+    desc:'<strong>Baconian 培根密码</strong> — 弗朗西斯&middot;培根发明的隐写密码，将每个字母编码为 5 位 A/B 序列（A=AAAAA, B=AAAAB, ...）。无密钥，加密将字母转为二进制序列，解密将序列还原为字母。'
+  },
+  rot13:{
+    name:'ROT13',needsKey:false,keyType:'none',
+    keyLabel:'',keyPlaceholder:'',
+    desc:'<strong>ROT13</strong> — 凯撒密码的特例（固定移位 13 位）。由于 26 个字母恰好移位一半，加密与解密为同一操作。广泛用于论坛和邮件中隐藏剧透或答案。仅处理英文字母 (A-Z)。'
+  },
+  railfence:{
+    name:'Rail Fence',needsKey:true,keyType:'number',
+    keyLabel:'栏数',keyPlaceholder:'输入数字 2-10...',keyMin:2,keyMax:10,keyDefault:'3',keyInputType:'number',
+    desc:'<strong>Rail Fence 栅栏密码</strong> — 经典置换密码，将明文按 Zigzag（之字形）模式沿多根"栏"排列，再逐行读出密文。密钥为栏数。解密按反向重建栅栏。仅处理英文字母。'
+  },
+  vigenere:{
+    name:'Vigenère',needsKey:true,keyType:'text',
+    keyLabel:'密钥',keyPlaceholder:'输入字母密钥...',keyInputType:'text',
+    desc:'<strong>Vigenère 维吉尼亚密码</strong> — 多表替换密码，使用字母密钥循环对齐明文，每个字母的移位量由对应密钥字母决定（A=0, B=1, ... Z=25）。曾被误认为"不可破解"，是经典密码学的里程碑。仅处理英文字母 (A-Z)。'
+  },
+  playfair:{
+    name:'Playfair',needsKey:true,keyType:'text',
+    keyLabel:'密钥',keyPlaceholder:'输入字母密钥...',keyInputType:'text',
+    desc:'<strong>Playfair 普莱费尔密码</strong> — 双字母替换密码，使用密钥构建 5&times;5 字母矩阵（I/J 合并），将明文按字母对加密。相同字母对插入 X，末尾补 X。三种规则：同行右移、同列下移、矩形互换。仅处理英文字母。'
   }
 };
 
@@ -674,6 +864,23 @@ function updateAlgoUI(){
   if(info.keyType==='number'){
     keyRow.classList.remove('hidden');
     enigmaPanel.classList.remove('show');
+    var keyInput=document.getElementById('key-input');
+    keyInput.type='number';
+    document.getElementById('key-label').textContent=info.keyLabel;
+    keyInput.placeholder=info.keyPlaceholder;
+    keyInput.min=info.keyMin;
+    keyInput.max=info.keyMax;
+    keyInput.value=info.keyDefault;
+  }else if(info.keyType==='text'){
+    keyRow.classList.remove('hidden');
+    enigmaPanel.classList.remove('show');
+    var keyInput=document.getElementById('key-input');
+    keyInput.type='text';
+    keyInput.removeAttribute('min');
+    keyInput.removeAttribute('max');
+    document.getElementById('key-label').textContent=info.keyLabel;
+    keyInput.placeholder=info.keyPlaceholder;
+    keyInput.value='';
   }else if(info.keyType==='enigma'){
     keyRow.classList.add('hidden');
     enigmaPanel.classList.add('show');
@@ -945,6 +1152,251 @@ function getEnigmaSettings(){
 }
 
 /* ============================================================
+   ATBASH CIPHER
+   ============================================================ */
+function atbashCipher(text){
+  return text.replace(/[a-zA-Z]/g,function(c){
+    var base=c<='Z'?65:97;
+    return String.fromCharCode(25-(c.charCodeAt(0)-base)+base);
+  });
+}
+
+/* ============================================================
+   BACONIAN CIPHER
+   ============================================================ */
+function baconianEncode(text){
+  var result='';
+  var letters=text.toUpperCase().replace(/[^A-Z]/g,'');
+  for(var i=0;i<letters.length;i++){
+    var code=letters.charCodeAt(i)-65;
+    var binary=code.toString(2);
+    while(binary.length<5)binary='0'+binary;
+    result+=binary.replace(/0/g,'A').replace(/1/g,'B');
+  }
+  return result;
+}
+function baconianDecode(text){
+  var clean=text.toUpperCase().replace(/[^AB]/g,'');
+  if(clean.length%5!==0)clean=clean.substring(0,clean.length-clean.length%5);
+  var result='';
+  for(var i=0;i<clean.length;i+=5){
+    var group=clean.substring(i,i+5);
+    var binary=group.replace(/A/g,'0').replace(/B/g,'1');
+    var code=parseInt(binary,2);
+    if(code>=0&&code<26)result+=String.fromCharCode(code+65);
+  }
+  return result;
+}
+
+/* ============================================================
+   ROT13
+   ============================================================ */
+function rot13(text){
+  return caesarEncrypt(text,13);
+}
+
+/* ============================================================
+   RAIL FENCE CIPHER
+   ============================================================ */
+function railFenceEncrypt(text,rails){
+  var letters=text.toUpperCase().replace(/[^A-Z]/g,'');
+  if(rails<2)rails=2;
+  if(letters.length<=1)return letters;
+  var fence=[];
+  for(var r=0;r<rails;r++)fence[r]=[];
+  var rail=0,dir=1;
+  for(var i=0;i<letters.length;i++){
+    fence[rail].push(letters[i]);
+    if(rail===0)dir=1;
+    else if(rail===rails-1)dir=-1;
+    rail+=dir;
+  }
+  var result='';
+  for(var r=0;r<rails;r++){
+    result+=fence[r].join('');
+  }
+  return result;
+}
+function railFenceDecrypt(text,rails){
+  var letters=text.toUpperCase().replace(/[^A-Z]/g,'');
+  if(rails<2)rails=2;
+  if(letters.length<=1)return letters;
+  /* Build the fence pattern to know how many chars per rail */
+  var pattern=[];
+  for(var i=0;i<letters.length;i++)pattern[i]=-1;
+  var rail=0,dir=1;
+  var railCounts=[];
+  for(var r=0;r<rails;r++)railCounts[r]=0;
+  for(var i=0;i<letters.length;i++){
+    railCounts[rail]++;
+    if(rail===0)dir=1;
+    else if(rail===rails-1)dir=-1;
+    rail+=dir;
+  }
+  /* Fill rails with letters */
+  var idx=0;
+  var fence=[];
+  for(var r=0;r<rails;r++){
+    fence[r]=letters.substring(idx,idx+railCounts[r]).split('');
+    idx+=railCounts[r];
+  }
+  /* Read in zigzag order */
+  var result='';
+  rail=0;dir=1;
+  for(var i=0;i<letters.length;i++){
+    result+=fence[rail].shift();
+    if(rail===0)dir=1;
+    else if(rail===rails-1)dir=-1;
+    rail+=dir;
+  }
+  return result;
+}
+
+/* ============================================================
+   VIGENÈRE CIPHER
+   ============================================================ */
+function vigenereEncrypt(text,key){
+  var cleanKey=key.toUpperCase().replace(/[^A-Z]/g,'');
+  if(!cleanKey)throw new Error('密钥必须包含至少一个字母');
+  var result='';
+  var ki=0;
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(c>='A'&&c<='Z'){
+      var shift=cleanKey.charCodeAt(ki%cleanKey.length)-65;
+      result+=String.fromCharCode((c.charCodeAt(0)-65+shift)%26+65);
+      ki++;
+    }else if(c>='a'&&c<='z'){
+      var shift=cleanKey.charCodeAt(ki%cleanKey.length)-65;
+      result+=String.fromCharCode((c.charCodeAt(0)-97+shift)%26+97);
+      ki++;
+    }else{
+      result+=c;
+    }
+  }
+  return result;
+}
+function vigenereDecrypt(text,key){
+  var cleanKey=key.toUpperCase().replace(/[^A-Z]/g,'');
+  if(!cleanKey)throw new Error('密钥必须包含至少一个字母');
+  var result='';
+  var ki=0;
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(c>='A'&&c<='Z'){
+      var shift=cleanKey.charCodeAt(ki%cleanKey.length)-65;
+      result+=String.fromCharCode((c.charCodeAt(0)-65-shift+26)%26+65);
+      ki++;
+    }else if(c>='a'&&c<='z'){
+      var shift=cleanKey.charCodeAt(ki%cleanKey.length)-65;
+      result+=String.fromCharCode((c.charCodeAt(0)-97-shift+26)%26+97);
+      ki++;
+    }else{
+      result+=c;
+    }
+  }
+  return result;
+}
+
+/* ============================================================
+   PLAYFAIR CIPHER
+   ============================================================ */
+function playfairMatrix(key){
+  var cleanKey=key.toUpperCase().replace(/[^A-Z]/g,'').replace(/J/g,'I');
+  var seen={};
+  var matrix=[];
+  var chars='';
+  /* Add key letters first */
+  for(var i=0;i<cleanKey.length;i++){
+    if(!seen[cleanKey[i]]){seen[cleanKey[i]]=true;chars+=cleanKey[i]}
+  }
+  /* Add remaining alphabet (I instead of J) */
+  for(var i=0;i<26;i++){
+    var c=String.fromCharCode(65+i);
+    if(c==='J')continue;
+    if(!seen[c]){seen[c]=true;chars+=c}
+  }
+  /* Build 5x5 matrix */
+  for(var r=0;r<5;r++){
+    matrix[r]=[];
+    for(var col=0;col<5;col++){
+      matrix[r][col]=chars[r*5+col];
+    }
+  }
+  return matrix;
+}
+function playfairFind(matrix,ch){
+  for(var r=0;r<5;r++){
+    for(var c=0;c<5;c++){
+      if(matrix[r][c]===ch)return{row:r,col:c};
+    }
+  }
+  return null;
+}
+function playfairPrepare(text){
+  var clean=text.toUpperCase().replace(/[^A-Z]/g,'').replace(/J/g,'I');
+  var pairs=[];
+  var i=0;
+  while(i<clean.length){
+    var a=clean[i];
+    var b=i+1<clean.length?clean[i+1]:'X';
+    if(a===b){b='X';i++}else{i+=2}
+    pairs.push([a,b]);
+  }
+  return pairs;
+}
+function playfairEncrypt(text,key){
+  var cleanKey=key.toUpperCase().replace(/[^A-Z]/g,'');
+  if(!cleanKey)throw new Error('密钥必须包含至少一个字母');
+  var matrix=playfairMatrix(key);
+  var pairs=playfairPrepare(text);
+  var result='';
+  for(var p=0;p<pairs.length;p++){
+    var a=playfairFind(matrix,pairs[p][0]);
+    var b=playfairFind(matrix,pairs[p][1]);
+    if(a.row===b.row){
+      result+=matrix[a.row][(a.col+1)%5];
+      result+=matrix[b.row][(b.col+1)%5];
+    }else if(a.col===b.col){
+      result+=matrix[(a.row+1)%5][a.col];
+      result+=matrix[(b.row+1)%5][b.col];
+    }else{
+      result+=matrix[a.row][b.col];
+      result+=matrix[b.row][a.col];
+    }
+  }
+  return result;
+}
+function playfairDecrypt(text,key){
+  var cleanKey=key.toUpperCase().replace(/[^A-Z]/g,'');
+  if(!cleanKey)throw new Error('密钥必须包含至少一个字母');
+  var matrix=playfairMatrix(key);
+  var clean=text.toUpperCase().replace(/[^A-Z]/g,'').replace(/J/g,'I');
+  var pairs=[];
+  for(var i=0;i<clean.length;i+=2){
+    var a=clean[i];
+    var b=i+1<clean.length?clean[i+1]:'X';
+    pairs.push([a,b]);
+  }
+  var result='';
+  for(var p=0;p<pairs.length;p++){
+    var a=playfairFind(matrix,pairs[p][0]);
+    var b=playfairFind(matrix,pairs[p][1]);
+    if(a.row===b.row){
+      result+=matrix[a.row][(a.col+4)%5];
+      result+=matrix[b.row][(b.col+4)%5];
+    }else if(a.col===b.col){
+      result+=matrix[(a.row+4)%5][a.col];
+      result+=matrix[(b.row+4)%5][b.col];
+    }else{
+      result+=matrix[a.row][b.col];
+      result+=matrix[b.row][a.col];
+    }
+  }
+  return result;
+}
+
+/* ============================================================
    MAIN ACTION HANDLER
    ============================================================ */
 var btnAction=document.getElementById('btn-action');
@@ -959,9 +1411,16 @@ btnAction.addEventListener('click',function(){
 
   var info=ALGOS[currentAlgo];
   if(info.needsKey&&info.keyType==='number'){
-    var shift=parseInt(document.getElementById('key-input').value,10);
-    if(isNaN(shift)||shift<1||shift>25){
-      alert('移位数必须是 1-25 之间的数字。');
+    var numKey=parseInt(document.getElementById('key-input').value,10);
+    if(isNaN(numKey)||numKey<info.keyMin||numKey>info.keyMax){
+      alert(info.keyLabel+'必须是 '+info.keyMin+'-'+info.keyMax+' 之间的数字。');
+      return;
+    }
+  }
+  if(info.needsKey&&info.keyType==='text'){
+    var textKey=document.getElementById('key-input').value;
+    if(!textKey||!textKey.trim()||!textKey.toUpperCase().replace(/[^A-Z]/g,'')){
+      alert('密钥必须包含至少一个字母。');
       return;
     }
   }
@@ -974,9 +1433,10 @@ btnAction.addEventListener('click',function(){
     var startTime=performance.now();
     var result='';
     var extraMeta='';
+    var keyInputVal=document.getElementById('key-input').value;
 
     if(currentAlgo==='caesar'){
-      var shift=parseInt(document.getElementById('key-input').value,10);
+      var shift=parseInt(keyInputVal,10);
       result=currentMode==='encrypt'?caesarEncrypt(text,shift):caesarDecrypt(text,shift);
     }else if(currentAlgo==='morse'){
       result=currentMode==='encrypt'?morseEncode(text):morseDecode(text);
@@ -985,6 +1445,19 @@ btnAction.addEventListener('click',function(){
       var enigmaResult=enigmaEncrypt(text,settings);
       result=enigmaResult.result;
       extraMeta='转子终位: '+enigmaResult.finalPositions.join('');
+    }else if(currentAlgo==='atbash'){
+      result=atbashCipher(text);
+    }else if(currentAlgo==='baconian'){
+      result=currentMode==='encrypt'?baconianEncode(text):baconianDecode(text);
+    }else if(currentAlgo==='rot13'){
+      result=rot13(text);
+    }else if(currentAlgo==='railfence'){
+      var rails=parseInt(keyInputVal,10);
+      result=currentMode==='encrypt'?railFenceEncrypt(text,rails):railFenceDecrypt(text,rails);
+    }else if(currentAlgo==='vigenere'){
+      result=currentMode==='encrypt'?vigenereEncrypt(text,keyInputVal):vigenereDecrypt(text,keyInputVal);
+    }else if(currentAlgo==='playfair'){
+      result=currentMode==='encrypt'?playfairEncrypt(text,keyInputVal):playfairDecrypt(text,keyInputVal);
     }
 
     var elapsed=Math.round(performance.now()-startTime);
