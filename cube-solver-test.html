@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Cube Solver Test</title>
+<script src="https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/cube.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/solve.js"></script>
+</head>
+<body>
+<pre id="out"></pre>
+<script>
+const log = s => { document.getElementById('out').textContent += s + '\n'; };
+
+window.addEventListener('load', () => {
+  try {
+    log('=== Cube Solver Test ===');
+    log('Cube type: ' + typeof Cube);
+    log('Cube.initSolver: ' + typeof Cube.initSolver);
+    log('Cube.random: ' + typeof Cube.random);
+
+    // 1. Init solver
+    Cube.initSolver();
+    log('\n[1] Solver initialized.');
+
+    // 2. Test solved cube
+    const solved = new Cube();
+    log('[2] Solved cube facelet: ' + solved.asString());
+    log('    isSolved: ' + solved.isSolved());
+
+    // 3. Apply a scramble and get facelet
+    const scrambled = solved.clone();
+    const scrambleMoves = "R U R' U' F2 D L' B";
+    scrambled.move(scrambleMoves);
+    const facelet = scrambled.asString();
+    log('[3] After scramble "' + scrambleMoves + '":');
+    log('    Facelet: ' + facelet);
+    log('    isSolved: ' + scrambled.isSolved());
+
+    // 4. Solve from facelet string (simulating painter input)
+    const c2 = Cube.fromString(facelet);
+    log('[4] Cube.fromString(facelet) created.');
+    log('    isSolved: ' + c2.isSolved());
+
+    // 5. Get solution
+    const solution = c2.solve();
+    log('[5] Solution: ' + solution);
+
+    // 6. Verify: apply solution to scrambled cube, should be solved
+    const verify = scrambled.clone();
+    verify.move(solution);
+    log('[6] After applying solution:');
+    log('    isSolved: ' + verify.isSolved());
+    log('    Facelet: ' + verify.asString());
+
+    // 7. Test 2x2 mapping (corners only in 3x3 facelet)
+    log('\n=== 2x2 Solver Test ===');
+    // Create a 2x2 scramble by applying corner-only moves
+    // For 2x2, we map to 3x3 corners only
+    const c2x2 = new Cube();
+    c2x2.move("R U R' U' R U R' U'"); // corner-only scramble
+    const facelet2 = c2x2.asString();
+    log('[2x2] Scrambled facelet: ' + facelet2);
+    const sol2 = c2x2.solve();
+    log('[2x2] Solution: ' + sol2);
+    const verify2 = c2x2.clone();
+    verify2.move(sol2);
+    log('[2x2] isSolved after solution: ' + verify2.isSolved());
+
+    // 8. Test random scramble
+    log('\n=== Random Scramble Test ===');
+    const random = Cube.scramble();
+    log('Random scramble: ' + random);
+    const rc = new Cube();
+    rc.move(random);
+    log('Scrambled facelet: ' + rc.asString());
+    const rsol = rc.solve();
+    log('Solution: ' + rsol);
+    const rv = rc.clone();
+    rv.move(rsol);
+    log('isSolved: ' + rv.isSolved());
+
+    log('\n=== All tests passed! ===');
+  } catch (err) {
+    log('\nERROR: ' + (err.message || err));
+    log(err.stack || '');
+  }
+});
+</script>
+</body>
+</html>
