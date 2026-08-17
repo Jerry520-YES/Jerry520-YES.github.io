@@ -134,7 +134,10 @@ section{padding:72px 0}
 .enigma-section:last-child{margin-bottom:0}
 .enigma-section>label{
   display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;
-  letter-spacing:0.06em;color:var(--muted);margin-bottom:10px;
+  letter-spacing:0.06em;color:var(--muted);margin-bottom:4px;
+}
+.enigma-hint{
+  font-size:0.76rem;color:var(--muted);margin-bottom:10px;line-height:1.6;
 }
 .enigma-row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
 .enigma-slot{flex:1;min-width:90px;text-align:center}
@@ -146,6 +149,12 @@ section{padding:72px 0}
   font-family:var(--font);text-align:center;
 }
 .rotor-select:focus,.reflector-select:focus{outline:none;border-color:var(--accent)}
+.rotor-detail{
+  margin-top:6px;padding:6px 8px;background:var(--bg2);border-radius:5px;
+  font-size:0.66rem;color:var(--muted);line-height:1.5;text-align:center;
+  font-family:var(--mono);
+}
+.rotor-detail .detail-notch{color:var(--warn);font-weight:700}
 
 .rotor-wheel{display:flex;flex-direction:column;align-items:center;gap:4px}
 .wheel-btn{
@@ -160,6 +169,9 @@ section{padding:72px 0}
   font-size:1.6rem;font-weight:800;font-family:var(--mono);
   border:2px solid var(--accent);box-shadow:0 2px 12px rgba(26,188,156,0.2);
 }
+.wheel-position-num{
+  font-size:0.68rem;color:var(--muted);font-family:var(--mono);margin-top:2px;
+}
 
 .ring-input{
   width:100%;padding:8px 12px;border:2px solid var(--rule);border-radius:6px;
@@ -167,6 +179,14 @@ section{padding:72px 0}
   text-align:center;font-family:var(--mono);
 }
 .ring-input:focus{outline:none;border-color:var(--accent)}
+.ring-letter{
+  font-size:0.68rem;color:var(--muted);font-family:var(--mono);margin-top:4px;
+}
+
+.reflector-detail{
+  margin-top:6px;font-size:0.74rem;color:var(--muted);line-height:1.6;
+  padding:8px 12px;background:var(--bg2);border-radius:6px;
+}
 
 .plugboard-input{
   width:100%;padding:10px 14px;border:2px solid var(--rule);border-radius:8px;
@@ -176,6 +196,41 @@ section{padding:72px 0}
 .plugboard-input:focus{outline:none;border-color:var(--accent)}
 .plugboard-input::placeholder{color:#adb5bd;font-family:var(--font)}
 .plugboard-hint{font-size:0.78rem;color:var(--muted);margin-top:6px;line-height:1.5}
+.plugboard-pairs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.plugboard-pair{
+  display:inline-flex;align-items:center;gap:3px;padding:3px 10px;
+  background:var(--accent-dim);border-radius:12px;font-size:0.76rem;
+  font-weight:700;color:var(--accent2);font-family:var(--mono);
+}
+.plugboard-pair .pair-arrow{opacity:0.5;font-size:0.7rem}
+
+.enigma-preset-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.enigma-preset-select{
+  flex:1;min-width:200px;padding:8px 12px;border:2px solid var(--rule);border-radius:6px;
+  font-size:0.88rem;font-weight:600;background:var(--bg);color:var(--ink);cursor:pointer;
+  font-family:var(--font);
+}
+.enigma-preset-select:focus{outline:none;border-color:var(--accent)}
+
+.enigma-summary{
+  margin-top:16px;padding:14px 16px;background:var(--dark);border-radius:8px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+.enigma-summary-code{
+  font-family:var(--mono);font-size:0.82rem;color:var(--accent);
+  word-break:break-all;line-height:1.6;flex:1;
+}
+.enigma-summary-label{
+  font-size:0.68rem;color:#6c757d;text-transform:uppercase;
+  letter-spacing:0.06em;font-weight:700;margin-bottom:2px;
+}
+.btn-copy-key{
+  padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;
+  font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s;
+  font-family:var(--font);white-space:nowrap;
+}
+.btn-copy-key:hover{background:var(--accent2)}
+.btn-copy-key.copied{background:var(--ok)}
 
 /* ===== Text areas ===== */
 .text-area-group{margin-bottom:16px}
@@ -295,6 +350,8 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
   .key-label{min-width:auto}
   .enigma-row{flex-direction:column}
   .enigma-slot{min-width:auto}
+  .enigma-summary{flex-direction:column;align-items:stretch}
+  .btn-copy-key{width:100%;justify-content:center;text-align:center}
 }
 </style>
 </head>
@@ -405,7 +462,22 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
         <!-- Enigma configuration panel -->
         <div class="enigma-panel" id="enigma-panel">
           <div class="enigma-section">
+            <label>预设配置 (Preset)</label>
+            <p class="enigma-hint">选择历史预设一键配置全部参数，或手动调整下方各项设置。</p>
+            <div class="enigma-preset-row">
+              <select class="enigma-preset-select" id="enigma-preset">
+                <option value="custom">— 自定义 —</option>
+                <option value="wehrmacht">Wehrmacht 陆军默认 (I-II-III / AAA / 01-01-01 / B / AT BL CM DY FL G...)</option>
+                <option value="luftwaffe">Luftwaffe 空军默认 (I-II-III / AAA / 01-01-01 / B / 无插接板)</option>
+                <option value="navy">Kriegsmarine 海军 M4 简化 (I-II-III / AAA / 01-01-01 / B / 无插接板)</option>
+                <option value="random">随机生成配置</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="enigma-section">
             <label>转子选择 (Rotor Selection)</label>
+            <p class="enigma-hint">选择三个转子的型号 (I-V)。每个转子有不同的接线方式和步进缺口位置（notch）。三个转子不可重复。</p>
             <div class="enigma-row">
               <div class="enigma-slot">
                 <span class="slot-label">左转子</span>
@@ -416,6 +488,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
                   <option value="IV">Rotor IV</option>
                   <option value="V">Rotor V</option>
                 </select>
+                <div class="rotor-detail" id="rotor-detail-0"></div>
               </div>
               <div class="enigma-slot">
                 <span class="slot-label">中转子</span>
@@ -426,6 +499,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
                   <option value="IV">Rotor IV</option>
                   <option value="V">Rotor V</option>
                 </select>
+                <div class="rotor-detail" id="rotor-detail-1"></div>
               </div>
               <div class="enigma-slot">
                 <span class="slot-label">右转子</span>
@@ -436,12 +510,14 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
                   <option value="IV">Rotor IV</option>
                   <option value="V">Rotor V</option>
                 </select>
+                <div class="rotor-detail" id="rotor-detail-2"></div>
               </div>
             </div>
           </div>
 
           <div class="enigma-section">
-            <label>初始位置 (Initial Position) — 点击上下箭头调整</label>
+            <label>初始位置 (Initial Position)</label>
+            <p class="enigma-hint">点击上下箭头调整每个转子的起始字母 (A-Z)。此位置决定加密的初始状态，是密钥的核心部分。</p>
             <div class="enigma-row">
               <div class="enigma-slot">
                 <span class="slot-label">左</span>
@@ -450,6 +526,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
                   <div class="wheel-display" id="wheel-0">A</div>
                   <button class="wheel-btn" data-rotor="0" data-dir="down">&#9660;</button>
                 </div>
+                <div class="wheel-position-num" id="wheel-num-0">位置 01/26</div>
               </div>
               <div class="enigma-slot">
                 <span class="slot-label">中</span>
@@ -458,6 +535,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
                   <div class="wheel-display" id="wheel-1">A</div>
                   <button class="wheel-btn" data-rotor="1" data-dir="down">&#9660;</button>
                 </div>
+                <div class="wheel-position-num" id="wheel-num-1">位置 01/26</div>
               </div>
               <div class="enigma-slot">
                 <span class="slot-label">右</span>
@@ -466,40 +544,57 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
                   <div class="wheel-display" id="wheel-2">A</div>
                   <button class="wheel-btn" data-rotor="2" data-dir="down">&#9660;</button>
                 </div>
+                <div class="wheel-position-num" id="wheel-num-2">位置 01/26</div>
               </div>
             </div>
           </div>
 
           <div class="enigma-section">
             <label>环设置 (Ring Setting)</label>
+            <p class="enigma-hint">环设置 (01-26) 决定转子接线圈与位置窗口的偏移量。改变环设置会改变加密结果，但不改变窗口显示字母。</p>
             <div class="enigma-row">
               <div class="enigma-slot">
                 <span class="slot-label">左</span>
                 <input type="number" class="ring-input" data-rotor="0" min="1" max="26" value="1">
+                <div class="ring-letter" id="ring-letter-0">A</div>
               </div>
               <div class="enigma-slot">
                 <span class="slot-label">中</span>
                 <input type="number" class="ring-input" data-rotor="1" min="1" max="26" value="1">
+                <div class="ring-letter" id="ring-letter-1">A</div>
               </div>
               <div class="enigma-slot">
                 <span class="slot-label">右</span>
                 <input type="number" class="ring-input" data-rotor="2" min="1" max="26" value="1">
+                <div class="ring-letter" id="ring-letter-2">A</div>
               </div>
             </div>
           </div>
 
           <div class="enigma-section">
             <label>反射器 (Reflector)</label>
+            <p class="enigma-hint">反射器将信号从转子组折返，使 Enigma 加密与解密为同一操作。不同反射器有不同的接线方式。</p>
             <select class="reflector-select" id="reflector-select">
-              <option value="B" selected>Reflector B</option>
-              <option value="C">Reflector C</option>
+              <option value="B" selected>Reflector B (标准陆军/空军)</option>
+              <option value="C">Reflector C (备用型)</option>
             </select>
+            <div class="reflector-detail" id="reflector-detail"></div>
           </div>
 
           <div class="enigma-section">
             <label>插接板 (Plugboard) — 可选</label>
-            <input type="text" class="plugboard-input" id="plugboard-input" placeholder="例如: AT BS DE (字母对，空格分隔)" autocomplete="off">
-            <p class="plugboard-hint">输入字母对（每对 2 个字母），用空格分隔。例如 "AT BS DE" 表示 A&harr;T, B&harr;S, D&harr;E。最多 10 对。</p>
+            <p class="enigma-hint">在加密前互换指定字母对。输入格式：每对 2 个字母，用空格分隔。例如 "AT BS DE" 表示 A&harr;T, B&harr;S, D&harr;E。最多 10 对，每个字母只能出现一次。</p>
+            <input type="text" class="plugboard-input" id="plugboard-input" placeholder="例如: AT BS DE FG HI" autocomplete="off">
+            <p class="plugboard-hint">提示：可输入任意大小写字母，系统自动转换为大写。无效的字母对将被忽略。</p>
+            <div class="plugboard-pairs" id="plugboard-pairs"></div>
+          </div>
+
+          <div class="enigma-summary" id="enigma-summary">
+            <div>
+              <div class="enigma-summary-label">当前密钥配置 (Key String)</div>
+              <div class="enigma-summary-code" id="enigma-key-string">III-II-I | AAA | 01-01-01 | Reflector B | 无插接板</div>
+            </div>
+            <button class="btn-copy-key" id="btn-copy-key">复制密钥</button>
           </div>
         </div>
 
@@ -938,9 +1033,218 @@ document.querySelectorAll('.wheel-btn').forEach(function(btn){
     }
     var letter=String.fromCharCode(enigmaPositions[rotorIdx]+65);
     document.getElementById('wheel-'+rotorIdx).textContent=letter;
+    document.getElementById('wheel-num-'+rotorIdx).textContent='位置 '+String(enigmaPositions[rotorIdx]+1).padStart(2,'0')+'/26';
+    document.getElementById('enigma-preset').value='custom';
+    updateEnigmaKeyString();
     clearOutput();
   });
 });
+
+/* ===== Enigma rotor detail ===== */
+var ROTOR_INFO={
+  I:  {wiring:'EKMFLGDQVZNTOWYHXUSPAIBRCJ',notch:'Q',desc:'Rotor I'},
+  II: {wiring:'AJDKSIRUXBLHWTMCQGZNPYFVOE',notch:'E',desc:'Rotor II'},
+  III:{wiring:'BDFHJLCPRTXVZNYEIWGAKMUSQO',notch:'V',desc:'Rotor III'},
+  IV: {wiring:'ESOVPZJAYQUIRHXLNFTGKDCMWB',notch:'J',desc:'Rotor IV'},
+  V:  {wiring:'VZBRGITYUPSDNHLXAWMJQOFECK',notch:'Z',desc:'Rotor V'}
+};
+var REFLECTOR_INFO={
+  B:{wiring:'YRUHQSLDPXNGOKMIEBFZCWVJAT',desc:'标准型，Wehrmacht 陆军与 Luftwaffe 空军使用'},
+  C:{wiring:'FVPJIAOYEDRZXWGCTKUQSBNMHL',desc:'备用型，后期偶尔使用'}
+};
+
+function updateRotorDetails(){
+  for(var i=0;i<3;i++){
+    var rotorName=document.querySelector('.rotor-select[data-slot="'+i+'"]').value;
+    var info=ROTOR_INFO[rotorName];
+    var wiringShort=info.wiring.substring(0,13)+'...';
+    document.getElementById('rotor-detail-'+i).innerHTML=
+      'Notch: <span class="detail-notch">'+info.notch+'</span><br>'+wiringShort;
+  }
+}
+document.querySelectorAll('.rotor-select').forEach(function(sel){
+  sel.addEventListener('change',function(){
+    updateRotorDetails();
+    document.getElementById('enigma-preset').value='custom';
+    updateEnigmaKeyString();
+    clearOutput();
+  });
+});
+
+/* ===== Ring setting letter display ===== */
+document.querySelectorAll('.ring-input').forEach(function(inp){
+  inp.addEventListener('input',function(){
+    var rotorIdx=this.dataset.rotor;
+    var val=parseInt(this.value,10);
+    if(isNaN(val)||val<1)val=1;
+    if(val>26)val=26;
+    var letter=String.fromCharCode(val-1+65);
+    var el=document.getElementById('ring-letter-'+rotorIdx);
+    if(el)el.textContent=letter;
+    document.getElementById('enigma-preset').value='custom';
+    updateEnigmaKeyString();
+    clearOutput();
+  });
+});
+
+/* ===== Reflector detail ===== */
+document.getElementById('reflector-select').addEventListener('change',function(){
+  updateReflectorDetail();
+  document.getElementById('enigma-preset').value='custom';
+  updateEnigmaKeyString();
+  clearOutput();
+});
+function updateReflectorDetail(){
+  var ref=document.getElementById('reflector-select').value;
+  var info=REFLECTOR_INFO[ref];
+  document.getElementById('reflector-detail').innerHTML=
+    '<strong>'+ref+'</strong> &middot; '+info.desc+'<br>接线: '+info.wiring;
+}
+
+/* ===== Plugboard pair visualization ===== */
+document.getElementById('plugboard-input').addEventListener('input',function(){
+  updatePlugboardPairs();
+  document.getElementById('enigma-preset').value='custom';
+  updateEnigmaKeyString();
+  clearOutput();
+});
+function updatePlugboardPairs(){
+  var pairs=parsePlugboard(document.getElementById('plugboard-input').value);
+  var container=document.getElementById('plugboard-pairs');
+  if(pairs.length===0){
+    container.innerHTML='<span style="font-size:0.78rem;color:var(--muted)">未设置字母对</span>';
+    return;
+  }
+  var html='';
+  for(var i=0;i<pairs.length;i++){
+    html+='<span class="plugboard-pair">'+pairs[i][0]+'<span class="pair-arrow">&harr;</span>'+pairs[i][1]+'</span>';
+  }
+  container.innerHTML=html;
+}
+
+/* ===== Enigma key string summary ===== */
+function updateEnigmaKeyString(){
+  var rotorNames=[
+    document.querySelector('.rotor-select[data-slot="0"]').value,
+    document.querySelector('.rotor-select[data-slot="1"]').value,
+    document.querySelector('.rotor-select[data-slot="2"]').value
+  ];
+  var positions=enigmaPositions.map(function(p){
+    return String.fromCharCode(p+65);
+  }).join('');
+  var rings=[
+    parseInt(document.querySelector('.ring-input[data-rotor="0"]').value,10)||1,
+    parseInt(document.querySelector('.ring-input[data-rotor="1"]').value,10)||1,
+    parseInt(document.querySelector('.ring-input[data-rotor="2"]').value,10)||1
+  ].map(function(r){
+    return String(Math.max(1,Math.min(26,r))).padStart(2,'0');
+  }).join('-');
+  var reflector=document.getElementById('reflector-select').value;
+  var pairs=parsePlugboard(document.getElementById('plugboard-input').value);
+  var pbStr=pairs.length>0?
+    pairs.map(function(p){return p[0]+p[1]}).join(' '):
+    '无插接板';
+  var keyStr=rotorNames.join('-')+' | '+positions+' | '+rings+' | Reflector '+reflector+' | '+pbStr;
+  document.getElementById('enigma-key-string').textContent=keyStr;
+}
+
+/* ===== Copy key string ===== */
+document.getElementById('btn-copy-key').addEventListener('click',function(){
+  var text=document.getElementById('enigma-key-string').textContent;
+  navigator.clipboard.writeText(text).then(function(){
+    var btn=document.getElementById('btn-copy-key');
+    btn.textContent='已复制';
+    btn.classList.add('copied');
+    setTimeout(function(){
+      btn.textContent='复制密钥';
+      btn.classList.remove('copied');
+    },1500);
+  });
+});
+
+/* ===== Enigma presets ===== */
+var ENIGMA_PRESETS={
+  wehrmacht:{
+    rotors:['III','II','I'],positions:[0,0,0],rings:[0,0,0],
+    reflector:'B',plugboard:'AT BL CM DY FL GZ HQ IN JW KO'
+  },
+  luftwaffe:{
+    rotors:['III','II','I'],positions:[0,0,0],rings:[0,0,0],
+    reflector:'B',plugboard:''
+  },
+  navy:{
+    rotors:['III','II','I'],positions:[0,0,0],rings:[0,0,0],
+    reflector:'B',plugboard:''
+  }
+};
+document.getElementById('enigma-preset').addEventListener('change',function(){
+  var preset=this.value;
+  if(preset==='custom')return;
+  if(preset==='random'){
+    applyRandomPreset();
+    return;
+  }
+  var p=ENIGMA_PRESETS[preset];
+  if(!p)return;
+  for(var i=0;i<3;i++){
+    document.querySelector('.rotor-select[data-slot="'+i+'"]').value=p.rotors[i];
+    enigmaPositions[i]=p.positions[i];
+    var letter=String.fromCharCode(p.positions[i]+65);
+    document.getElementById('wheel-'+i).textContent=letter;
+    document.getElementById('wheel-num-'+i).textContent='位置 '+String(p.positions[i]+1).padStart(2,'0')+'/26';
+    document.querySelector('.ring-input[data-rotor="'+i+'"]').value=p.rings[i]+1;
+    var ringLetter=String.fromCharCode(p.rings[i]+65);
+    document.getElementById('ring-letter-'+i).textContent=ringLetter;
+  }
+  document.getElementById('reflector-select').value=p.reflector;
+  document.getElementById('plugboard-input').value=p.plugboard;
+  updateRotorDetails();
+  updateReflectorDetail();
+  updatePlugboardPairs();
+  updateEnigmaKeyString();
+  clearOutput();
+});
+
+function applyRandomPreset(){
+  var rotorPool=['I','II','III','IV','V'];
+  var picked=[];
+  while(picked.length<3){
+    var idx=Math.floor(Math.random()*rotorPool.length);
+    var r=rotorPool.splice(idx,1)[0];
+    picked.push(r);
+  }
+  for(var i=0;i<3;i++){
+    document.querySelector('.rotor-select[data-slot="'+i+'"]').value=picked[i];
+    var pos=Math.floor(Math.random()*26);
+    enigmaPositions[i]=pos;
+    var letter=String.fromCharCode(pos+65);
+    document.getElementById('wheel-'+i).textContent=letter;
+    document.getElementById('wheel-num-'+i).textContent='位置 '+String(pos+1).padStart(2,'0')+'/26';
+    var ring=Math.floor(Math.random()*26);
+    document.querySelector('.ring-input[data-rotor="'+i+'"]').value=ring+1;
+    document.getElementById('ring-letter-'+i).textContent=String.fromCharCode(ring+65);
+  }
+  var refs=['B','C'];
+  document.getElementById('reflector-select').value=refs[Math.floor(Math.random()*2)];
+  /* Random plugboard: 3-6 pairs */
+  var alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  var shuffled=alpha.slice();
+  for(var i=shuffled.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=shuffled[i];shuffled[i]=shuffled[j];shuffled[j]=tmp;
+  }
+  var numPairs=3+Math.floor(Math.random()*4);
+  var pairs=[];
+  for(var i=0;i<numPairs;i++){
+    pairs.push(shuffled[i*2]+shuffled[i*2+1]);
+  }
+  document.getElementById('plugboard-input').value=pairs.join(' ');
+  updateRotorDetails();
+  updateReflectorDetail();
+  updatePlugboardPairs();
+  updateEnigmaKeyString();
+  clearOutput();
+}
 
 /* ===== Char count ===== */
 var inputText=document.getElementById('input-text');
@@ -1535,6 +1839,10 @@ outputArea.addEventListener('click',function(e){
 
 /* ===== Initialize ===== */
 updateAlgoUI();
+updateRotorDetails();
+updateReflectorDetail();
+updatePlugboardPairs();
+updateEnigmaKeyString();
 </script>
 </body>
 </html>
