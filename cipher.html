@@ -87,30 +87,46 @@ section{padding:72px 0}
 }
 .tool-panel{padding:28px}
 
-/* Algorithm chips */
+/* Algorithm chips (physical key style) */
 .algo-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
 .algo-chip{
   padding:10px 20px;border:2px solid var(--rule);border-radius:8px;cursor:pointer;
-  font-size:0.88rem;font-weight:600;color:var(--muted);background:var(--bg);
-  transition:all 0.2s;user-select:none;font-family:var(--font);
+  font-size:0.88rem;font-weight:600;color:var(--muted);
+  background:linear-gradient(180deg,#fff 0%,var(--bg2) 100%);
+  transition:transform 0.08s ease,box-shadow 0.08s ease,border-color 0.15s,color 0.15s;
+  user-select:none;font-family:var(--font);
+  box-shadow:0 2px 0 var(--rule),0 3px 6px rgba(0,0,0,0.05);
 }
-.algo-chip:hover{border-color:var(--accent);color:var(--accent)}
-.algo-chip.active{border-color:var(--accent);background:var(--accent);color:#fff}
+.algo-chip:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 0 var(--accent-dim),0 4px 10px rgba(26,188,156,0.15)}
+.algo-chip:active{transform:translateY(2px);box-shadow:0 0 0 var(--rule)}
+.algo-chip.active{
+  border-color:var(--accent);background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;
+  box-shadow:0 2px 0 #0d6b59,0 4px 12px rgba(26,188,156,0.3);text-shadow:0 1px 2px rgba(0,0,0,0.15);
+}
+.algo-chip.active:active{transform:translateY(2px);box-shadow:0 0 0 #0d6b59}
 .algo-desc{
   padding:14px 16px;background:var(--accent-dim);border-radius:8px;
   font-size:0.85rem;color:var(--accent2);margin-bottom:20px;line-height:1.7;
 }
 .algo-desc strong{color:var(--accent2)}
 
-/* Mode toggle */
+/* Mode toggle (physical switch style) */
 .mode-row{display:flex;align-items:center;gap:16px;margin-bottom:20px}
-.mode-toggle{display:inline-flex;border:2px solid var(--accent);border-radius:8px;overflow:hidden}
+.mode-toggle{
+  display:inline-flex;border:2px solid var(--accent);border-radius:8px;overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,0.08),inset 0 1px 2px rgba(0,0,0,0.06);
+}
 .mode-btn{
   padding:8px 24px;border:none;background:var(--bg);color:var(--accent);
-  font-weight:700;font-size:0.9rem;cursor:pointer;transition:all 0.2s;font-family:var(--font);
+  font-weight:700;font-size:0.9rem;cursor:pointer;
+  transition:background 0.15s,color 0.15s;font-family:var(--font);user-select:none;
 }
-.mode-btn.active{background:var(--accent);color:#fff}
+.mode-btn.active{
+  background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,0.15);
+}
 .mode-btn:hover:not(.active){background:var(--accent-dim)}
+.mode-btn:active:not(.active){background:var(--accent-dim)}
 
 /* Key input (Caesar) */
 .key-row{display:flex;align-items:center;gap:12px;margin-bottom:20px}
@@ -118,16 +134,20 @@ section{padding:72px 0}
 .key-label{font-size:0.85rem;color:var(--muted);font-weight:600;white-space:nowrap;min-width:50px}
 .key-input{
   flex:1;padding:10px 14px;border:2px solid var(--rule);border-radius:8px;
-  font-size:0.9rem;font-family:var(--mono);background:var(--bg);color:var(--ink);
-  transition:border-color 0.2s;
+  font-size:0.9rem;font-family:var(--mono);
+  background:linear-gradient(135deg,var(--dark) 0%,#0d0d1e 100%);color:var(--accent);
+  transition:border-color 0.2s,box-shadow 0.2s;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.4);text-shadow:0 0 8px rgba(26,188,156,0.3);
 }
-.key-input:focus{outline:none;border-color:var(--accent)}
-.key-input::placeholder{color:#adb5bd;font-family:var(--font)}
+.key-input:focus{outline:none;border-color:var(--accent);box-shadow:inset 0 2px 4px rgba(0,0,0,0.4),0 0 0 3px var(--accent-dim)}
+.key-input::placeholder{color:#4a4a6e;font-family:var(--font);text-shadow:none}
 
 /* ===== Enigma Panel ===== */
 .enigma-panel{
-  margin-bottom:20px;padding:24px;background:var(--bg);border-radius:10px;
-  border:2px solid var(--rule);display:none;
+  margin-bottom:20px;padding:24px;
+  background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
+  border-radius:10px;border:2px solid var(--rule);display:none;
+  box-shadow:inset 0 1px 2px rgba(255,255,255,0.5),0 2px 8px rgba(0,0,0,0.04);
 }
 .enigma-panel.show{display:block}
 .enigma-section{margin-bottom:20px}
@@ -145,10 +165,13 @@ section{padding:72px 0}
 
 .rotor-select,.reflector-select{
   width:100%;padding:8px 12px;border:2px solid var(--rule);border-radius:6px;
-  font-size:0.9rem;font-weight:600;background:var(--bg);color:var(--ink);cursor:pointer;
+  font-size:0.9rem;font-weight:600;background:linear-gradient(180deg,#fff 0%,var(--bg2) 100%);color:var(--ink);cursor:pointer;
   font-family:var(--font);text-align:center;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,0.06),0 1px 0 #fff;
+  transition:border-color 0.15s,box-shadow 0.15s;user-select:none;
 }
-.rotor-select:focus,.reflector-select:focus{outline:none;border-color:var(--accent)}
+.rotor-select:hover,.reflector-select:hover{border-color:var(--accent)}
+.rotor-select:focus,.reflector-select:focus{outline:none;border-color:var(--accent);box-shadow:inset 0 1px 3px rgba(0,0,0,0.06),0 0 0 3px var(--accent-dim)}
 .rotor-detail{
   margin-top:6px;padding:6px 8px;background:var(--bg2);border-radius:5px;
   font-size:0.66rem;color:var(--muted);line-height:1.5;text-align:center;
@@ -158,16 +181,39 @@ section{padding:72px 0}
 
 .rotor-wheel{display:flex;flex-direction:column;align-items:center;gap:4px}
 .wheel-btn{
-  width:44px;height:22px;border:1px solid var(--rule);background:var(--bg2);
+  width:44px;height:22px;border:1px solid var(--rule);
+  background:linear-gradient(180deg,#fff 0%,var(--bg2) 100%);
   border-radius:4px;cursor:pointer;font-size:0.65rem;color:var(--accent);
-  display:flex;align-items:center;justify-content:center;transition:all 0.15s;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform 0.08s,box-shadow 0.08s,background 0.1s;
+  box-shadow:0 2px 0 var(--rule);user-select:none;
 }
-.wheel-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.wheel-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 0 var(--accent2)}
+.wheel-btn:active{transform:translateY(2px);box-shadow:0 0 0 var(--accent2)}
 .wheel-display{
-  width:52px;height:52px;background:var(--dark);color:var(--accent);
-  border-radius:8px;display:flex;align-items:center;justify-content:center;
-  font-size:1.6rem;font-weight:800;font-family:var(--mono);
-  border:2px solid var(--accent);box-shadow:0 2px 12px rgba(26,188,156,0.2);
+  width:56px;height:56px;
+  background:linear-gradient(135deg,#2a2a4e 0%,var(--dark) 40%,#0d0d1e 100%);
+  color:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;font-weight:800;font-family:var(--mono);
+  border:2px solid #3a3a5e;
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,0.08),
+    inset 0 -2px 4px rgba(0,0,0,0.4),
+    0 2px 8px rgba(26,188,156,0.25),
+    0 4px 16px rgba(0,0,0,0.15);
+  text-shadow:0 0 12px rgba(26,188,156,0.6);
+  position:relative;overflow:hidden;
+}
+.wheel-display::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,0.06) 0%,transparent 100%);
+  border-radius:8px 8px 0 0;pointer-events:none;
+}
+.wheel-display.spinning{animation:wheelFlip 0.3s ease}
+@keyframes wheelFlip{
+  0%{transform:scaleY(1)}
+  50%{transform:scaleY(0.3);filter:brightness(1.5)}
+  100%{transform:scaleY(1)}
 }
 .wheel-position-num{
   font-size:0.68rem;color:var(--muted);font-family:var(--mono);margin-top:2px;
@@ -175,10 +221,14 @@ section{padding:72px 0}
 
 .ring-input{
   width:100%;padding:8px 12px;border:2px solid var(--rule);border-radius:6px;
-  font-size:0.9rem;font-weight:600;background:var(--bg);color:var(--ink);
+  font-size:0.9rem;font-weight:700;
+  background:linear-gradient(135deg,var(--dark) 0%,#0d0d1e 100%);color:var(--accent);
   text-align:center;font-family:var(--mono);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.4);text-shadow:0 0 8px rgba(26,188,156,0.4);
+  transition:border-color 0.15s;
 }
 .ring-input:focus{outline:none;border-color:var(--accent)}
+.ring-input::-webkit-inner-spin-button{opacity:0.4}
 .ring-letter{
   font-size:0.68rem;color:var(--muted);font-family:var(--mono);margin-top:4px;
 }
@@ -190,11 +240,13 @@ section{padding:72px 0}
 
 .plugboard-input{
   width:100%;padding:10px 14px;border:2px solid var(--rule);border-radius:8px;
-  font-size:0.9rem;font-family:var(--mono);background:var(--bg);color:var(--ink);
-  transition:border-color 0.2s;
+  font-size:0.9rem;font-family:var(--mono);
+  background:linear-gradient(135deg,var(--dark) 0%,#0d0d1e 100%);color:var(--accent);
+  transition:border-color 0.2s,box-shadow 0.2s;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.4);text-shadow:0 0 8px rgba(26,188,156,0.3);
 }
-.plugboard-input:focus{outline:none;border-color:var(--accent)}
-.plugboard-input::placeholder{color:#adb5bd;font-family:var(--font)}
+.plugboard-input:focus{outline:none;border-color:var(--accent);box-shadow:inset 0 2px 4px rgba(0,0,0,0.4),0 0 0 3px var(--accent-dim)}
+.plugboard-input::placeholder{color:#4a4a6e;font-family:var(--font);text-shadow:none}
 .plugboard-hint{font-size:0.78rem;color:var(--muted);margin-top:6px;line-height:1.5}
 .plugboard-pairs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .plugboard-pair{
@@ -225,12 +277,167 @@ section{padding:72px 0}
   letter-spacing:0.06em;font-weight:700;margin-bottom:2px;
 }
 .btn-copy-key{
-  padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;
-  font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s;
+  padding:6px 14px;background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;border:none;border-radius:6px;
+  font-size:0.78rem;font-weight:600;cursor:pointer;
+  transition:transform 0.08s,box-shadow 0.08s;
   font-family:var(--font);white-space:nowrap;
+  box-shadow:0 2px 0 #0d6b59;user-select:none;text-shadow:0 1px 2px rgba(0,0,0,0.15);
 }
-.btn-copy-key:hover{background:var(--accent2)}
-.btn-copy-key.copied{background:var(--ok)}
+.btn-copy-key:hover{box-shadow:0 2px 0 #0d6b59,0 4px 10px rgba(26,188,156,0.2)}
+.btn-copy-key:active{transform:translateY(2px);box-shadow:0 0 0 #0d6b59}
+.btn-copy-key.copied{background:linear-gradient(180deg,#2ecc71 0%,#27ae60 100%);box-shadow:0 2px 0 #1e8449}
+
+/* ===== Cipher Config Panel ===== */
+.cipher-config{
+  margin-bottom:20px;padding:24px;
+  background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
+  border-radius:10px;border:2px solid var(--rule);display:none;
+  box-shadow:inset 0 1px 2px rgba(255,255,255,0.5),0 2px 8px rgba(0,0,0,0.04);
+}
+.cipher-config.show{display:block}
+.config-section{margin-bottom:20px}
+.config-section:last-child{margin-bottom:0}
+.config-label{
+  display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.06em;color:var(--muted);margin-bottom:4px;
+}
+.config-hint{font-size:0.76rem;color:var(--muted);margin-bottom:12px;line-height:1.6}
+
+/* Slider */
+.config-slider-row{display:flex;align-items:center;gap:12px}
+.config-slider{
+  flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;
+  background:var(--rule);outline:none;cursor:pointer;
+}
+.config-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;
+  background:var(--accent);cursor:pointer;box-shadow:0 2px 8px rgba(26,188,156,0.4);
+}
+.config-slider::-moz-range-thumb{
+  width:20px;height:20px;border-radius:50%;background:var(--accent);
+  cursor:pointer;border:none;box-shadow:0 2px 8px rgba(26,188,156,0.4);
+}
+.slider-value{
+  min-width:60px;text-align:center;font-family:var(--mono);font-size:0.9rem;
+  font-weight:700;color:var(--accent);background:var(--accent-dim);padding:4px 12px;
+  border-radius:6px;
+}
+
+/* Preset chips */
+.preset-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.preset-chip{
+  padding:6px 14px;border:2px solid var(--rule);border-radius:6px;cursor:pointer;
+  font-size:0.8rem;font-weight:600;color:var(--muted);
+  background:linear-gradient(180deg,#fff 0%,var(--bg2) 100%);
+  transition:transform 0.08s,box-shadow 0.08s,border-color 0.15s,color 0.15s;
+  font-family:var(--font);box-shadow:0 2px 0 var(--rule);user-select:none;
+}
+.preset-chip:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 0 var(--accent-dim)}
+.preset-chip:active{transform:translateY(2px);box-shadow:0 0 0 var(--rule)}
+.preset-chip.active{border-color:var(--accent);background:var(--accent);color:#fff;box-shadow:0 2px 0 #0d6b59}
+
+/* Alphabet mapping */
+.alpha-map{display:flex;flex-direction:column;gap:2px;overflow-x:auto;padding-bottom:4px}
+.alpha-map-row{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.alpha-pair{
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  min-width:28px;padding:4px 2px;background:var(--bg2);border-radius:5px;
+}
+.alpha-pair .a-from{font-family:var(--mono);font-size:0.82rem;font-weight:700;color:var(--ink)}
+.alpha-pair .a-arrow{font-size:0.6rem;color:var(--muted);line-height:1}
+.alpha-pair .a-to{font-family:var(--mono);font-size:0.82rem;font-weight:700;color:var(--accent)}
+
+/* Morse reference */
+.morse-ref-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;
+}
+.morse-cell{
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;
+  background:var(--bg2);border-radius:5px;border:1px solid var(--rule);
+}
+.morse-cell .mc-letter{font-family:var(--mono);font-size:0.8rem;font-weight:700;color:var(--ink)}
+.morse-cell .mc-code{font-family:var(--mono);font-size:0.72rem;color:var(--accent);letter-spacing:0.05em}
+
+/* Audio controls */
+.audio-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.audio-btn{
+  padding:8px 18px;background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;border:none;border-radius:6px;
+  font-size:0.84rem;font-weight:600;cursor:pointer;
+  transition:transform 0.08s,box-shadow 0.08s;font-family:var(--font);
+  display:inline-flex;align-items:center;gap:6px;
+  box-shadow:0 3px 0 #0d6b59,0 4px 10px rgba(26,188,156,0.25);user-select:none;
+  text-shadow:0 1px 2px rgba(0,0,0,0.15);
+}
+.audio-btn:hover{box-shadow:0 3px 0 #0d6b59,0 6px 16px rgba(26,188,156,0.35)}
+.audio-btn:active{transform:translateY(3px);box-shadow:0 0 0 #0d6b59}
+.audio-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:0 3px 0 #0d6b59}
+.audio-speed-row{display:flex;align-items:center;gap:8px}
+.audio-speed-label{font-size:0.8rem;color:var(--muted);white-space:nowrap}
+.audio-wpm{font-family:var(--mono);font-size:0.82rem;font-weight:700;color:var(--accent);min-width:50px}
+
+/* Tabula recta (Vigenère table) */
+.tabula-recta-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--rule);margin-top:10px}
+.tabula-recta{border-collapse:collapse;font-size:0.68rem;font-family:var(--mono)}
+.tabula-recta th,.tabula-recta td{
+  padding:3px 6px;text-align:center;border:1px solid var(--rule);min-width:22px;
+}
+.tabula-recta th{background:var(--bg2);color:var(--muted);font-weight:700}
+.tabula-recta th.corner{background:var(--accent);color:#fff}
+.tabula-recta td.hi{background:var(--accent-dim);color:var(--accent2);font-weight:700}
+
+/* Playfair matrix */
+.matrix-display{
+  display:inline-block;margin-top:10px;border:2px solid var(--accent);border-radius:8px;
+  overflow:hidden;
+}
+.matrix-row{display:flex}
+.matrix-cell{
+  width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:0.9rem;font-weight:700;color:var(--ink);
+  border:1px solid var(--rule);background:var(--bg2);transition:background 0.2s;
+}
+.matrix-cell.key-origin{background:var(--accent-dim);color:var(--accent2)}
+
+/* Key alignment preview */
+.key-align{margin-top:10px;font-family:var(--mono);font-size:0.78rem;overflow-x:auto}
+.key-align-row{display:flex;gap:1px;flex-wrap:wrap}
+.key-align-char{
+  min-width:20px;text-align:center;padding:2px;border-radius:3px;
+}
+.key-align-char.k-key{background:var(--accent-dim);color:var(--accent2);font-weight:700}
+.key-align-char.k-pt{background:var(--bg2);color:var(--ink)}
+.key-align-char.k-sep{min-width:6px}
+
+/* Rail fence preview */
+.rail-preview{margin-top:10px;overflow-x:auto}
+.rail-grid{display:flex;flex-direction:column;gap:2px}
+.rail-row{display:flex;gap:2px}
+.rail-char{
+  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:0.72rem;font-weight:600;border-radius:3px;
+  background:var(--bg2);color:var(--muted);border:1px solid transparent;
+}
+.rail-char.active{background:var(--accent-dim);color:var(--accent2);font-weight:700;border-color:var(--accent)}
+.rail-char.empty{opacity:0.2}
+
+/* Baconian reference */
+.bacon-ref-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;
+}
+.bacon-cell{
+  display:flex;align-items:center;gap:6px;padding:5px 8px;
+  background:var(--bg2);border-radius:5px;border:1px solid var(--rule);
+}
+.bacon-cell .bc-letter{font-family:var(--mono);font-size:0.78rem;font-weight:700;color:var(--ink);min-width:14px}
+.bacon-cell .bc-code{font-family:var(--mono);font-size:0.68rem;color:var(--accent);letter-spacing:0.03em}
+
+@media(max-width:768px){
+  .cipher-config{padding:16px}
+  .morse-ref-grid{grid-template-columns:repeat(auto-fill,minmax(60px,1fr))}
+  .tabula-recta{font-size:0.6rem}
+  .matrix-cell{width:34px;height:34px;font-size:0.78rem}
+  .bacon-ref-grid{grid-template-columns:repeat(auto-fill,minmax(80px,1fr))}
+}
 
 /* ===== Text areas ===== */
 .text-area-group{margin-bottom:16px}
@@ -240,63 +447,81 @@ section{padding:72px 0}
 textarea.cipher-text{
   width:100%;min-height:140px;padding:16px;border:2px solid var(--rule);border-radius:10px;
   font-family:var(--mono);font-size:0.88rem;line-height:1.7;resize:vertical;
-  transition:border-color 0.2s;background:var(--bg);color:var(--ink);
+  transition:border-color 0.2s,box-shadow 0.2s;
+  background:linear-gradient(135deg,var(--dark) 0%,#0d0d1e 100%);color:var(--accent);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.4);text-shadow:0 0 8px rgba(26,188,156,0.3);
 }
-textarea.cipher-text:focus{outline:none;border-color:var(--accent)}
-textarea.cipher-text::placeholder{color:#adb5bd;font-family:var(--font)}
+textarea.cipher-text:focus{outline:none;border-color:var(--accent);box-shadow:inset 0 2px 6px rgba(0,0,0,0.4),0 0 0 3px var(--accent-dim)}
+textarea.cipher-text::placeholder{color:#4a4a6e;font-family:var(--font);text-shadow:none}
 
-/* ===== Action buttons ===== */
+/* ===== Action buttons (physical key-cap style) ===== */
 .action-row{display:flex;gap:12px;align-items:center;margin:20px 0;flex-wrap:wrap}
 .btn-action{
-  flex:1;min-width:200px;padding:14px 32px;background:var(--accent);color:#fff;border:none;
-  border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;
+  flex:1;min-width:200px;padding:14px 32px;background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);
+  color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;
+  transition:transform 0.08s ease,box-shadow 0.08s ease;
   font-family:var(--font);display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 0 #0d6b59,0 6px 16px rgba(26,188,156,0.35);
+  text-shadow:0 1px 2px rgba(0,0,0,0.2);user-select:none;
 }
-.btn-action:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,188,156,0.3)}
-.btn-action:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.btn-action:hover{box-shadow:0 4px 0 #0d6b59,0 8px 24px rgba(26,188,156,0.45)}
+.btn-action:active{transform:translateY(3px);box-shadow:0 1px 0 #0d6b59,0 2px 8px rgba(26,188,156,0.3)}
+.btn-action:disabled{opacity:0.6;cursor:not-allowed;transform:none;box-shadow:0 4px 0 #0d6b59}
 .btn-action.loading{pointer-events:none;opacity:0.8}
 .btn-swap{
-  padding:14px 18px;background:var(--bg);color:var(--accent);border:2px solid var(--accent);
-  border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s;
-  font-family:var(--font);display:inline-flex;align-items:center;gap:6px;
+  padding:14px 18px;background:linear-gradient(180deg,#fff 0%,var(--bg2) 100%);color:var(--accent);
+  border:2px solid var(--accent);border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;
+  transition:transform 0.08s ease,box-shadow 0.08s ease;font-family:var(--font);
+  display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 0 var(--accent-dim);user-select:none;
 }
-.btn-swap:hover{background:var(--accent-dim)}
+.btn-swap:hover{box-shadow:0 3px 0 var(--accent-dim),0 4px 12px rgba(26,188,156,0.2)}
+.btn-swap:active{transform:translateY(2px);box-shadow:0 1px 0 var(--accent-dim)}
 .btn-clear{
-  padding:14px 18px;background:var(--bg);color:var(--muted);border:2px solid var(--rule);
-  border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:var(--font);
+  padding:14px 18px;background:linear-gradient(180deg,#fff 0%,var(--bg2) 100%);color:var(--muted);
+  border:2px solid var(--rule);border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;
+  transition:transform 0.08s ease,box-shadow 0.08s ease;font-family:var(--font);
+  box-shadow:0 3px 0 #c8d0d8;user-select:none;
 }
-.btn-clear:hover{border-color:var(--muted);color:var(--ink)}
+.btn-clear:hover{border-color:var(--muted);color:var(--ink);box-shadow:0 3px 0 #c8d0d8,0 4px 12px rgba(0,0,0,0.08)}
+.btn-clear:active{transform:translateY(2px);box-shadow:0 1px 0 #c8d0d8}
 
 .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ===== Output ===== */
 .output-area{
-  margin-top:8px;padding:24px;background:var(--bg);border-radius:10px;
-  border:1px solid var(--rule);border-left:4px solid var(--accent2);min-height:120px;position:relative;
+  margin-top:8px;padding:24px;
+  background:linear-gradient(135deg,var(--dark) 0%,#0d0d1e 100%);
+  border-radius:10px;border:1px solid #3a3a5e;border-left:4px solid var(--accent);
+  min-height:120px;position:relative;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.4);
 }
-.output-placeholder{color:var(--muted);text-align:center;padding:30px 0;font-size:0.95rem}
+.output-placeholder{color:#4a4a6e;text-align:center;padding:30px 0;font-size:0.95rem}
 .output-placeholder .ph-icon{font-size:2rem;opacity:0.3;display:block;margin-bottom:12px}
 .output-content{
   font-family:var(--mono);font-size:0.88rem;line-height:1.7;word-break:break-all;
   white-space:pre-wrap;max-height:400px;overflow-y:auto;
+  color:var(--accent);text-shadow:0 0 8px rgba(26,188,156,0.3);
 }
 .output-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.output-header h4{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700}
-.mode-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;margin-left:8px;background:var(--accent-dim);color:var(--accent)}
+.output-header h4{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:#8a8aae;font-weight:700}
+.mode-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;margin-left:8px;background:rgba(26,188,156,0.15);color:var(--accent)}
 .btn-copy{
-  padding:6px 16px;background:var(--accent-dim);color:var(--accent);border:none;border-radius:6px;
-  font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:var(--font);
+  padding:6px 16px;background:rgba(26,188,156,0.15);color:var(--accent);border:none;border-radius:6px;
+  font-size:0.8rem;font-weight:600;cursor:pointer;
+  transition:transform 0.08s,box-shadow 0.08s,background 0.15s;font-family:var(--font);
+  box-shadow:0 2px 0 rgba(26,188,156,0.2);user-select:none;
 }
-.btn-copy:hover{background:var(--accent);color:#fff}
-.btn-copy.copied{background:var(--ok);color:#fff}
+.btn-copy:hover{background:var(--accent);color:#fff;box-shadow:0 2px 0 var(--accent2)}
+.btn-copy:active{transform:translateY(2px);box-shadow:0 0 0 var(--accent2)}
+.btn-copy.copied{background:var(--ok);color:#fff;box-shadow:0 2px 0 #1e8449}
 .output-meta{
-  margin-top:12px;padding-top:10px;border-top:1px solid var(--rule);
-  display:flex;gap:20px;flex-wrap:wrap;font-size:0.78rem;color:var(--muted);
+  margin-top:12px;padding-top:10px;border-top:1px solid #2a2a4e;
+  display:flex;gap:20px;flex-wrap:wrap;font-size:0.78rem;color:#8a8aae;
 }
 .output-meta span{display:inline-flex;align-items:center;gap:4px}
-.output-meta strong{color:var(--ink);font-weight:700}
-.output-error{color:var(--danger);padding:16px;background:#fdf0ef;border-radius:8px;border:1px solid #f5c6cb;font-size:0.88rem;line-height:1.6}
+.output-meta strong{color:var(--accent);font-weight:700}
+.output-error{color:#ff8a8a;padding:16px;background:rgba(231,76,60,0.1);border-radius:8px;border:1px solid rgba(231,76,60,0.3);font-size:0.88rem;line-height:1.6}
 .output-error .err-icon{font-size:1.2rem;display:block;margin-bottom:8px}
 
 /* ===== Algorithm Reference ===== */
@@ -319,8 +544,9 @@ textarea.cipher-text::placeholder{color:#adb5bd;font-family:var(--font)}
 /* ===== Demo ===== */
 .demo-container{background:var(--bg2);border-radius:var(--radius);border:1px solid var(--rule);overflow:hidden}
 .demo-tabs{display:flex;border-bottom:2px solid var(--rule);flex-wrap:wrap}
-.demo-tab{padding:14px 24px;cursor:pointer;font-weight:600;font-size:0.9rem;color:var(--muted);border-bottom:3px solid transparent;transition:all 0.2s;user-select:none}
-.demo-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.demo-tab{padding:14px 24px;cursor:pointer;font-weight:600;font-size:0.9rem;color:var(--muted);border-bottom:3px solid transparent;transition:color 0.15s,border-color 0.15s,background 0.15s;user-select:none}
+.demo-tab:hover{color:var(--accent);background:rgba(26,188,156,0.04)}
+.demo-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--accent-dim)}
 .demo-content{padding:32px;display:none}
 .demo-content.active{display:block}
 .demo-split{display:grid;grid-template-columns:1fr 1fr;gap:24px}
@@ -458,6 +684,9 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
           <label class="key-label" id="key-label">移位数</label>
           <input type="number" class="key-input" id="key-input" placeholder="输入数字 1-25..." min="1" max="25" value="3" autocomplete="off">
         </div>
+
+        <!-- Cipher configuration panel (dynamic) -->
+        <div class="cipher-config" id="cipher-config"></div>
 
         <!-- Enigma configuration panel -->
         <div class="enigma-panel" id="enigma-panel">
@@ -984,6 +1213,15 @@ function updateAlgoUI(){
     enigmaPanel.classList.remove('show');
   }
 
+  /* Show cipher-config for non-Enigma algorithms */
+  var cipherConfig=document.getElementById('cipher-config');
+  if(info.keyType==='enigma'){
+    cipherConfig.classList.remove('show');
+  }else{
+    cipherConfig.classList.add('show');
+    updateCipherConfig();
+  }
+
   /* Update mode labels */
   var modeBtns=document.querySelectorAll('.mode-btn');
   if(currentAlgo==='morse'){
@@ -1021,6 +1259,397 @@ function updateLabels(){
   btnAction.textContent=verb;
 }
 
+/* ============================================================
+   CIPHER CONFIG PANEL (dynamic visualization)
+   ============================================================ */
+function updateCipherConfig(){
+  var panel=document.getElementById('cipher-config');
+  switch(currentAlgo){
+    case 'caesar':   panel.innerHTML=buildCaesarConfig();   bindCaesarConfig();   break;
+    case 'morse':    panel.innerHTML=buildMorseConfig();    bindMorseConfig();    break;
+    case 'atbash':   panel.innerHTML=buildAtbashConfig();                         break;
+    case 'baconian': panel.innerHTML=buildBaconianConfig();                       break;
+    case 'rot13':    panel.innerHTML=buildROT13Config();                            break;
+    case 'railfence':panel.innerHTML=buildRailFenceConfig();bindRailFenceConfig();break;
+    case 'vigenere': panel.innerHTML=buildVigenereConfig();bindVigenereConfig();  break;
+    case 'playfair': panel.innerHTML=buildPlayfairConfig();bindPlayfairConfig();  break;
+    default: panel.innerHTML='';
+  }
+}
+
+/* --- Alphabet mapping helper --- */
+function buildAlphaMap(shift){
+  shift=((shift%26)+26)%26;
+  var rows=['',''];
+  for(var i=0;i<26;i++){
+    var from=String.fromCharCode(65+i);
+    var to=String.fromCharCode(65+(i+shift)%26);
+    rows[0]+='<div class="alpha-pair"><span class="a-from">'+from+'</span><span class="a-arrow">&darr;</span><span class="a-to">'+to+'</span></div>';
+  }
+  return '<div class="alpha-map"><div class="alpha-map-row">'+rows[0]+'</div></div>';
+}
+
+/* --- Caesar config --- */
+function buildCaesarConfig(){
+  var shift=parseInt(document.getElementById('key-input').value,10)||3;
+  return '<div class="config-section">'+
+    '<span class="config-label">移位滑块 (Shift Slider)</span>'+
+    '<p class="config-hint">拖动滑块或输入数字来调整移位数。下方实时显示字母映射关系。</p>'+
+    '<div class="config-slider-row">'+
+      '<input type="range" class="config-slider" id="caesar-slider" min="1" max="25" value="'+shift+'">'+
+      '<span class="slider-value" id="caesar-slider-val">'+shift+'</span>'+
+    '</div>'+
+    '<div class="preset-chips">'+
+      '<button class="preset-chip" data-shift="3">3 (经典)</button>'+
+      '<button class="preset-chip" data-shift="7">7</button>'+
+      '<button class="preset-chip" data-shift="13">13 (ROT13)</button>'+
+      '<button class="preset-chip" data-shift="25">25</button>'+
+    '</div>'+
+  '</div>'+
+  '<div class="config-section">'+
+    '<span class="config-label">字母映射表 (Alphabet Mapping)</span>'+
+    '<p class="config-hint">每个字母加密后对应的字母（移位 '+shift+' 位）。</p>'+
+    '<div id="caesar-alpha-map">'+buildAlphaMap(shift)+'</div>'+
+  '</div>';
+}
+function bindCaesarConfig(){
+  var slider=document.getElementById('caesar-slider');
+  var sliderVal=document.getElementById('caesar-slider-val');
+  var keyInput=document.getElementById('key-input');
+  slider.addEventListener('input',function(){
+    var v=parseInt(slider.value,10);
+    sliderVal.textContent=v;
+    keyInput.value=v;
+    document.getElementById('caesar-alpha-map').innerHTML=buildAlphaMap(v);
+    clearOutput();
+  });
+  document.querySelectorAll('.preset-chip').forEach(function(chip){
+    chip.addEventListener('click',function(){
+      var v=parseInt(this.dataset.shift,10);
+      slider.value=v;
+      sliderVal.textContent=v;
+      keyInput.value=v;
+      document.getElementById('caesar-alpha-map').innerHTML=buildAlphaMap(v);
+      clearOutput();
+    });
+  });
+}
+
+/* --- Morse config --- */
+function buildMorseConfig(){
+  var cells='';
+  var letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  for(var i=0;i<letters.length;i++){
+    var c=letters[i];
+    if(MORSE_MAP[c]){
+      cells+='<div class="morse-cell"><span class="mc-letter">'+c+'</span><span class="mc-code">'+MORSE_MAP[c]+'</span></div>';
+    }
+  }
+  return '<div class="config-section">'+
+    '<span class="config-label">音频播放 (Audio Playback)</span>'+
+    '<p class="config-hint">点击播放按钮，用蜂鸣音模拟摩斯电码的点和划。调节速度控制播放快慢。</p>'+
+    '<div class="audio-controls">'+
+      '<button class="audio-btn" id="morse-play">&#128266; 播放</button>'+
+      '<div class="audio-speed-row">'+
+        '<span class="audio-speed-label">速度</span>'+
+        '<input type="range" class="config-slider" id="morse-speed" min="5" max="30" value="15" style="max-width:120px">'+
+        '<span class="audio-wpm" id="morse-wpm">15 WPM</span>'+
+      '</div>'+
+    '</div>'+
+  '</div>'+
+  '<div class="config-section">'+
+    '<span class="config-label">摩斯码对照表 (Reference)</span>'+
+    '<p class="config-hint">国际标准摩斯电码表。点 (&middot;) 为短音，划 (&mdash;) 为长音。</p>'+
+    '<div class="morse-ref-grid">'+cells+'</div>'+
+  '</div>';
+}
+function bindMorseConfig(){
+  var speedSlider=document.getElementById('morse-speed');
+  var wpmLabel=document.getElementById('morse-wpm');
+  speedSlider.addEventListener('input',function(){
+    wpmLabel.textContent=speedSlider.value+' WPM';
+  });
+  var playBtn=document.getElementById('morse-play');
+  var morseCtx=null;
+  playBtn.addEventListener('click',function(){
+    var text=inputText.value;
+    if(!text||!text.trim()){alert('请先输入需要播放的文本。');return}
+    var encoded=morseEncode(text);
+    playMorseAudio(encoded,parseInt(speedSlider.value,10),playBtn);
+  });
+}
+function playMorseAudio(morseStr,wpm,btn){
+  var unit=1.2/wpm;
+  var audioCtx=null;
+  try{audioCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return}
+  var tokens=morseStr.split('');
+  var t=audioCtx.currentTime;
+  btn.disabled=true;
+  btn.innerHTML='&#128266; 播放中...';
+  for(var i=0;i<tokens.length;i++){
+    var ch=tokens[i];
+    if(ch==='.'){scheduleBeep(audioCtx,t,unit);t+=unit*2}
+    else if(ch==='-'){scheduleBeep(audioCtx,t,unit*3);t+=unit*4}
+    else if(ch===' '){t+=unit*3}
+    else if(ch==='/'){t+=unit*7}
+  }
+  setTimeout(function(){
+    btn.disabled=false;
+    btn.innerHTML='&#128266; 播放';
+    audioCtx.close();
+  },(t-audioCtx.currentTime)*1000+200);
+}
+function scheduleBeep(ctx,start,dur){
+  var osc=ctx.createOscillator();
+  var gain=ctx.createGain();
+  osc.frequency.value=700;
+  osc.type='sine';
+  gain.gain.setValueAtTime(0,start);
+  gain.gain.linearRampToValueAtTime(0.3,start+0.01);
+  gain.gain.setValueAtTime(0.3,start+dur-0.01);
+  gain.gain.linearRampToValueAtTime(0,start+dur);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(start);
+  osc.stop(start+dur);
+}
+
+/* --- Atbash config --- */
+function buildAtbashConfig(){
+  var pairs='';
+  for(var i=0;i<26;i++){
+    var from=String.fromCharCode(65+i);
+    var to=String.fromCharCode(90-i);
+    pairs+='<div class="alpha-pair"><span class="a-from">'+from+'</span><span class="a-arrow">&harr;</span><span class="a-to">'+to+'</span></div>';
+  }
+  return '<div class="config-section">'+
+    '<span class="config-label">字母映射表 (Alphabet Mapping)</span>'+
+    '<p class="config-hint">Atbash 将每个字母映射为字母表中的反向字母（A&harr;Z, B&harr;Y, C&harr;X...）。加密与解密为同一操作，无需密钥。</p>'+
+    '<div class="alpha-map"><div class="alpha-map-row">'+pairs+'</div></div>'+
+  '</div>';
+}
+
+/* --- ROT13 config --- */
+function buildROT13Config(){
+  var pairs='';
+  for(var i=0;i<26;i++){
+    var from=String.fromCharCode(65+i);
+    var to=String.fromCharCode(65+(i+13)%26);
+    pairs+='<div class="alpha-pair"><span class="a-from">'+from+'</span><span class="a-arrow">&darr;</span><span class="a-to">'+to+'</span></div>';
+  }
+  return '<div class="config-section">'+
+    '<span class="config-label">字母映射表 (Alphabet Mapping)</span>'+
+    '<p class="config-hint">ROT13 是凯撒密码的特例（固定移位 13 位）。由于 26 个字母恰好移位一半，加密与解密为同一操作。广泛用于隐藏剧透或谜底。</p>'+
+    '<div class="alpha-map"><div class="alpha-map-row">'+pairs+'</div></div>'+
+  '</div>';
+}
+
+/* --- Baconian config --- */
+function buildBaconianConfig(){
+  var cells='';
+  for(var i=0;i<26;i++){
+    var letter=String.fromCharCode(65+i);
+    var binary=i.toString(2);
+    while(binary.length<5)binary='0'+binary;
+    var code=binary.replace(/0/g,'A').replace(/1/g,'B');
+    cells+='<div class="bacon-cell"><span class="bc-letter">'+letter+'</span><span class="bc-code">'+code+'</span></div>';
+  }
+  return '<div class="config-section">'+
+    '<span class="config-label">培根码对照表 (Baconian Reference)</span>'+
+    '<p class="config-hint">每个字母对应一个 5 位 A/B 二进制序列。A=00000(AAAAA), B=00001(AAAAB), ... Z=11011(BBBBA)。无密钥，加解密为编码与解码。</p>'+
+    '<div class="bacon-ref-grid">'+cells+'</div>'+
+  '</div>';
+}
+
+/* --- Rail Fence config --- */
+function buildRailFenceConfig(){
+  var rails=parseInt(document.getElementById('key-input').value,10)||3;
+  return '<div class="config-section">'+
+    '<span class="config-label">栏数滑块 (Rails Slider)</span>'+
+    '<p class="config-hint">拖动滑块调整栏数。栏数决定之字形排列的行数，直接影响加密结果。</p>'+
+    '<div class="config-slider-row">'+
+      '<input type="range" class="config-slider" id="railfence-slider" min="2" max="10" value="'+rails+'">'+
+      '<span class="slider-value" id="railfence-slider-val">'+rails+' 栏</span>'+
+    '</div>'+
+  '</div>'+
+  '<div class="config-section">'+
+    '<span class="config-label">栅栏排列预览 (Zigzag Preview)</span>'+
+    '<p class="config-hint">输入文本的前若干字符按之字形排列在 '+rails+' 栏中的示意图。高亮字符表示该位置在对应栏中。</p>'+
+    '<div id="railfence-preview">'+buildRailFencePreview(rails)+'</div>'+
+  '</div>';
+}
+function buildRailFencePreview(rails){
+  var text=inputText.value.toUpperCase().replace(/[^A-Z]/g,'').substring(0,15);
+  if(!text)text='SAMPLETEXTTEST';
+  var n=text.length;
+  if(n<=1)return '<div style="font-size:0.82rem;color:var(--muted)">请输入文本以查看排列预览</div>';
+  var grid=[];
+  for(var r=0;r<rails;r++){grid[r]=[]}
+  var rail=0,dir=1;
+  for(var i=0;i<n;i++){
+    grid[rail][i]=text[i];
+    if(rail===0)dir=1;
+    else if(rail===rails-1)dir=-1;
+    rail+=dir;
+  }
+  var html='<div class="rail-grid">';
+  for(var r=0;r<rails;r++){
+    html+='<div class="rail-row">';
+    for(var c=0;c<n;c++){
+      if(grid[r][c]){
+        html+='<div class="rail-char active">'+grid[r][c]+'</div>';
+      }else{
+        html+='<div class="rail-char empty">&middot;</div>';
+      }
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  return html;
+}
+function bindRailFenceConfig(){
+  var slider=document.getElementById('railfence-slider');
+  var sliderVal=document.getElementById('railfence-slider-val');
+  var keyInput=document.getElementById('key-input');
+  slider.addEventListener('input',function(){
+    var v=parseInt(slider.value,10);
+    sliderVal.textContent=v+' 栏';
+    keyInput.value=v;
+    document.getElementById('railfence-preview').innerHTML=buildRailFencePreview(v);
+    clearOutput();
+  });
+}
+
+/* --- Vigenère config --- */
+function buildVigenereConfig(){
+  var key=document.getElementById('key-input').value.toUpperCase().replace(/[^A-Z]/g,'');
+  return '<div class="config-section">'+
+    '<span class="config-label">维吉尼亚方表 (Tabula Recta)</span>'+
+    '<p class="config-hint">26&times;26 字母移位表。行表示明文字母，列表示密钥字母，交叉点为密文字母。当前密钥高亮显示对应行。</p>'+
+    '<div class="tabula-recta-wrap">'+buildTabulaRecta(key)+'</div>'+
+  '</div>'+
+  '<div class="config-section">'+
+    '<span class="config-label">密钥对齐预览 (Key Alignment)</span>'+
+    '<p class="config-hint">密钥字母循环对齐明文，每个明文字母使用对应密钥字母的行进行移位。</p>'+
+    '<div id="vigenere-align">'+buildVigenereAlign(key)+'</div>'+
+  '</div>';
+}
+function buildTabulaRecta(key){
+  var html='<table class="tabula-recta"><thead><tr><th class="corner">&times;</th>';
+  for(var c=0;c<26;c++){
+    html+='<th>'+String.fromCharCode(65+c)+'</th>';
+  }
+  html+='</tr></thead><tbody>';
+  for(var r=0;r<26;r++){
+    var rowLetter=String.fromCharCode(65+r);
+    var isKeyRow=key.indexOf(rowLetter)>=0;
+    html+='<tr><th'+(isKeyRow?' class="hi"':'')+'>'+rowLetter+'</th>';
+    for(var c=0;c<26;c++){
+      var enc=String.fromCharCode(65+(r+c)%26);
+      html+='<td'+(isKeyRow?' class="hi"':'')+'>'+enc+'</td>';
+    }
+    html+='</tr>';
+  }
+  html+='</tbody></table>';
+  return html;
+}
+function buildVigenereAlign(key){
+  var text=inputText.value;
+  if(!text||!text.trim())return '<div style="font-size:0.82rem;color:var(--muted)">请输入文本以查看密钥对齐</div>';
+  if(!key)return '<div style="font-size:0.82rem;color:var(--muted)">请输入字母密钥</div>';
+  var ptChars=text.split('').filter(function(c){return /[a-zA-Z]/.test(c)});
+  var ptShow=ptChars.slice(0,30);
+  var keyChars=[];
+  var ki=0;
+  for(var i=0;i<ptShow.length;i++){
+    keyChars.push(key[ki%key.length]);
+    ki++;
+  }
+  var html='<div class="key-align">';
+  html+='<div class="key-align-row">';
+  for(var i=0;i<keyChars.length;i++){
+    html+='<span class="key-align-char k-key">'+keyChars[i]+'</span>';
+  }
+  html+='</div><div class="key-align-row">';
+  for(var i=0;i<ptShow.length;i++){
+    html+='<span class="key-align-char k-pt">'+ptShow[i].toUpperCase()+'</span>';
+  }
+  html+='</div></div>';
+  return html;
+}
+function bindVigenereConfig(){
+  document.getElementById('key-input').oninput=function(){
+    var key=this.value.toUpperCase().replace(/[^A-Z]/g,'');
+    var panel=document.getElementById('cipher-config');
+    var tabulaWrap=panel.querySelector('.tabula-recta-wrap');
+    if(tabulaWrap)tabulaWrap.innerHTML=buildTabulaRecta(key);
+    var alignDiv=document.getElementById('vigenere-align');
+    if(alignDiv)alignDiv.innerHTML=buildVigenereAlign(key);
+  };
+}
+
+/* --- Playfair config --- */
+function buildPlayfairConfig(){
+  var key=document.getElementById('key-input').value;
+  return '<div class="config-section">'+
+    '<span class="config-label">5&times;5 密钥矩阵 (Key Square)</span>'+
+    '<p class="config-hint">由密钥生成的 5&times;5 字母矩阵（I/J 合并）。密钥字母优先填入，剩余字母按顺序补全。浅色背景表示密钥来源字母。</p>'+
+    '<div id="playfair-matrix">'+buildPlayfairMatrixDisplay(key)+'</div>'+
+  '</div>'+
+  '<div class="config-section">'+
+    '<span class="config-label">加密规则 (Rules)</span>'+
+    '<p class="config-hint">明文按字母对加密，三种规则：<br>&bull; <strong>同行</strong>：两个字母各自右移一位<br>&bull; <strong>同列</strong>：两个字母各自下移一位<br>&bull; <strong>不同行列</strong>：矩形互换（取同行对方的列字母）<br>相同字母对插入 X 分隔，末尾补 X。</p>'+
+  '</div>';
+}
+function buildPlayfairMatrixDisplay(key){
+  var cleanKey=(key||'').toUpperCase().replace(/[^A-Z]/g,'').replace(/J/g,'I');
+  var seen={};
+  var keyChars='';
+  for(var i=0;i<cleanKey.length;i++){
+    if(!seen[cleanKey[i]]){seen[cleanKey[i]]=true;keyChars+=cleanKey[i]}
+  }
+  var allChars='';
+  for(var i=0;i<26;i++){
+    var c=String.fromCharCode(65+i);
+    if(c==='J')continue;
+    if(!seen[c]){seen[c]=true;allChars+=c}
+  }
+  var fullStr=keyChars+allChars;
+  var keySet={};
+  for(var i=0;i<keyChars.length;i++){keySet[keyChars[i]]=true}
+  var html='<div class="matrix-display">';
+  for(var r=0;r<5;r++){
+    html+='<div class="matrix-row">';
+    for(var c=0;c<5;c++){
+      var ch=fullStr[r*5+c];
+      var cls=keySet[ch]?'matrix-cell key-origin':'matrix-cell';
+      html+='<div class="'+cls+'">'+ch+'</div>';
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  return html;
+}
+function bindPlayfairConfig(){
+  document.getElementById('key-input').oninput=function(){
+    var matrixDiv=document.getElementById('playfair-matrix');
+    if(matrixDiv)matrixDiv.innerHTML=buildPlayfairMatrixDisplay(this.value);
+  };
+}
+
+/* Refresh dynamic parts of config when input text changes */
+function refreshConfigDynamic(){
+  if(currentAlgo==='railfence'){
+    var rails=parseInt(document.getElementById('key-input').value,10)||3;
+    var preview=document.getElementById('railfence-preview');
+    if(preview)preview.innerHTML=buildRailFencePreview(rails);
+  }else if(currentAlgo==='vigenere'){
+    var key=document.getElementById('key-input').value.toUpperCase().replace(/[^A-Z]/g,'');
+    var alignDiv=document.getElementById('vigenere-align');
+    if(alignDiv)alignDiv.innerHTML=buildVigenereAlign(key);
+  }
+}
+
 /* ===== Enigma rotor wheel interaction ===== */
 document.querySelectorAll('.wheel-btn').forEach(function(btn){
   btn.addEventListener('click',function(){
@@ -1032,7 +1661,11 @@ document.querySelectorAll('.wheel-btn').forEach(function(btn){
       enigmaPositions[rotorIdx]=(enigmaPositions[rotorIdx]+25)%26;
     }
     var letter=String.fromCharCode(enigmaPositions[rotorIdx]+65);
-    document.getElementById('wheel-'+rotorIdx).textContent=letter;
+    var wheel=document.getElementById('wheel-'+rotorIdx);
+    wheel.textContent=letter;
+    wheel.classList.remove('spinning');
+    void wheel.offsetWidth;
+    wheel.classList.add('spinning');
     document.getElementById('wheel-num-'+rotorIdx).textContent='位置 '+String(enigmaPositions[rotorIdx]+1).padStart(2,'0')+'/26';
     document.getElementById('enigma-preset').value='custom';
     updateEnigmaKeyString();
@@ -1250,6 +1883,7 @@ function applyRandomPreset(){
 var inputText=document.getElementById('input-text');
 inputText.addEventListener('input',function(){
   document.getElementById('input-count').textContent=inputText.value.length+' 字符';
+  refreshConfigDynamic();
 });
 
 /* ===== Clear & Swap ===== */
