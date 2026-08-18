@@ -67,7 +67,8 @@ a{color:var(--accent);text-decoration:none}
 .notation-editor.fullscreen .notation-grid{flex:1}
 .panel-head.clickable{cursor:pointer;user-select:none}
 .panel-head.clickable:hover{background:var(--accent-dim)}
-.fs-toggle{font-size:0.85rem;color:var(--muted);cursor:pointer;margin-left:8px;opacity:0.6}
+.fs-toggle{font-size:0.8rem;color:var(--accent);cursor:pointer;margin-left:8px;padding:3px 12px;border:1.5px solid var(--accent);border-radius:8px;background:transparent;transition:all 0.15s;user-select:none;font-weight:600}
+.fs-toggle:hover{background:var(--accent-dim)}
 .panel-head:hover .fs-toggle{opacity:1}
 .notation-grid{flex:1;overflow:auto;padding:12px}
 .notation-row{display:flex;align-items:flex-start;gap:0;margin-bottom:6px;border-bottom:1px solid var(--rule);padding-bottom:6px}
@@ -193,7 +194,7 @@ a{color:var(--accent);text-decoration:none}
   </aside>
 
   <section class="panel notation-editor" id="notation-panel">
-    <div class="panel-head clickable" id="notation-head"><span>简谱编辑器</span><span id="notation-info" style="font-size:0.75rem;color:var(--muted)">点击音轨开始创作</span><span class="fs-toggle" id="fs-toggle">▢ 全屏</span></div>
+    <div class="panel-head clickable" id="notation-head"><span>简谱编辑器</span><span id="notation-info" style="font-size:0.75rem;color:var(--muted)">点击音轨开始创作</span><span class="fs-toggle" id="fs-toggle">全屏</span></div>
     <div class="input-status" id="input-status">
       <div class="status-item"><span class="status-label">当前八度</span><span class="octave-preview" id="oct-preview"><span class="dots-up" id="oct-dots-up"></span><span class="num">1</span><span class="dots-down" id="oct-dots-down"></span></span></div>
       <div class="status-item"><span class="status-label">时值</span><span class="status-val" id="dur-preview">♩ 四分</span></div>
@@ -1607,7 +1608,7 @@ $('notation-head').onclick = (e) => {
   // 只在点击 header 标题区域时触发，不触发 input-status
   const panel = $('notation-panel');
   panel.classList.toggle('fullscreen');
-  $('fs-toggle').textContent = panel.classList.contains('fullscreen') ? '▼ 收起' : '▢ 全屏';
+  $('fs-toggle').textContent = panel.classList.contains('fullscreen') ? '收起' : '全屏';
 };
 
 function showInstrumentModal() {
@@ -1697,7 +1698,6 @@ $('btn-export-mp3').onclick = exportMP3;
 /* ============================================================
    初始化
    ============================================================ */
-addTrack('piano');
 renderTracks();
 renderNotation();
 renderSectionList();
