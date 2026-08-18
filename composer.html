@@ -126,6 +126,22 @@ a{color:var(--accent);text-decoration:none}
 .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:0.85rem;opacity:0;transition:all 0.3s;z-index:200;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.15s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:#fff;border-radius:14px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;animation:slideIn 0.2s ease}
+@keyframes slideIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--rule);font-weight:700;font-size:1rem;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
+.modal-close:hover{color:var(--ink)}
+.modal-body{padding:20px}
+.inst-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.inst-card{border:2px solid var(--rule);border-radius:10px;padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.15s;background:#fff}
+.inst-card:hover{border-color:var(--accent);background:var(--accent-dim);transform:translateY(-2px)}
+.inst-card.selected{border-color:var(--accent);background:var(--accent-dim)}
+.inst-card .inst-icon{font-size:2rem;margin-bottom:6px}
+.inst-card .inst-name{font-weight:700;font-size:0.92rem}
+.inst-card .inst-desc{font-size:0.72rem;color:var(--muted);margin-top:2px}
+
 @media(max-width:900px){
   .workspace{grid-template-columns:1fr}
   .notation-label{flex:0 0 60px}
@@ -251,17 +267,30 @@ a{color:var(--accent);text-decoration:none}
 <input type="file" id="load-file" accept=".json" style="display:none">
 <div class="toast" id="toast"></div>
 
+<div class="modal-overlay" id="inst-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-head">
+      <span>选择乐器</span>
+      <button class="modal-close" id="inst-modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="inst-grid" id="inst-grid"></div>
+      <button class="export-btn export-mp3" id="inst-confirm" style="width:100%;margin-top:16px;padding:12px;font-size:0.9rem">确认添加</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    常量
    ============================================================ */
 const INSTRUMENTS = {
-  piano:   {name:'钢琴',     color:'#E74C3C', icon:'🎹'},
-  guitar:  {name:'吉他',     color:'#E89614', icon:'🎸'},
-  violin:  {name:'小提琴',   color:'#27AE60', icon:'🎻'},
-  flute:   {name:'长笛',     color:'#00B4D8', icon:'🪈'},
-  bass:    {name:'贝斯',     color:'#7C3AED', icon:'🎵'},
-  trumpet: {name:'小号',     color:'#F1C40F', icon:'🎺'},
+  piano:   {name:'钢琴',     color:'#E74C3C', icon:'🎹', desc:'音域宽广，和声丰富'},
+  guitar:  {name:'吉他',     color:'#E89614', icon:'🎸', desc:'温暖指弹，适合伴奏'},
+  violin:  {name:'小提琴',   color:'#27AE60', icon:'🎻', desc:'悠扬抒情，旋律优美'},
+  flute:   {name:'长笛',     color:'#00B4D8', icon:'🪈', desc:'清脆明亮，悠远空灵'},
+  bass:    {name:'贝斯',     color:'#7C3AED', icon:'🎵', desc:'低音沉稳，节奏根基'},
+  trumpet: {name:'小号',     color:'#F1C40F', icon:'🎺', desc:'嘹亮激昂，气势磅礴'},
 };
 const INSTRUMENT_LIST = Object.keys(INSTRUMENTS);
 const NOTE_SEMITONES = {1:0, 2:2, 3:4, 4:5, 5:7, 6:9, 7:11};
@@ -1034,10 +1063,37 @@ function showToast(msg) {
 /* ============================================================
    事件绑定
    ============================================================ */
-$('btn-add-track').onclick = () => {
-  const inst = INSTRUMENT_LIST[state.tracks.length % INSTRUMENT_LIST.length];
-  addTrack(inst);
-};
+$('btn-add-track').onclick = showInstrumentModal;
+
+function showInstrumentModal() {
+  const grid = $('inst-grid');
+  grid.innerHTML = '';
+  let selected = 'piano';
+  for (const key of INSTRUMENT_LIST) {
+    const inst = INSTRUMENTS[key];
+    const card = document.createElement('div');
+    card.className = 'inst-card' + (key === selected ? ' selected' : '');
+    card.innerHTML = `<div class="inst-icon">${inst.icon}</div><div class="inst-name">${inst.name}</div><div class="inst-desc">${inst.desc}</div>`;
+    card.onclick = () => {
+      grid.querySelectorAll('.inst-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selected = key;
+    };
+    card.ondblclick = () => {
+      addTrack(key);
+      $('inst-modal').style.display = 'none';
+    };
+    grid.appendChild(card);
+  }
+  $('inst-confirm').onclick = () => {
+    addTrack(selected);
+    $('inst-modal').style.display = 'none';
+  };
+  $('inst-modal').style.display = 'flex';
+}
+
+$('inst-modal-close').onclick = () => { $('inst-modal').style.display = 'none'; };
+$('inst-modal').onclick = e => { if (e.target === $('inst-modal')) $('inst-modal').style.display = 'none'; };
 
 $('btn-play').onclick = togglePlay;
 $('btn-stop').onclick = stopPlay;
