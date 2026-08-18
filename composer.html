@@ -71,15 +71,20 @@ a{color:var(--accent);text-decoration:none}
 .fs-toggle:hover{background:var(--accent-dim)}
 .panel-head:hover .fs-toggle{opacity:1}
 .notation-grid{flex:1;overflow:auto;padding:12px}
-.notation-row{display:flex;align-items:flex-start;gap:0;margin-bottom:6px;border-bottom:1px solid var(--rule);padding-bottom:6px}
+.notation-row{display:flex;align-items:flex-start;gap:0;margin-bottom:6px;border-bottom:1px solid var(--rule);padding:6px;position:relative}
 .notation-row:last-child{border-bottom:none}
-.notation-row.active-track{background:var(--accent-dim);border-radius:6px;padding:6px}
+.notation-row.active-track{background:var(--accent-dim);border-radius:6px}
 .notation-label{flex:0 0 90px;font-size:0.78rem;font-weight:700;color:var(--muted);padding-top:8px;display:flex;align-items:center;gap:4px;cursor:pointer}
 .note-cell{flex:0 0 auto;min-width:12px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid #f0ebe2;font-family:var(--mono);font-size:1rem;font-weight:700;cursor:pointer;position:relative;transition:background 0.1s;overflow:hidden;white-space:nowrap}
 .note-cell:hover{background:var(--accent-dim)}
 .note-cell.cursor{background:var(--accent-dim);box-shadow:inset 0 -3px 0 var(--accent)}
 .note-cell.selected{background:#fff3cd !important;box-shadow:inset 0 0 0 2px var(--accent) !important;z-index:3}
 .note-cell.playing{background:var(--accent);color:#fff;transform:scale(1.08)}
+.slur-line{position:absolute;top:-2px;height:10px;border:2px solid var(--accent);border-bottom:none;border-radius:50% 50% 0 0 / 100% 100% 0 0;pointer-events:auto;cursor:pointer;z-index:4}
+.slur-line:hover{border-color:var(--danger)}
+.slur-btn{padding:8px 14px;border-radius:8px;border:1.5px solid var(--rule);background:#fff;cursor:pointer;font-size:0.85rem;font-weight:600;color:var(--ink);transition:all 0.15s}
+.slur-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.slur-btn.active{background:var(--accent);color:#fff;border-color:var(--accent2)}
 .note-cell .octave-dot-up{position:absolute;top:2px;font-size:0.5rem;line-height:1}
 .note-cell .octave-dot-down{position:absolute;bottom:2px;font-size:0.5rem;line-height:1}
 .note-cell .duration-line{position:absolute;bottom:0;left:2px;right:2px;height:2px;background:currentColor}
@@ -103,7 +108,7 @@ a{color:var(--accent);text-decoration:none}
 
 .props-section{margin-bottom:14px}
 .props-label{font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:6px}
-.duration-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.duration-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 .dur-btn{padding:7px 4px;border:1.5px solid var(--rule);border-radius:6px;background:#fff;cursor:pointer;font-size:0.76rem;font-weight:600;transition:all 0.1s;text-align:center}
 .dur-btn:hover{border-color:var(--accent)}
 .dur-btn.active{background:var(--accent);color:#fff;border-color:var(--accent2)}
@@ -222,6 +227,7 @@ a{color:var(--accent);text-decoration:none}
           <button class="dur-btn active" data-dur="4">♩ 四分</button>
           <button class="dur-btn" data-dur="8">♪ 八分</button>
           <button class="dur-btn" data-dur="16">𝅘𝅥𝅯 十六分</button>
+          <button class="dur-btn" data-dur="6">六分</button>
           <button class="dur-btn" data-dur="2">𝅗𝅥 二分</button>
           <button class="dur-btn" data-dur="1">𝅝 全音</button>
           <button class="dur-btn" data-dur="3">♩. 附点</button>
@@ -270,7 +276,8 @@ a{color:var(--accent);text-decoration:none}
   <kbd>←</kbd><kbd>→</kbd> 移动光标 ·
   <kbd>↑</kbd><kbd>↓</kbd> 升降八度 ·
   <kbd>⌫</kbd> 删除 ·
-  拖拽选择 · <kbd>Ctrl+C</kbd> 复制 · <kbd>Ctrl+V</kbd> 粘贴 ·
+  拖拽选择 · <kbd>Ctrl+C</kbd> 复制 · <kbd>Ctrl+V</kbd> 粘贴 · <kbd>Ctrl+A</kbd> 全选音轨 ·
+  <kbd>Ctrl+拖拽</kbd> 选中后点连音 ·
   <kbd>空格</kbd> 播放/停止 ·
   点击编辑器顶部全屏查看
 </div>
@@ -282,6 +289,7 @@ a{color:var(--accent);text-decoration:none}
     <span class="tempo-display">速度 <b id="tempo-val">120</b> BPM</span>
     <input type="range" class="tempo-slider" id="tempo-slider" min="40" max="240" value="120">
     <button class="metronome-btn" id="btn-metronome">节拍器 关</button>
+    <button class="slur-btn" id="btn-slur" title="Ctrl+拖拽选中音符后点击">连音</button>
     <div class="transport-spacer"></div>
     <button class="export-btn export-json" id="btn-save">保存项目</button>
     <button class="export-btn export-json" id="btn-load">加载项目</button>
@@ -359,6 +367,15 @@ class AudioEngine {
     }
     if (this.ctx.state === 'suspended') this.ctx.resume();
     return this.ctx;
+  }
+
+  stopAll() {
+    if (this.ctx) {
+      try { this.ctx.close(); } catch(e) {}
+      this.ctx = null;
+      this.masterGain = null;
+      this.compressor = null;
+    }
   }
 
   _noiseBuffer(ctx, dur) {
@@ -968,6 +985,7 @@ function createTrack(instrument) {
     name: INSTRUMENTS[instrument].name + ' ' + (id + 1),
     instrument,
     notes: [],
+    slurs: [],
     volume: 0.8,
     muted: false,
     solo: false,
@@ -1001,6 +1019,7 @@ function clearTrack(id) {
   const tr = state.tracks.find(t => t.id === id);
   if (!tr) return;
   tr.notes = [];
+  tr.slurs = [];
   state.cursor = 0;
   state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
   renderTracks();
@@ -1015,6 +1034,15 @@ function deleteSelection() {
   const selMax = Math.max(state.selection.startIdx, state.selection.endIdx);
   const count = selMax - selMin + 1;
   tr.notes.splice(selMin, count);
+  if (tr.slurs) {
+    tr.slurs = tr.slurs
+      .filter(s => !(s.startIdx >= selMin && s.startIdx <= selMax) && !(s.endIdx >= selMin && s.endIdx <= selMax))
+      .map(s => ({
+        startIdx: s.startIdx > selMax ? s.startIdx - count : s.startIdx,
+        endIdx: s.endIdx > selMax ? s.endIdx - count : s.endIdx
+      }))
+      .filter(s => s.startIdx >= 0 && s.endIdx < tr.notes.length && s.endIdx > s.startIdx);
+  }
   state.cursor = selMin;
   state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
   renderNotation();
@@ -1042,6 +1070,43 @@ function pasteClipboard() {
   renderNotation();
   showToast('已粘贴 ' + pasted.length + ' 个音符');
   return true;
+}
+
+function addSlur() {
+  if (state.selection.startIdx < 0 || state.selection.trackId === null) {
+    showToast('请先 Ctrl+拖拽选中要连音的音符');
+    return false;
+  }
+  const tr = state.tracks.find(t => t.id === state.selection.trackId);
+  if (!tr) return false;
+  const startIdx = Math.min(state.selection.startIdx, state.selection.endIdx);
+  const endIdx = Math.max(state.selection.startIdx, state.selection.endIdx);
+  if (endIdx - startIdx < 1) {
+    showToast('至少选择 2 个音符');
+    return false;
+  }
+  const overlap = tr.slurs.some(s =>
+    (startIdx >= s.startIdx && startIdx <= s.endIdx) ||
+    (endIdx >= s.startIdx && endIdx <= s.endIdx) ||
+    (startIdx <= s.startIdx && endIdx >= s.endIdx)
+  );
+  if (overlap) {
+    showToast('该范围已有连音');
+    return false;
+  }
+  tr.slurs.push({startIdx, endIdx});
+  state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
+  renderNotation();
+  showToast('连音已添加');
+  return true;
+}
+
+function removeSlur(trackId, slurIdx) {
+  const tr = state.tracks.find(t => t.id === trackId);
+  if (!tr || !tr.slurs[slurIdx]) return;
+  tr.slurs.splice(slurIdx, 1);
+  renderNotation();
+  showToast('连音已取消');
 }
 
 function addSection(label) {
@@ -1259,10 +1324,10 @@ function renderNotation() {
       if (width < 20) cell.style.fontSize = '0.62rem';
       else if (width < 30) cell.style.fontSize = '0.75rem';
 
-      // 鼠标拖拽选择
+      // 鼠标拖拽选择 (Ctrl+拖拽用于连音选择)
       cell.onmousedown = (e) => {
         e.preventDefault();
-        state.selection = {trackId: tr.id, startIdx: i, endIdx: i, active: true};
+        state.selection = {trackId: tr.id, startIdx: i, endIdx: i, active: true, ctrlSel: e.ctrlKey};
         _dragOccurred = false;
         updateSelectionVisuals();
       };
@@ -1276,6 +1341,26 @@ function renderNotation() {
 
       row.appendChild(cell);
     }
+
+    // 渲染连音线
+    if (tr.slurs && tr.slurs.length > 0) {
+      const cells = row.querySelectorAll('.note-cell');
+      tr.slurs.forEach((slur, slurIdx) => {
+        if (slur.startIdx >= cells.length || slur.endIdx >= cells.length) return;
+        const firstCell = cells[slur.startIdx];
+        const lastCell = cells[slur.endIdx];
+        const startX = firstCell.offsetLeft;
+        const endX = lastCell.offsetLeft + lastCell.offsetWidth;
+        const slurEl = document.createElement('div');
+        slurEl.className = 'slur-line';
+        slurEl.style.left = startX + 'px';
+        slurEl.style.width = (endX - startX) + 'px';
+        slurEl.title = '点击取消连音';
+        slurEl.onclick = (e) => { e.stopPropagation(); removeSlur(tr.id, slurIdx); };
+        row.appendChild(slurEl);
+      });
+    }
+
     grid.appendChild(row);
   }
 }
@@ -1295,7 +1380,7 @@ function updateSelectionVisuals() {
 document.addEventListener('mouseup', () => {
   if (state.selection.active) {
     state.selection.active = false;
-    if (!_dragOccurred) {
+    if (!_dragOccurred && !state.selection.ctrlSel) {
       state.activeTrackId = state.selection.trackId;
       state.cursor = state.selection.startIdx;
       state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
@@ -1322,6 +1407,15 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey && (e.key === 'v' || e.key === 'V')) {
     e.preventDefault();
     pasteClipboard();
+    return;
+  }
+  if (e.ctrlKey && (e.key === 'a' || e.key === 'A')) {
+    e.preventDefault();
+    if (tr.notes.length > 0) {
+      state.selection = {trackId: tr.id, startIdx: 0, endIdx: tr.notes.length - 1, active: false, ctrlSel: true};
+      renderNotation();
+      showToast('已全选 ' + tr.notes.length + ' 个音符，Ctrl+C 复制后切到其他音轨 Ctrl+V 粘贴');
+    }
     return;
   }
 
@@ -1439,6 +1533,7 @@ function stopPlay() {
   $('btn-play').classList.remove('playing');
   $('btn-play').textContent = '▶';
   if (state.playTimer) { clearInterval(state.playTimer); state.playTimer = null; }
+  audio.stopAll();
   document.querySelectorAll('.note-cell.playing').forEach(c => c.classList.remove('playing'));
 }
 
@@ -1551,7 +1646,7 @@ function saveProject() {
   const data = {
     tracks: state.tracks.map(t => ({
       name: t.name, instrument: t.instrument,
-      notes: t.notes, volume: t.volume, color: t.color
+      notes: t.notes, slurs: t.slurs || [], volume: t.volume, color: t.color
     })),
     sections: state.sections,
     tempo: state.tempo, timeSig: state.timeSig, key: state.key,
@@ -1570,6 +1665,7 @@ function loadProject(file) {
         name: t.name || ('Track ' + (i + 1)),
         instrument: t.instrument || 'piano',
         notes: t.notes || [],
+        slurs: t.slurs || [],
         volume: t.volume ?? 0.8,
         muted: false, solo: false,
         color: t.color || TRACK_COLORS[i % TRACK_COLORS.length],
@@ -1702,6 +1798,7 @@ $('btn-save').onclick = saveProject;
 $('btn-load').onclick = () => $('load-file').click();
 $('load-file').onchange = e => { if (e.target.files[0]) loadProject(e.target.files[0]); };
 $('btn-export-mp3').onclick = exportMP3;
+$('btn-slur').onclick = addSlur;
 
 /* ============================================================
    初始化
