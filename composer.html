@@ -101,16 +101,24 @@ a{color:var(--accent);text-decoration:none}
 .input-status .octave-preview .dots-down{font-size:0.5rem;color:var(--accent);min-height:6px}
 .input-status .octave-preview .num{font-size:0.9rem;font-weight:700}
 
-.props-section{margin-bottom:16px}
-.props-label{font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
-.duration-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
-.dur-btn{padding:8px;border:1.5px solid var(--rule);border-radius:6px;background:#fff;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.1s}
+.props-section{margin-bottom:14px}
+.props-label{font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:6px}
+.duration-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.dur-btn{padding:7px 4px;border:1.5px solid var(--rule);border-radius:6px;background:#fff;cursor:pointer;font-size:0.76rem;font-weight:600;transition:all 0.1s;text-align:center}
 .dur-btn:hover{border-color:var(--accent)}
 .dur-btn.active{background:var(--accent);color:#fff;border-color:var(--accent2)}
+.octave-control{display:flex;align-items:center;gap:8px;justify-content:center}
+.octave-control .oct-btn{width:32px;height:32px;flex:0 0 32px;padding:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.octave-display{font-family:var(--mono);font-weight:700;font-size:1.2rem;color:var(--accent);min-width:40px;text-align:center}
+.select-stack{display:flex;flex-direction:column;gap:6px}
+.setting-select{padding:6px 10px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.82rem;background:#fff;cursor:pointer;width:100%}
+.setting-select:focus{outline:none;border-color:var(--accent)}
+.section-list{margin-top:8px;max-height:180px;overflow-y:auto}
 .input-row{display:flex;align-items:center;gap:8px}
+.input-row input[type=text]{flex:1;padding:6px 8px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.82rem}
+.input-row input[type=text]:focus{outline:none;border-color:var(--accent)}
 .input-row input[type=number]{flex:1;padding:6px 8px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.85rem;font-family:var(--mono)}
 .input-row input[type=number]:focus{outline:none;border-color:var(--accent)}
-.octave-display{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--accent)}
 
 .transport{position:sticky;bottom:0;background:rgba(250,248,245,0.97);backdrop-filter:blur(8px);border-top:1px solid var(--rule);padding:12px 24px;z-index:50}
 .transport-inner{max-width:var(--max-w);margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -213,30 +221,30 @@ a{color:var(--accent);text-decoration:none}
         <div class="duration-grid">
           <button class="dur-btn active" data-dur="4">♩ 四分</button>
           <button class="dur-btn" data-dur="8">♪ 八分</button>
+          <button class="dur-btn" data-dur="16">𝅘𝅥𝅯 十六分</button>
           <button class="dur-btn" data-dur="2">𝅗𝅥 二分</button>
           <button class="dur-btn" data-dur="1">𝅝 全音</button>
-          <button class="dur-btn" data-dur="16">𝅘𝅥𝅯 十六分</button>
           <button class="dur-btn" data-dur="3">♩. 附点</button>
         </div>
       </div>
       <div class="props-section">
         <div class="props-label">八度</div>
-        <div class="input-row">
-          <button class="dur-btn" id="oct-down" style="flex:0 0 32px">−</button>
-          <span class="octave-display" id="oct-display" style="flex:1;text-align:center">0</span>
-          <button class="dur-btn" id="oct-up" style="flex:0 0 32px">+</button>
+        <div class="octave-control">
+          <button class="dur-btn oct-btn" id="oct-down">−</button>
+          <span class="octave-display" id="oct-display">0</span>
+          <button class="dur-btn oct-btn" id="oct-up">+</button>
         </div>
       </div>
       <div class="props-section">
         <div class="props-label">节拍 / 调号</div>
-        <div class="input-row">
-          <select id="time-sig" style="flex:1;padding:6px 8px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.82rem;background:#fff">
+        <div class="select-stack">
+          <select id="time-sig" class="setting-select">
             <option value="4/4">4/4 拍</option>
             <option value="3/4">3/4 拍</option>
             <option value="2/4">2/4 拍</option>
             <option value="6/8">6/8 拍</option>
           </select>
-          <select id="key-sig" style="flex:1;padding:6px 8px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.82rem;background:#fff">
+          <select id="key-sig" class="setting-select">
             <option value="C">C 调</option>
             <option value="G">G 调</option>
             <option value="D">D 调</option>
@@ -247,10 +255,10 @@ a{color:var(--accent);text-decoration:none}
       <div class="props-section">
         <div class="props-label">段落标记</div>
         <div class="input-row">
-          <input type="text" id="section-input" placeholder="如: A段/副歌" style="flex:1;padding:6px 8px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.82rem">
+          <input type="text" id="section-input" placeholder="如: A段 / 副歌">
           <button class="dur-btn" id="btn-add-section" style="flex:0 0 auto;padding:6px 12px">添加</button>
         </div>
-        <div id="section-list" style="margin-top:8px"></div>
+        <div id="section-list" class="section-list"></div>
       </div>
     </div>
   </aside>
