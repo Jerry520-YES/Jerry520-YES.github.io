@@ -58,6 +58,8 @@ a{color:var(--accent);text-decoration:none}
 .btn-add-track:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
 .track-delete{font-size:0.72rem;color:var(--danger);cursor:pointer;margin-left:4px}
 .track-delete:hover{text-decoration:underline}
+.track-clear{font-size:0.72rem;color:var(--muted);cursor:pointer;margin-left:4px}
+.track-clear:hover{color:var(--danger);text-decoration:underline}
 
 .notation-editor{min-height:400px;display:flex;flex-direction:column}
 .notation-editor.fullscreen{position:fixed;inset:0;z-index:150;border-radius:0;border:none;max-width:none}
@@ -72,9 +74,10 @@ a{color:var(--accent);text-decoration:none}
 .notation-row:last-child{border-bottom:none}
 .notation-row.active-track{background:var(--accent-dim);border-radius:6px;padding:6px}
 .notation-label{flex:0 0 90px;font-size:0.78rem;font-weight:700;color:var(--muted);padding-top:8px;display:flex;align-items:center;gap:4px;cursor:pointer}
-.note-cell{flex:0 0 auto;min-width:36px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid #f0ebe2;font-family:var(--mono);font-size:1rem;font-weight:700;cursor:pointer;position:relative;transition:background 0.1s}
+.note-cell{flex:0 0 auto;min-width:12px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid #f0ebe2;font-family:var(--mono);font-size:1rem;font-weight:700;cursor:pointer;position:relative;transition:background 0.1s;overflow:hidden;white-space:nowrap}
 .note-cell:hover{background:var(--accent-dim)}
 .note-cell.cursor{background:var(--accent-dim);box-shadow:inset 0 -3px 0 var(--accent)}
+.note-cell.selected{background:#fff3cd !important;box-shadow:inset 0 0 0 2px var(--accent) !important;z-index:3}
 .note-cell.playing{background:var(--accent);color:#fff;transform:scale(1.08)}
 .note-cell .octave-dot-up{position:absolute;top:2px;font-size:0.5rem;line-height:1}
 .note-cell .octave-dot-down{position:absolute;bottom:2px;font-size:0.5rem;line-height:1}
@@ -83,6 +86,11 @@ a{color:var(--accent);text-decoration:none}
 .note-cell.rest{color:var(--muted);font-style:italic}
 .beat-marker{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);z-index:5;pointer-events:none;transition:left 0.05s linear;opacity:0.7}
 .notation-empty{padding:40px;text-align:center;color:var(--muted);font-size:0.9rem}
+.section-header{display:flex;align-items:center;gap:0;border-bottom:2px solid var(--accent);margin-bottom:4px;padding-bottom:0;height:26px}
+.section-marker{flex:0 0 auto;padding:2px 10px;background:var(--accent);color:#fff;border-radius:4px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;max-height:22px}
+.section-marker:hover{background:var(--accent2)}
+.section-spacer{flex:0 0 auto;height:1px}
+.section-item{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;border:1px solid var(--rule);border-radius:4px;font-size:0.8rem;margin-bottom:4px}
 .input-status{padding:8px 12px;background:var(--accent-dim);border-bottom:1px solid var(--rule);font-size:0.8rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .input-status .status-item{display:flex;align-items:center;gap:4px}
 .input-status .status-label{color:var(--muted);font-size:0.72rem}
@@ -102,9 +110,6 @@ a{color:var(--accent);text-decoration:none}
 .input-row input[type=number]{flex:1;padding:6px 8px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.85rem;font-family:var(--mono)}
 .input-row input[type=number]:focus{outline:none;border-color:var(--accent)}
 .octave-display{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--accent)}
-.preset-list{display:flex;flex-direction:column;gap:4px}
-.preset-btn{text-align:left;padding:8px 10px;border:1px solid var(--rule);border-radius:6px;background:#fff;cursor:pointer;font-size:0.82rem;transition:all 0.1s}
-.preset-btn:hover{border-color:var(--accent);background:var(--accent-dim)}
 
 .transport{position:sticky;bottom:0;background:rgba(250,248,245,0.97);backdrop-filter:blur(8px);border-top:1px solid var(--rule);padding:12px 24px;z-index:50}
 .transport-inner{max-width:var(--max-w);margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -167,11 +172,11 @@ a{color:var(--accent);text-decoration:none}
 
 <header class="hero">
   <h1>Composer</h1>
-  <p class="tagline">用简谱数字自由创作你的音乐 — 多音轨 · 11 种乐器 · 电子合成 · 导出 MP3</p>
+  <p class="tagline">用简谱数字自由创作你的音乐 — 多音轨 · 12 种乐器 · 电子合成 · 导出 MP3</p>
   <div class="hero-badges">
     <span class="badge">Web Audio API</span>
     <span class="badge">多音轨</span>
-    <span class="badge">11 种乐器</span>
+    <span class="badge">12 种乐器</span>
     <span class="badge">电子合成</span>
     <span class="badge">简谱输入</span>
     <span class="badge">MP3 导出</span>
@@ -195,7 +200,7 @@ a{color:var(--accent);text-decoration:none}
       <div class="status-item" style="margin-left:auto"><span class="status-label">提示</span><span style="color:var(--muted)">按 1-7 输入 · ↑↓ 调八度</span></div>
     </div>
     <div class="notation-grid" id="notation-grid">
-      <div class="notation-empty">请在左侧选择或添加一条音轨开始创作<br><br>按数字键 <kbd>1</kbd>-<kbd>7</kbd> 输入音符，<kbd>0</kbd> 输入休止符</div>
+      <div class="notation-empty">请在左侧选择或添加一条音轨开始创作<br><br>按数字键 <kbd>1</kbd>-<kbd>7</kbd> 输入音符，<kbd>0</kbd> 输入休止符<br>拖拽音符可选择并删除</div>
     </div>
   </section>
 
@@ -239,13 +244,12 @@ a{color:var(--accent);text-decoration:none}
         </div>
       </div>
       <div class="props-section">
-        <div class="props-label">示例曲库</div>
-        <div class="preset-list">
-          <button class="preset-btn" data-preset="twinkle">小星星</button>
-          <button class="preset-btn" data-preset="birthday">生日快乐</button>
-          <button class="preset-btn" data-preset="ode">欢乐颂</button>
-          <button class="preset-btn" data-preset="jasmine">茉莉花</button>
+        <div class="props-label">段落标记</div>
+        <div class="input-row">
+          <input type="text" id="section-input" placeholder="如: A段/副歌" style="flex:1;padding:6px 8px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.82rem">
+          <button class="dur-btn" id="btn-add-section" style="flex:0 0 auto;padding:6px 12px">添加</button>
         </div>
+        <div id="section-list" style="margin-top:8px"></div>
       </div>
     </div>
   </aside>
@@ -257,6 +261,7 @@ a{color:var(--accent);text-decoration:none}
   <kbd>←</kbd><kbd>→</kbd> 移动光标 ·
   <kbd>↑</kbd><kbd>↓</kbd> 升降八度 ·
   <kbd>⌫</kbd> 删除 ·
+  拖拽选择 · <kbd>Ctrl+C</kbd> 复制 · <kbd>Ctrl+V</kbd> 粘贴 ·
   <kbd>空格</kbd> 播放/停止 ·
   点击编辑器顶部全屏查看
 </div>
@@ -307,6 +312,7 @@ const INSTRUMENTS = {
   elec_piano: {name:'电钢琴',   color:'#00ACC1', icon:'🎹', desc:'FM 电钢，温暖通透'},
   pad:        {name:'铺底合成', color:'#3F51B5', icon:'🌊', desc:'环境铺底，氛围感强'},
   lead:       {name:'主音合成', color:'#FF6E40', icon:'⚡', desc:'明亮主音，穿透力强'},
+  guzheng:   {name:'古筝',     color:'#8BC34A', icon:'🪕', desc:'中国弹拨，明亮清脆'},
 };
 const DRUM_NAMES = {1:'Kick',2:'Snare',3:'HiHat',4:'OpenH',5:'TomL',6:'TomH',7:'Crash'};
 const DRUM_SHORT = {1:'K',2:'S',3:'H',4:'O',5:'L',6:'T',7:'C'};
@@ -374,6 +380,7 @@ class AudioEngine {
       case 'elec_piano': this._elecPiano(ctx, dest, freq, time, duration, volume); break;
       case 'pad':        this._pad(ctx, dest, freq, time, duration, volume); break;
       case 'lead':       this._lead(ctx, dest, freq, time, duration, volume); break;
+      case 'guzheng':   this._guzheng(ctx, dest, freq, time, duration, volume); break;
     }
   }
 
@@ -482,25 +489,13 @@ class AudioEngine {
     }
   }
 
-  /* === 钢琴 — 8 次谐波 + 非谐波拉伸 + 击锤噪声 === */
+  /* === 钢琴 — 8 次谐波 + 非谐波拉伸 === */
   _piano(ctx, dest, freq, t, dur, vol) {
-    // 击锤噪声
-    const noise = ctx.createBufferSource();
-    noise.buffer = this._noiseBuffer(ctx, 0.015);
-    const nf = ctx.createBiquadFilter();
-    nf.type = 'bandpass'; nf.frequency.value = freq * 3; nf.Q.value = 1;
-    const ng = ctx.createGain();
-    ng.gain.setValueAtTime(vol * 0.06, t);
-    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.012);
-    noise.connect(nf).connect(ng).connect(dest);
-    noise.start(t);
-
-    // 谐波（含非谐波拉伸）
     const harmonics = [
       {m:1, a:1.0}, {m:2, a:0.45}, {m:3, a:0.22}, {m:4, a:0.15},
       {m:5, a:0.08}, {m:6, a:0.06}, {m:7, a:0.04}, {m:8, a:0.03},
     ];
-    const inharmonicity = 1.0014; // 拉伸因子
+    const inharmonicity = 1.0014;
     harmonics.forEach(h => {
       const osc = ctx.createOscillator();
       osc.type = h.m === 1 ? 'triangle' : 'sine';
@@ -516,49 +511,41 @@ class AudioEngine {
     });
   }
 
-  /* === 吉他 — Karplus-Strong 风格拨弦 + 琴箱共振 === */
+  /* === 吉他 — 谐波拨弦合成 + 琴箱共振 === */
   _guitar(ctx, dest, freq, t, dur, vol) {
-    // 拨弦噪声
-    const noise = ctx.createBufferSource();
-    noise.buffer = this._noiseBuffer(ctx, 0.03);
-    const nd = noise.buffer.getChannelData(0);
-    for (let i = 0; i < nd.length; i++) nd[i] *= Math.exp(-i / (nd.length * 0.1));
-    const nFilt = ctx.createBiquadFilter();
-    nFilt.type = 'bandpass'; nFilt.frequency.value = freq * 2.5; nFilt.Q.value = 0.8;
-    const nGain = ctx.createGain();
-    nGain.gain.value = vol * 0.08;
-    noise.connect(nFilt).connect(nGain).connect(dest);
-    noise.start(t);
-
-    // 弦振动 — Karplus-Strong 近似
-    const ksDur = Math.min(dur, 3);
-    const ksLen = Math.max(2, Math.floor(ctx.sampleRate / freq));
-    const ksBuf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * ksDur), ctx.sampleRate);
-    const ksData = ksBuf.getChannelData(0);
-    for (let i = 0; i < ksLen; i++) ksData[i] = (Math.random() * 2 - 1) * vol * 0.3;
-    for (let i = ksLen; i < ksData.length; i++) {
-      ksData[i] = (ksData[i - ksLen] + ksData[i - ksLen + 1]) * 0.495;
-    }
-    const ks = ctx.createBufferSource();
-    ks.buffer = ksBuf;
-    const ksFilt = ctx.createBiquadFilter();
-    ksFilt.type = 'lowpass'; ksFilt.frequency.value = freq * 4;
-    ks.connect(ksFilt).connect(dest);
-    ks.start(t);
-
-    // 琴箱共振
-    [100, 200].forEach(fr => {
-      const body = ctx.createBiquadFilter();
-      body.type = 'bandpass'; body.frequency.value = fr; body.Q.value = 3;
-      const bg = ctx.createGain();
-      bg.gain.setValueAtTime(0, t);
-      bg.gain.linearRampToValueAtTime(vol * 0.05, t + 0.02);
-      bg.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.7);
-      ks.connect(body).connect(bg).connect(dest);
+    const partials = [
+      {m:1, a:1.0}, {m:2, a:0.55}, {m:3, a:0.35},
+      {m:4, a:0.22}, {m:5, a:0.14}, {m:6, a:0.07},
+    ];
+    partials.forEach(p => {
+      const osc = ctx.createOscillator();
+      osc.type = p.m === 1 ? 'triangle' : 'sine';
+      osc.frequency.value = freq * p.m;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(p.a * vol * 0.26, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(p.a * vol * 0.1, t + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = freq * (p.m === 1 ? 1.3 : 2.8);
+      bp.Q.value = 0.7;
+      osc.connect(bp).connect(g).connect(dest);
+      osc.start(t); osc.stop(t + dur);
     });
+    // 琴箱共振
+    const body = ctx.createOscillator();
+    body.type = 'sine';
+    body.frequency.value = freq * 0.5;
+    const bg = ctx.createGain();
+    bg.gain.setValueAtTime(0, t);
+    bg.gain.linearRampToValueAtTime(vol * 0.08, t + 0.02);
+    bg.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.8);
+    body.connect(bg).connect(dest);
+    body.start(t); body.stop(t + dur);
   }
 
-  /* === 小提琴 — 弓噪声 + 共振峰滤波 + 延迟颤音 === */
+  /* === 小提琴 — 共振峰滤波 + 延迟颤音 === */
   _violin(ctx, dest, freq, t, dur, vol) {
     const osc = ctx.createOscillator();
     osc.type = 'sawtooth';
@@ -572,19 +559,6 @@ class AudioEngine {
     vibGain.gain.setValueAtTime(0, t + 0.15);
     vibGain.gain.linearRampToValueAtTime(4, t + 0.4);
     vibLfo.connect(vibGain).connect(osc.frequency);
-
-    // 弓噪声
-    const bowNoise = ctx.createBufferSource();
-    bowNoise.buffer = this._noiseBuffer(ctx, dur);
-    const bnf = ctx.createBiquadFilter();
-    bnf.type = 'bandpass'; bnf.frequency.value = freq * 1.5; bnf.Q.value = 0.5;
-    const bng = ctx.createGain();
-    bng.gain.setValueAtTime(0, t);
-    bng.gain.linearRampToValueAtTime(vol * 0.04, t + 0.05);
-    bng.gain.setValueAtTime(vol * 0.04, t + Math.max(0.05, dur * 0.8));
-    bng.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    bowNoise.connect(bnf).connect(bng).connect(dest);
-    bowNoise.start(t); bowNoise.stop(t + dur);
 
     // 共振峰滤波器
     const formants = [{f:300, q:5}, {f:600, q:6}, {f:1500, q:7}, {f:2500, q:8}];
@@ -609,7 +583,7 @@ class AudioEngine {
     osc.stop(t + dur); vibLfo.stop(t + dur);
   }
 
-  /* === 长笛 — 三角波 + 气声 + 二次谐波 + 延迟颤音 === */
+  /* === 长笛 — 三角波 + 二次谐波 + 延迟颤音 === */
   _flute(ctx, dest, freq, t, dur, vol) {
     const osc = ctx.createOscillator();
     osc.type = 'triangle';
@@ -622,19 +596,6 @@ class AudioEngine {
     vibGain.gain.setValueAtTime(0, t + 0.2);
     vibGain.gain.linearRampToValueAtTime(3, t + 0.5);
     vibLfo.connect(vibGain).connect(osc.frequency);
-
-    // 气声
-    const breath = ctx.createBufferSource();
-    breath.buffer = this._noiseBuffer(ctx, dur);
-    const bf = ctx.createBiquadFilter();
-    bf.type = 'bandpass'; bf.frequency.value = freq * 2; bf.Q.value = 0.3;
-    const bg = ctx.createGain();
-    bg.gain.setValueAtTime(0, t);
-    bg.gain.linearRampToValueAtTime(vol * 0.05, t + 0.04);
-    bg.gain.setValueAtTime(vol * 0.05, t + Math.max(0.04, dur * 0.85));
-    bg.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    breath.connect(bf).connect(bg).connect(dest);
-    breath.start(t); breath.stop(t + dur);
 
     // 二次谐波
     const osc2 = ctx.createOscillator();
@@ -657,20 +618,8 @@ class AudioEngine {
     osc.stop(t + dur); vibLfo.stop(t + dur); osc2.stop(t + dur);
   }
 
-  /* === 贝斯 — 锯齿波低通 + 子八度 + 品位噪声 === */
+  /* === 贝斯 — 锯齿波低通 + 子八度 === */
   _bass(ctx, dest, freq, t, dur, vol) {
-    // 品位噪声
-    const noise = ctx.createBufferSource();
-    noise.buffer = this._noiseBuffer(ctx, 0.02);
-    const nf = ctx.createBiquadFilter();
-    nf.type = 'bandpass'; nf.frequency.value = freq * 4; nf.Q.value = 1;
-    const ng = ctx.createGain();
-    ng.gain.setValueAtTime(vol * 0.05, t);
-    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
-    noise.connect(nf).connect(ng).connect(dest);
-    noise.start(t);
-
-    // 主音
     const osc = ctx.createOscillator();
     osc.type = 'sawtooth';
     osc.frequency.value = freq * 0.5;
@@ -883,6 +832,30 @@ class AudioEngine {
     vibLfo.start(t); vibLfo.stop(t + dur);
   }
 
+  /* === 古筝 — 谐波拨弦合成（明亮清脆）=== */
+  _guzheng(ctx, dest, freq, t, dur, vol) {
+    const partials = [
+      {m:1, a:1.0}, {m:2, a:0.6}, {m:3, a:0.4},
+      {m:4, a:0.25}, {m:5, a:0.15}, {m:6, a:0.08}, {m:7, a:0.05},
+    ];
+    partials.forEach(p => {
+      const osc = ctx.createOscillator();
+      osc.type = p.m === 1 ? 'triangle' : 'sine';
+      osc.frequency.value = freq * p.m;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(p.a * vol * 0.28, t + 0.002);
+      g.gain.exponentialRampToValueAtTime(p.a * vol * 0.12, t + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = freq * (p.m === 1 ? 1.5 : 3.0);
+      bp.Q.value = 0.8;
+      osc.connect(bp).connect(g).connect(dest);
+      osc.start(t); osc.stop(t + dur);
+    });
+  }
+
   playMetronome(time, accent) {
     const ctx = this.ensureCtx();
     const osc = ctx.createOscillator();
@@ -945,6 +918,7 @@ class AudioEngine {
       case 'elec_piano': this._elecPiano(ctx, dest, freq, t, dur, vol); break;
       case 'pad':        this._pad(ctx, dest, freq, t, dur, vol); break;
       case 'lead':       this._lead(ctx, dest, freq, t, dur, vol); break;
+      case 'guzheng':   this._guzheng(ctx, dest, freq, t, dur, vol); break;
     }
   }
 }
@@ -965,8 +939,14 @@ const state = {
   playing: false,
   playTimer: null,
   beatMarker: null,
+  selection: {trackId: null, startIdx: -1, endIdx: -1, active: false},
+  clipboard: [],
+  sections: [],
 };
 let nextTrackId = 0;
+let nextSectionId = 0;
+let _dragOccurred = false;
+const UNIT_PX = 15;
 const audio = new AudioEngine();
 
 /* ============================================================
@@ -995,11 +975,98 @@ function addTrack(instrument) {
 }
 
 function deleteTrack(id) {
-  if (state.tracks.length <= 1) return;
   state.tracks = state.tracks.filter(t => t.id !== id);
-  if (state.activeTrackId === id) state.activeTrackId = state.tracks[0].id;
+  if (state.tracks.length === 0) {
+    state.activeTrackId = -1;
+    state.cursor = 0;
+  } else if (state.activeTrackId === id) {
+    state.activeTrackId = state.tracks[0].id;
+    state.cursor = state.tracks[0].notes.length;
+  }
+  state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
   renderTracks();
   renderNotation();
+}
+
+function clearTrack(id) {
+  const tr = state.tracks.find(t => t.id === id);
+  if (!tr) return;
+  tr.notes = [];
+  state.cursor = 0;
+  state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
+  renderTracks();
+  renderNotation();
+}
+
+function deleteSelection() {
+  if (state.selection.startIdx < 0 || state.selection.trackId === null) return false;
+  const tr = state.tracks.find(t => t.id === state.selection.trackId);
+  if (!tr) return false;
+  const selMin = Math.min(state.selection.startIdx, state.selection.endIdx);
+  const selMax = Math.max(state.selection.startIdx, state.selection.endIdx);
+  const count = selMax - selMin + 1;
+  tr.notes.splice(selMin, count);
+  state.cursor = selMin;
+  state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
+  renderNotation();
+  return true;
+}
+
+function copySelection() {
+  if (state.selection.startIdx < 0 || state.selection.trackId === null) return false;
+  const tr = state.tracks.find(t => t.id === state.selection.trackId);
+  if (!tr) return false;
+  const selMin = Math.min(state.selection.startIdx, state.selection.endIdx);
+  const selMax = Math.max(state.selection.startIdx, state.selection.endIdx);
+  state.clipboard = tr.notes.slice(selMin, selMax + 1).map(n => ({...n}));
+  showToast('已复制 ' + state.clipboard.length + ' 个音符');
+  return true;
+}
+
+function pasteClipboard() {
+  if (state.clipboard.length === 0) return false;
+  const tr = getActiveTrack();
+  if (!tr) return false;
+  const pasted = state.clipboard.map(n => ({...n}));
+  tr.notes.splice(state.cursor, 0, ...pasted);
+  state.cursor += pasted.length;
+  renderNotation();
+  showToast('已粘贴 ' + pasted.length + ' 个音符');
+  return true;
+}
+
+function addSection(label) {
+  if (!label) return;
+  const tr = getActiveTrack();
+  if (!tr) { showToast('请先选择音轨'); return; }
+  let beatPos = 0;
+  for (let i = 0; i < state.cursor && i < tr.notes.length; i++) {
+    beatPos += 4 / tr.notes[i].duration;
+  }
+  state.sections.push({id: nextSectionId++, label, beatPos});
+  renderNotation();
+  renderSectionList();
+  showToast('段落标记已添加: ' + label);
+}
+
+function removeSection(id) {
+  state.sections = state.sections.filter(s => s.id !== id);
+  renderNotation();
+  renderSectionList();
+}
+
+function renderSectionList() {
+  const list = $('section-list');
+  if (!list) return;
+  list.innerHTML = '';
+  const sorted = [...state.sections].sort((a, b) => a.beatPos - b.beatPos);
+  for (const sec of sorted) {
+    const div = document.createElement('div');
+    div.className = 'section-item';
+    div.innerHTML = `<span>${sec.label} <span style="color:var(--muted);font-size:0.72rem">(${sec.beatPos.toFixed(1)}拍)</span></span><span class="track-delete" data-sec-id="${sec.id}">删除</span>`;
+    div.querySelector('.track-delete').onclick = () => removeSection(sec.id);
+    list.appendChild(div);
+  }
 }
 
 function getActiveTrack() {
@@ -1040,6 +1107,7 @@ function renderTracks() {
       <div class="track-item-head">
         <span class="track-color-dot" style="background:${tr.color}"></span>
         <span class="track-name">${tr.name}</span>
+        <span class="track-clear" onclick="event.stopPropagation();clearTrack(${tr.id})">清除</span>
         <span class="track-delete" onclick="event.stopPropagation();deleteTrack(${tr.id})">删除</span>
       </div>
       <div class="track-instrument">${inst.icon} ${inst.name}</div>
@@ -1071,24 +1139,62 @@ function toggleSolo(id) {
 }
 
 /* ============================================================
-   渲染 — 简谱编辑器 (多音轨并排显示)
+   渲染 — 简谱编辑器 (多音轨并排, 按时值宽度对齐)
    ============================================================ */
 function renderNotation() {
   const grid = $('notation-grid');
   const activeTr = getActiveTrack();
-  if (state.tracks.length === 0 || (state.tracks.length === 1 && state.tracks[0].notes.length === 0)) {
-    grid.innerHTML = `<div class="notation-empty">当前音轨为空<br><br>按数字键 <kbd>1</kbd>-<kbd>7</kbd> 输入音符，<kbd>0</kbd> 输入休止符<br>或从右侧加载示例曲目</div>`;
+
+  if (state.tracks.length === 0) {
+    grid.innerHTML = `<div class="notation-empty">无音轨<br><br>点击左侧"+ 添加音轨"开始创作</div>`;
+    $('notation-info').textContent = '无音轨';
+    return;
+  }
+
+  const allEmpty = state.tracks.every(t => t.notes.length === 0);
+  if (allEmpty) {
+    grid.innerHTML = `<div class="notation-empty">当前音轨为空<br><br>按数字键 <kbd>1</kbd>-<kbd>7</kbd> 输入音符，<kbd>0</kbd> 输入休止符<br>拖拽音符可选择并删除</div>`;
     $('notation-info').textContent = activeTr ? `${activeTr.name} · 0 音符` : '无音轨';
     return;
   }
+
   if (activeTr) {
-    const info = state.tracks.length > 1 ? `${activeTr.name} · ${activeTr.notes.length} 音符 · 共 ${state.tracks.length} 轨` : `${activeTr.name} · ${activeTr.notes.length} 音符`;
+    const info = state.tracks.length > 1
+      ? `${activeTr.name} · ${activeTr.notes.length} 音符 · 共 ${state.tracks.length} 轨`
+      : `${activeTr.name} · ${activeTr.notes.length} 音符`;
     $('notation-info').textContent = info;
   }
   grid.innerHTML = '';
 
-  // 所有音轨对齐显示，找最长长度
-  const maxNotes = Math.max(...state.tracks.map(t => t.notes.length), 1);
+  // 段落标记行
+  if (state.sections.length > 0) {
+    const secRow = document.createElement('div');
+    secRow.className = 'section-header';
+    const secLabel = document.createElement('div');
+    secLabel.className = 'notation-label';
+    secLabel.style.fontSize = '0.72rem';
+    secLabel.textContent = '段落';
+    secRow.appendChild(secLabel);
+
+    const sorted = [...state.sections].sort((a, b) => a.beatPos - b.beatPos);
+    let prevBeat = 0;
+    for (const sec of sorted) {
+      if (sec.beatPos > prevBeat) {
+        const spacer = document.createElement('div');
+        spacer.className = 'section-spacer';
+        spacer.style.flex = `0 0 ${(sec.beatPos - prevBeat) * 4 * UNIT_PX}px`;
+        secRow.appendChild(spacer);
+      }
+      const marker = document.createElement('div');
+      marker.className = 'section-marker';
+      marker.textContent = sec.label;
+      marker.title = '右键删除';
+      marker.oncontextmenu = (e) => { e.preventDefault(); removeSection(sec.id); };
+      secRow.appendChild(marker);
+      prevBeat = sec.beatPos;
+    }
+    grid.appendChild(secRow);
+  }
 
   for (const tr of state.tracks) {
     const row = document.createElement('div');
@@ -1100,6 +1206,7 @@ function renderNotation() {
     label.onclick = () => {
       state.activeTrackId = tr.id;
       state.cursor = tr.notes.length;
+      state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
       renderTracks();
       renderNotation();
     };
@@ -1110,37 +1217,84 @@ function renderNotation() {
       const n = tr.notes[i];
       const cell = document.createElement('div');
       const isActive = tr.id === state.activeTrackId;
-      cell.className = 'note-cell' + (isActive && i === state.cursor ? ' cursor' : '') + (n.pitch === 0 ? ' rest' : '');
+
+      const selMin = Math.min(state.selection.startIdx, state.selection.endIdx);
+      const selMax = Math.max(state.selection.startIdx, state.selection.endIdx);
+      const isSelected = state.selection.trackId === tr.id && state.selection.startIdx >= 0 && i >= selMin && i <= selMax;
+
+      cell.className = 'note-cell' + (isActive && i === state.cursor && !isSelected ? ' cursor' : '') + (isSelected ? ' selected' : '') + (n.pitch === 0 ? ' rest' : '');
       cell.dataset.idx = i;
       cell.dataset.trackId = tr.id;
+
+      // 按时值设置宽度: 十六分=1单位(15px), 四分=4单位(60px), 全音=16单位(240px)
+      const widthUnits = 16 / n.duration;
+      const width = Math.max(widthUnits * UNIT_PX, 12);
+      cell.style.flex = `0 0 ${width}px`;
+      cell.style.minWidth = `${width}px`;
 
       let html = '';
       if (n.pitch === 0) {
         html = '0';
       } else if (isDrum) {
         html = DRUM_SHORT[n.pitch] || String(n.pitch);
-        cell.style.fontSize = '0.78rem';
       } else {
         html = String(n.pitch);
         if (n.octave > 0) html = `<span class="octave-dot-up">${'·'.repeat(n.octave)}</span>` + html;
         if (n.octave < 0) html = html + `<span class="octave-dot-down">${'·'.repeat(-n.octave)}</span>`;
       }
-      if (n.duration === 8) html += '<span class="duration-line"></span>';
-      if (n.duration === 16) html += '<span class="duration-line"></span><span class="duration-line duration-line2"></span>';
       if (n.duration === 3) html += '.';
       cell.innerHTML = html;
       cell.title = isDrum ? (DRUM_NAMES[n.pitch] || '') : (n.pitch === 0 ? '休止' : '');
-      cell.onclick = () => {
-        state.activeTrackId = tr.id;
-        state.cursor = i;
-        renderTracks();
-        renderNotation();
+
+      // 窄音符用小字体
+      if (width < 20) cell.style.fontSize = '0.62rem';
+      else if (width < 30) cell.style.fontSize = '0.75rem';
+
+      // 鼠标拖拽选择
+      cell.onmousedown = (e) => {
+        e.preventDefault();
+        state.selection = {trackId: tr.id, startIdx: i, endIdx: i, active: true};
+        _dragOccurred = false;
+        updateSelectionVisuals();
       };
+      cell.onmouseenter = () => {
+        if (state.selection.active && state.selection.trackId === tr.id) {
+          state.selection.endIdx = i;
+          _dragOccurred = true;
+          updateSelectionVisuals();
+        }
+      };
+
       row.appendChild(cell);
     }
     grid.appendChild(row);
   }
 }
+
+function updateSelectionVisuals() {
+  const selMin = Math.min(state.selection.startIdx, state.selection.endIdx);
+  const selMax = Math.max(state.selection.startIdx, state.selection.endIdx);
+  document.querySelectorAll('.note-cell').forEach(c => {
+    const idx = parseInt(c.dataset.idx);
+    const trackId = parseInt(c.dataset.trackId);
+    const isSelected = state.selection.trackId === trackId && state.selection.startIdx >= 0 && idx >= selMin && idx <= selMax;
+    c.classList.toggle('selected', isSelected);
+    if (isSelected) c.classList.remove('cursor');
+  });
+}
+
+document.addEventListener('mouseup', () => {
+  if (state.selection.active) {
+    state.selection.active = false;
+    if (!_dragOccurred) {
+      state.activeTrackId = state.selection.trackId;
+      state.cursor = state.selection.startIdx;
+      state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
+      renderTracks();
+      renderNotation();
+    }
+  }
+});
 
 /* ============================================================
    输入 — 键盘
@@ -1150,8 +1304,21 @@ document.addEventListener('keydown', e => {
   const tr = getActiveTrack();
   if (!tr) return;
 
+  // Ctrl+C / Ctrl+V
+  if (e.ctrlKey && (e.key === 'c' || e.key === 'C')) {
+    e.preventDefault();
+    copySelection();
+    return;
+  }
+  if (e.ctrlKey && (e.key === 'v' || e.key === 'V')) {
+    e.preventDefault();
+    pasteClipboard();
+    return;
+  }
+
   if (e.key >= '0' && e.key <= '7') {
     e.preventDefault();
+    state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
     const pitch = parseInt(e.key);
     const note = {pitch, octave: state.octave, duration: state.duration};
     tr.notes.splice(state.cursor, 0, note);
@@ -1166,9 +1333,11 @@ document.addEventListener('keydown', e => {
     }
   } else if (e.key === 'ArrowLeft') {
     e.preventDefault();
+    state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
     if (state.cursor > 0) { state.cursor--; renderNotation(); }
   } else if (e.key === 'ArrowRight') {
     e.preventDefault();
+    state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
     if (state.cursor < tr.notes.length) { state.cursor++; renderNotation(); }
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
@@ -1180,7 +1349,9 @@ document.addEventListener('keydown', e => {
     updateOctaveDisplay();
   } else if (e.key === 'Backspace') {
     e.preventDefault();
-    if (state.cursor > 0) {
+    if (state.selection.startIdx >= 0) {
+      deleteSelection();
+    } else if (state.cursor > 0) {
       tr.notes.splice(state.cursor - 1, 1);
       state.cursor--;
       renderNotation();
@@ -1373,6 +1544,7 @@ function saveProject() {
       name: t.name, instrument: t.instrument,
       notes: t.notes, volume: t.volume, color: t.color
     })),
+    sections: state.sections,
     tempo: state.tempo, timeSig: state.timeSig, key: state.key,
   };
   downloadBlob(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}), 'composer-project.json');
@@ -1396,6 +1568,7 @@ function loadProject(file) {
       state.tempo = data.tempo || 120;
       state.timeSig = data.timeSig || '4/4';
       state.key = data.key || 'C';
+      state.sections = data.sections || [];
       state.activeTrackId = state.tracks[0]?.id ?? 0;
       state.cursor = 0;
       $('tempo-slider').value = state.tempo;
@@ -1404,75 +1577,11 @@ function loadProject(file) {
       $('key-sig').value = state.key;
       renderTracks();
       renderNotation();
+      renderSectionList();
       showToast('项目加载成功');
     } catch (err) { showToast('加载失败：文件格式错误'); }
   };
   reader.readAsText(file);
-}
-
-/* ============================================================
-   预设曲目
-   ============================================================ */
-const PRESETS = {
-  twinkle: {
-    name: '小星星',
-    tracks: [{
-      instrument: 'piano',
-      notes: [1,1,5,5,6,6,5, 4,4,3,3,2,2,1, 5,5,4,4,3,3,2, 5,5,4,4,3,3,2, 1,1,5,5,6,6,5, 4,4,3,3,2,2,1]
-        .map(p => ({pitch:p, octave:0, duration:4})),
-    }]
-  },
-  birthday: {
-    name: '生日快乐',
-    tracks: [{
-      instrument: 'violin',
-      notes: [
-        {pitch:5,octave:0,duration:8},{pitch:5,octave:0,duration:8},{pitch:6,octave:0,duration:4},{pitch:5,octave:0,duration:4},{pitch:1,octave:1,duration:4},{pitch:7,octave:0,duration:2},
-        {pitch:5,octave:0,duration:8},{pitch:5,octave:0,duration:8},{pitch:6,octave:0,duration:4},{pitch:5,octave:0,duration:4},{pitch:2,octave:1,duration:4},{pitch:1,octave:1,duration:2},
-        {pitch:5,octave:0,duration:8},{pitch:5,octave:0,duration:8},{pitch:5,octave:1,duration:4},{pitch:3,octave:1,duration:4},{pitch:1,octave:1,duration:4},{pitch:7,octave:0,duration:4},{pitch:6,octave:0,duration:4},
-        {pitch:4,octave:1,duration:8},{pitch:4,octave:1,duration:8},{pitch:3,octave:1,duration:4},{pitch:1,octave:1,duration:4},{pitch:2,octave:1,duration:4},{pitch:1,octave:1,duration:2},
-      ],
-    }]
-  },
-  ode: {
-    name: '欢乐颂',
-    tracks: [{
-      instrument: 'trumpet',
-      notes: [3,3,4,5, 5,4,3,2, 1,1,2,3, 3,2,2, 3,3,4,5, 5,4,3,2, 1,1,2,3, 2,1,1]
-        .map(p => ({pitch:p, octave:0, duration:4}))
-        .map((n,i) => i === 14 || i === 28 ? {...n, duration:2} : n),
-    }]
-  },
-  jasmine: {
-    name: '茉莉花',
-    tracks: [{
-      instrument: 'flute',
-      notes: [
-        {pitch:3,octave:0,duration:4},{pitch:3,octave:0,duration:4},{pitch:5,octave:0,duration:8},{pitch:6,octave:0,duration:8},{pitch:5,octave:0,duration:4},
-        {pitch:3,octave:0,duration:8},{pitch:5,octave:0,duration:8},{pitch:5,octave:0,duration:4},{pitch:3,octave:0,duration:4},{pitch:2,octave:0,duration:4},{pitch:1,octave:0,duration:4},
-        {pitch:3,octave:0,duration:8},{pitch:5,octave:0,duration:8},{pitch:5,octave:0,duration:4},{pitch:6,octave:0,duration:4},{pitch:5,octave:0,duration:4},{pitch:3,octave:0,duration:4},
-        {pitch:2,octave:0,duration:8},{pitch:3,octave:0,duration:8},{pitch:1,octave:0,duration:2},
-      ],
-    }]
-  },
-};
-
-function loadPreset(name) {
-  const preset = PRESETS[name];
-  if (!preset) return;
-  state.tracks = preset.tracks.map((t, i) => ({
-    id: nextTrackId++,
-    name: t.instrument ? INSTRUMENTS[t.instrument].name + ' - ' + preset.name : preset.name,
-    instrument: t.instrument || 'piano',
-    notes: t.notes.map(n => ({...n})),
-    volume: 0.8, muted: false, solo: false,
-    color: TRACK_COLORS[i % TRACK_COLORS.length],
-  }));
-  state.activeTrackId = state.tracks[0].id;
-  state.cursor = state.tracks[0].notes.length;
-  renderTracks();
-  renderNotation();
-  showToast('已加载：' + preset.name);
 }
 
 /* ============================================================
@@ -1567,8 +1676,17 @@ $('oct-down').onclick = () => {
   updateInputStatus();
 };
 
-document.querySelectorAll('.preset-btn').forEach(btn => {
-  btn.onclick = () => loadPreset(btn.dataset.preset);
+$('btn-add-section').onclick = () => {
+  const input = $('section-input');
+  addSection(input.value.trim());
+  input.value = '';
+};
+$('section-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const val = e.target.value.trim();
+    if (val) { addSection(val); e.target.value = ''; }
+  }
 });
 
 $('btn-save').onclick = saveProject;
@@ -1582,6 +1700,7 @@ $('btn-export-mp3').onclick = exportMP3;
 addTrack('piano');
 renderTracks();
 renderNotation();
+renderSectionList();
 updateInputStatus();
 </script>
 </body>
