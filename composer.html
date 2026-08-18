@@ -60,10 +60,18 @@ a{color:var(--accent);text-decoration:none}
 .track-delete:hover{text-decoration:underline}
 
 .notation-editor{min-height:400px;display:flex;flex-direction:column}
+.notation-editor.fullscreen{position:fixed;inset:0;z-index:150;border-radius:0;border:none;max-width:none}
+.notation-editor.fullscreen .panel-head{cursor:pointer}
+.notation-editor.fullscreen .notation-grid{flex:1}
+.panel-head.clickable{cursor:pointer;user-select:none}
+.panel-head.clickable:hover{background:var(--accent-dim)}
+.fs-toggle{font-size:0.85rem;color:var(--muted);cursor:pointer;margin-left:8px;opacity:0.6}
+.panel-head:hover .fs-toggle{opacity:1}
 .notation-grid{flex:1;overflow:auto;padding:12px}
-.notation-row{display:flex;align-items:flex-start;gap:0;margin-bottom:10px;border-bottom:1px solid var(--rule);padding-bottom:10px}
+.notation-row{display:flex;align-items:flex-start;gap:0;margin-bottom:6px;border-bottom:1px solid var(--rule);padding-bottom:6px}
 .notation-row:last-child{border-bottom:none}
-.notation-label{flex:0 0 90px;font-size:0.78rem;font-weight:700;color:var(--muted);padding-top:8px;display:flex;align-items:center;gap:4px}
+.notation-row.active-track{background:var(--accent-dim);border-radius:6px;padding:6px}
+.notation-label{flex:0 0 90px;font-size:0.78rem;font-weight:700;color:var(--muted);padding-top:8px;display:flex;align-items:center;gap:4px;cursor:pointer}
 .note-cell{flex:0 0 auto;min-width:36px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid #f0ebe2;font-family:var(--mono);font-size:1rem;font-weight:700;cursor:pointer;position:relative;transition:background 0.1s}
 .note-cell:hover{background:var(--accent-dim)}
 .note-cell.cursor{background:var(--accent-dim);box-shadow:inset 0 -3px 0 var(--accent)}
@@ -178,7 +186,7 @@ a{color:var(--accent);text-decoration:none}
   </aside>
 
   <section class="panel notation-editor" id="notation-panel">
-    <div class="panel-head"><span>简谱编辑器</span><span id="notation-info" style="font-size:0.75rem;color:var(--muted)">点击音轨开始创作</span></div>
+    <div class="panel-head clickable" id="notation-head"><span>简谱编辑器</span><span id="notation-info" style="font-size:0.75rem;color:var(--muted)">点击音轨开始创作</span><span class="fs-toggle" id="fs-toggle">▢ 全屏</span></div>
     <div class="input-status" id="input-status">
       <div class="status-item"><span class="status-label">当前八度</span><span class="octave-preview" id="oct-preview"><span class="dots-up" id="oct-dots-up"></span><span class="num">1</span><span class="dots-down" id="oct-dots-down"></span></span></div>
       <div class="status-item"><span class="status-label">时值</span><span class="status-val" id="dur-preview">♩ 四分</span></div>
@@ -242,12 +250,13 @@ a{color:var(--accent);text-decoration:none}
 </main>
 
 <div class="kbd-hint">
-  <kbd>1</kbd>-<kbd>7</kbd> 输入音符 ·
+  <kbd>1</kbd>-<kbd>7</kbd> 输入音符/鼓点 ·
   <kbd>0</kbd> 休止符 ·
   <kbd>←</kbd><kbd>→</kbd> 移动光标 ·
   <kbd>↑</kbd><kbd>↓</kbd> 升降八度 ·
   <kbd>⌫</kbd> 删除 ·
-  <kbd>空格</kbd> 播放/停止
+  <kbd>空格</kbd> 播放/停止 ·
+  点击编辑器顶部全屏查看
 </div>
 
 <footer class="transport">
@@ -291,7 +300,10 @@ const INSTRUMENTS = {
   flute:   {name:'长笛',     color:'#00B4D8', icon:'🪈', desc:'清脆明亮，悠远空灵'},
   bass:    {name:'贝斯',     color:'#7C3AED', icon:'🎵', desc:'低音沉稳，节奏根基'},
   trumpet: {name:'小号',     color:'#F1C40F', icon:'🎺', desc:'嘹亮激昂，气势磅礴'},
+  drums:   {name:'架子鼓',   color:'#34495E', icon:'🥁', desc:'节奏引擎，多种打击乐'},
 };
+const DRUM_NAMES = {1:'Kick',2:'Snare',3:'HiHat',4:'OpenH',5:'TomL',6:'TomH',7:'Crash'};
+const DRUM_SHORT = {1:'K',2:'S',3:'H',4:'O',5:'L',6:'T',7:'C'};
 const INSTRUMENT_LIST = Object.keys(INSTRUMENTS);
 const NOTE_SEMITONES = {1:0, 2:2, 3:4, 4:5, 5:7, 6:9, 7:11};
 const TRACK_COLORS = ['#E74C3C','#E89614','#27AE60','#00B4D8','#7C3AED','#F1C40F','#4A90D9','#b366ff'];
@@ -328,10 +340,15 @@ class AudioEngine {
     return this.ctx;
   }
 
-  playNote(instrument, freq, time, duration, volume) {
-    if (freq === 0 || volume === 0) return;
+  playNote(instrument, freq, time, duration, volume, drumType) {
+    if (volume === 0) return;
     const ctx = this.ensureCtx();
     const dest = this.compressor;
+    if (instrument === 'drums') {
+      this._drums(ctx, dest, drumType || 1, time, duration, volume);
+      return;
+    }
+    if (freq === 0) return;
     switch (instrument) {
       case 'piano':   this._piano(ctx, dest, freq, time, duration, volume); break;
       case 'guitar':  this._guitar(ctx, dest, freq, time, duration, volume); break;
@@ -339,6 +356,112 @@ class AudioEngine {
       case 'flute':   this._flute(ctx, dest, freq, time, duration, volume); break;
       case 'bass':    this._bass(ctx, dest, freq, time, duration, volume); break;
       case 'trumpet': this._trumpet(ctx, dest, freq, time, duration, volume); break;
+    }
+  }
+
+  _drums(ctx, dest, type, t, dur, vol) {
+    switch (type) {
+      case 1: { // Kick
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(150, t);
+        osc.frequency.exponentialRampToValueAtTime(50, t + 0.12);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(vol * 0.5, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        osc.connect(g).connect(dest);
+        osc.start(t); osc.stop(t + 0.15);
+        break;
+      }
+      case 2: { // Snare
+        const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
+        const nd = noiseBuf.getChannelData(0);
+        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuf;
+        const nf = ctx.createBiquadFilter();
+        nf.type = 'highpass'; nf.frequency.value = 1000;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(vol * 0.35, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        noise.connect(nf).connect(ng).connect(dest);
+        noise.start(t);
+        const tone = ctx.createOscillator();
+        tone.type = 'triangle'; tone.frequency.value = 180;
+        const tg = ctx.createGain();
+        tg.gain.setValueAtTime(vol * 0.2, t);
+        tg.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        tone.connect(tg).connect(dest);
+        tone.start(t); tone.stop(t + 0.1);
+        break;
+      }
+      case 3: { // HiHat closed
+        const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.06, ctx.sampleRate);
+        const nd = noiseBuf.getChannelData(0);
+        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuf;
+        const nf = ctx.createBiquadFilter();
+        nf.type = 'highpass'; nf.frequency.value = 7000;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(vol * 0.2, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+        noise.connect(nf).connect(ng).connect(dest);
+        noise.start(t);
+        break;
+      }
+      case 4: { // HiHat open
+        const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+        const nd = noiseBuf.getChannelData(0);
+        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuf;
+        const nf = ctx.createBiquadFilter();
+        nf.type = 'highpass'; nf.frequency.value = 7000;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(vol * 0.15, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        noise.connect(nf).connect(ng).connect(dest);
+        noise.start(t);
+        break;
+      }
+      case 5: { // Tom low
+        const osc = ctx.createOscillator();
+        osc.type = 'sine'; osc.frequency.value = 100;
+        osc.frequency.exponentialRampToValueAtTime(70, t + 0.2);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(vol * 0.4, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        osc.connect(g).connect(dest);
+        osc.start(t); osc.stop(t + 0.2);
+        break;
+      }
+      case 6: { // Tom high
+        const osc = ctx.createOscillator();
+        osc.type = 'sine'; osc.frequency.value = 160;
+        osc.frequency.exponentialRampToValueAtTime(110, t + 0.15);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(vol * 0.4, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        osc.connect(g).connect(dest);
+        osc.start(t); osc.stop(t + 0.15);
+        break;
+      }
+      case 7: { // Crash
+        const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+        const nd = noiseBuf.getChannelData(0);
+        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuf;
+        const nf = ctx.createBiquadFilter();
+        nf.type = 'highpass'; nf.frequency.value = 5000;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(vol * 0.25, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        noise.connect(nf).connect(ng).connect(dest);
+        noise.start(t);
+        break;
+      }
     }
   }
 
@@ -526,8 +649,12 @@ class AudioEngine {
       for (const n of tr.notes) {
         const dur = (4 / n.duration) * beatDur;
         if (n.pitch !== 0) {
-          const freq = noteToFreq(n.pitch, n.octave);
-          this._renderInstrument(offlineCtx, comp, tr.instrument, freq, t, dur, tr.volume);
+          if (tr.instrument === 'drums') {
+            this._drums(offlineCtx, comp, n.pitch, t, dur, tr.volume);
+          } else {
+            const freq = noteToFreq(n.pitch, n.octave);
+            this._renderInstrument(offlineCtx, comp, tr.instrument, freq, t, dur, tr.volume);
+          }
         }
         t += dur;
       }
@@ -536,8 +663,6 @@ class AudioEngine {
   }
 
   _renderInstrument(ctx, dest, inst, freq, t, dur, vol) {
-    const tmp = {...this};
-    tmp.ctx = ctx;
     switch (inst) {
       case 'piano':   this._piano(ctx, dest, freq, t, dur, vol); break;
       case 'guitar':  this._guitar(ctx, dest, freq, t, dur, vol); break;
@@ -671,54 +796,75 @@ function toggleSolo(id) {
 }
 
 /* ============================================================
-   渲染 — 简谱编辑器
+   渲染 — 简谱编辑器 (多音轨并排显示)
    ============================================================ */
 function renderNotation() {
   const grid = $('notation-grid');
-  const tr = getActiveTrack();
-  if (!tr || tr.notes.length === 0) {
+  const activeTr = getActiveTrack();
+  if (state.tracks.length === 0 || (state.tracks.length === 1 && state.tracks[0].notes.length === 0)) {
     grid.innerHTML = `<div class="notation-empty">当前音轨为空<br><br>按数字键 <kbd>1</kbd>-<kbd>7</kbd> 输入音符，<kbd>0</kbd> 输入休止符<br>或从右侧加载示例曲目</div>`;
-    $('notation-info').textContent = tr ? `${tr.name} · 0 音符` : '无音轨';
+    $('notation-info').textContent = activeTr ? `${activeTr.name} · 0 音符` : '无音轨';
     return;
   }
-  $('notation-info').textContent = `${tr.name} · ${tr.notes.length} 音符`;
+  if (activeTr) {
+    const info = state.tracks.length > 1 ? `${activeTr.name} · ${activeTr.notes.length} 音符 · 共 ${state.tracks.length} 轨` : `${activeTr.name} · ${activeTr.notes.length} 音符`;
+    $('notation-info').textContent = info;
+  }
   grid.innerHTML = '';
-  const row = document.createElement('div');
-  row.className = 'notation-row';
-  const label = document.createElement('div');
-  label.className = 'notation-label';
-  const inst = INSTRUMENTS[tr.instrument];
-  label.innerHTML = `<span class="track-color-dot" style="background:${tr.color}"></span> ${inst.icon}<br>${tr.name}`;
-  row.appendChild(label);
 
-  for (let i = 0; i < tr.notes.length; i++) {
-    const n = tr.notes[i];
-    const cell = document.createElement('div');
-    cell.className = 'note-cell' + (i === state.cursor ? ' cursor' : '') + (n.pitch === 0 ? ' rest' : '');
-    cell.dataset.idx = i;
-    let html = '';
-    if (n.pitch === 0) {
-      html = '0';
-    } else {
-      html = String(n.pitch);
-      if (n.octave > 0) {
-        html = `<span class="octave-dot-up">${'·'.repeat(n.octave)}</span>` + html;
-      }
-      if (n.octave < 0) {
-        html = html + `<span class="octave-dot-down">${'·'.repeat(-n.octave)}</span>`;
-      }
-    }
-    if (n.duration === 8) html += '<span class="duration-line"></span>';
-    if (n.duration === 16) html += '<span class="duration-line"></span><span class="duration-line duration-line2"></span>';
-    if (n.duration === 3) html += '.'; // 附点
-    cell.innerHTML = html;
-    cell.onclick = () => {
-      state.cursor = i;
+  // 所有音轨对齐显示，找最长长度
+  const maxNotes = Math.max(...state.tracks.map(t => t.notes.length), 1);
+
+  for (const tr of state.tracks) {
+    const row = document.createElement('div');
+    row.className = 'notation-row' + (tr.id === state.activeTrackId ? ' active-track' : '');
+    const label = document.createElement('div');
+    label.className = 'notation-label';
+    const inst = INSTRUMENTS[tr.instrument];
+    label.innerHTML = `<span class="track-color-dot" style="background:${tr.color}"></span> ${inst.icon}<br><span style="font-size:0.72rem">${tr.name}</span>`;
+    label.onclick = () => {
+      state.activeTrackId = tr.id;
+      state.cursor = tr.notes.length;
+      renderTracks();
       renderNotation();
     };
-    row.appendChild(cell);
+    row.appendChild(label);
+
+    const isDrum = tr.instrument === 'drums';
+    for (let i = 0; i < tr.notes.length; i++) {
+      const n = tr.notes[i];
+      const cell = document.createElement('div');
+      const isActive = tr.id === state.activeTrackId;
+      cell.className = 'note-cell' + (isActive && i === state.cursor ? ' cursor' : '') + (n.pitch === 0 ? ' rest' : '');
+      cell.dataset.idx = i;
+      cell.dataset.trackId = tr.id;
+
+      let html = '';
+      if (n.pitch === 0) {
+        html = '0';
+      } else if (isDrum) {
+        html = DRUM_SHORT[n.pitch] || String(n.pitch);
+        cell.style.fontSize = '0.78rem';
+      } else {
+        html = String(n.pitch);
+        if (n.octave > 0) html = `<span class="octave-dot-up">${'·'.repeat(n.octave)}</span>` + html;
+        if (n.octave < 0) html = html + `<span class="octave-dot-down">${'·'.repeat(-n.octave)}</span>`;
+      }
+      if (n.duration === 8) html += '<span class="duration-line"></span>';
+      if (n.duration === 16) html += '<span class="duration-line"></span><span class="duration-line duration-line2"></span>';
+      if (n.duration === 3) html += '.';
+      cell.innerHTML = html;
+      cell.title = isDrum ? (DRUM_NAMES[n.pitch] || '') : (n.pitch === 0 ? '休止' : '');
+      cell.onclick = () => {
+        state.activeTrackId = tr.id;
+        state.cursor = i;
+        renderTracks();
+        renderNotation();
+      };
+      row.appendChild(cell);
+    }
+    grid.appendChild(row);
   }
-  grid.appendChild(row);
 }
 
 /* ============================================================
@@ -737,7 +883,11 @@ document.addEventListener('keydown', e => {
     state.cursor++;
     renderNotation();
     if (pitch > 0) {
-      audio.playNote(tr.instrument, noteToFreq(pitch, state.octave), audio.ensureCtx().currentTime, 0.3, tr.volume);
+      if (tr.instrument === 'drums') {
+        audio.playNote('drums', 0, audio.ensureCtx().currentTime, 0.3, tr.volume, pitch);
+      } else {
+        audio.playNote(tr.instrument, noteToFreq(pitch, state.octave), audio.ensureCtx().currentTime, 0.3, tr.volume);
+      }
     }
   } else if (e.key === 'ArrowLeft') {
     e.preventDefault();
@@ -799,7 +949,11 @@ function startPlay() {
       const dur = (4 / n.duration) * beatDur;
       const absTime = startTime + t;
       if (n.pitch !== 0) {
-        audio.playNote(trk.instrument, noteToFreq(n.pitch, n.octave), absTime, dur, trk.volume);
+        if (trk.instrument === 'drums') {
+          audio.playNote('drums', 0, absTime, dur, trk.volume, n.pitch);
+        } else {
+          audio.playNote(trk.instrument, noteToFreq(n.pitch, n.octave), absTime, dur, trk.volume);
+        }
       }
       t += dur;
     }
@@ -834,19 +988,18 @@ function stopPlay() {
 }
 
 function highlightPlayingNote(beatPos) {
-  const tr = getActiveTrack();
-  if (!tr) return;
-  let b = 0;
-  let idx = -1;
-  for (let i = 0; i < tr.notes.length; i++) {
-    const d = 4 / tr.notes[i].duration;
-    if (b + d > beatPos) { idx = i; break; }
-    b += d;
-  }
   document.querySelectorAll('.note-cell.playing').forEach(c => c.classList.remove('playing'));
-  if (idx >= 0) {
-    const cells = document.querySelectorAll('.note-cell');
-    if (cells[idx]) cells[idx].classList.add('playing');
+  for (const tr of state.tracks) {
+    let b = 0;
+    for (let i = 0; i < tr.notes.length; i++) {
+      const d = 4 / tr.notes[i].duration;
+      if (b <= beatPos && b + d > beatPos) {
+        const cell = document.querySelector(`.note-cell[data-track-id="${tr.id}"][data-idx="${i}"]`);
+        if (cell) cell.classList.add('playing');
+        break;
+      }
+      b += d;
+    }
   }
 }
 
@@ -1064,6 +1217,14 @@ function showToast(msg) {
    事件绑定
    ============================================================ */
 $('btn-add-track').onclick = showInstrumentModal;
+
+// 全屏切换
+$('notation-head').onclick = (e) => {
+  // 只在点击 header 标题区域时触发，不触发 input-status
+  const panel = $('notation-panel');
+  panel.classList.toggle('fullscreen');
+  $('fs-toggle').textContent = panel.classList.contains('fullscreen') ? '▼ 收起' : '▢ 全屏';
+};
 
 function showInstrumentModal() {
   const grid = $('inst-grid');
