@@ -136,12 +136,12 @@ a{color:var(--accent);text-decoration:none}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.15s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{background:#fff;border-radius:14px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;animation:slideIn 0.2s ease}
+.modal{background:#fff;border-radius:14px;max-width:440px;width:90%;max-height:85vh;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;animation:slideIn 0.2s ease;display:flex;flex-direction:column}
 @keyframes slideIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
 .modal-head{padding:16px 20px;border-bottom:1px solid var(--rule);font-weight:700;font-size:1rem;display:flex;justify-content:space-between;align-items:center}
 .modal-close{background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
 .modal-close:hover{color:var(--ink)}
-.modal-body{padding:20px}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
 .inst-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .inst-card{border:2px solid var(--rule);border-radius:10px;padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.15s;background:#fff}
 .inst-card:hover{border-color:var(--accent);background:var(--accent-dim);transform:translateY(-2px)}
@@ -167,10 +167,12 @@ a{color:var(--accent);text-decoration:none}
 
 <header class="hero">
   <h1>Composer</h1>
-  <p class="tagline">用简谱数字自由创作你的音乐 — 多音轨 · 多乐器 · 导出 MP3</p>
+  <p class="tagline">用简谱数字自由创作你的音乐 — 多音轨 · 11 种乐器 · 电子合成 · 导出 MP3</p>
   <div class="hero-badges">
     <span class="badge">Web Audio API</span>
     <span class="badge">多音轨</span>
+    <span class="badge">11 种乐器</span>
+    <span class="badge">电子合成</span>
     <span class="badge">简谱输入</span>
     <span class="badge">MP3 导出</span>
   </div>
@@ -294,19 +296,23 @@ a{color:var(--accent);text-decoration:none}
    常量
    ============================================================ */
 const INSTRUMENTS = {
-  piano:   {name:'钢琴',     color:'#E74C3C', icon:'🎹', desc:'音域宽广，和声丰富'},
-  guitar:  {name:'吉他',     color:'#E89614', icon:'🎸', desc:'温暖指弹，适合伴奏'},
-  violin:  {name:'小提琴',   color:'#27AE60', icon:'🎻', desc:'悠扬抒情，旋律优美'},
-  flute:   {name:'长笛',     color:'#00B4D8', icon:'🪈', desc:'清脆明亮，悠远空灵'},
-  bass:    {name:'贝斯',     color:'#7C3AED', icon:'🎵', desc:'低音沉稳，节奏根基'},
-  trumpet: {name:'小号',     color:'#F1C40F', icon:'🎺', desc:'嘹亮激昂，气势磅礴'},
-  drums:   {name:'架子鼓',   color:'#34495E', icon:'🥁', desc:'节奏引擎，多种打击乐'},
+  piano:      {name:'钢琴',     color:'#E74C3C', icon:'🎹', desc:'音域宽广，和声丰富'},
+  guitar:     {name:'吉他',     color:'#E89614', icon:'🎸', desc:'温暖指弹，适合伴奏'},
+  violin:     {name:'小提琴',   color:'#27AE60', icon:'🎻', desc:'悠扬抒情，旋律优美'},
+  flute:      {name:'长笛',     color:'#00B4D8', icon:'🪈', desc:'清脆明亮，悠远空灵'},
+  bass:       {name:'贝斯',     color:'#7C3AED', icon:'🎵', desc:'低音沉稳，节奏根基'},
+  trumpet:    {name:'小号',     color:'#F1C40F', icon:'🎺', desc:'嘹亮激昂，气势磅礴'},
+  drums:      {name:'架子鼓',   color:'#34495E', icon:'🥁', desc:'节奏引擎，多种打击乐'},
+  synth:      {name:'合成器',   color:'#E91E63', icon:'🎛️', desc:'模拟电子合成音色'},
+  elec_piano: {name:'电钢琴',   color:'#00ACC1', icon:'🎹', desc:'FM 电钢，温暖通透'},
+  pad:        {name:'铺底合成', color:'#3F51B5', icon:'🌊', desc:'环境铺底，氛围感强'},
+  lead:       {name:'主音合成', color:'#FF6E40', icon:'⚡', desc:'明亮主音，穿透力强'},
 };
 const DRUM_NAMES = {1:'Kick',2:'Snare',3:'HiHat',4:'OpenH',5:'TomL',6:'TomH',7:'Crash'};
 const DRUM_SHORT = {1:'K',2:'S',3:'H',4:'O',5:'L',6:'T',7:'C'};
 const INSTRUMENT_LIST = Object.keys(INSTRUMENTS);
 const NOTE_SEMITONES = {1:0, 2:2, 3:4, 4:5, 5:7, 6:9, 7:11};
-const TRACK_COLORS = ['#E74C3C','#E89614','#27AE60','#00B4D8','#7C3AED','#F1C40F','#4A90D9','#b366ff'];
+const TRACK_COLORS = ['#E74C3C','#E89614','#27AE60','#00B4D8','#7C3AED','#F1C40F','#34495E','#E91E63','#00ACC1','#3F51B5','#FF6E40','#b366ff','#4A90D9','#26C6DA'];
 
 function noteToFreq(pitch, octave) {
   if (pitch === 0) return 0;
@@ -340,6 +346,14 @@ class AudioEngine {
     return this.ctx;
   }
 
+  _noiseBuffer(ctx, dur) {
+    const len = Math.ceil(ctx.sampleRate * dur);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+
   playNote(instrument, freq, time, duration, volume, drumType) {
     if (volume === 0) return;
     const ctx = this.ensureCtx();
@@ -350,44 +364,54 @@ class AudioEngine {
     }
     if (freq === 0) return;
     switch (instrument) {
-      case 'piano':   this._piano(ctx, dest, freq, time, duration, volume); break;
-      case 'guitar':  this._guitar(ctx, dest, freq, time, duration, volume); break;
-      case 'violin':  this._violin(ctx, dest, freq, time, duration, volume); break;
-      case 'flute':   this._flute(ctx, dest, freq, time, duration, volume); break;
-      case 'bass':    this._bass(ctx, dest, freq, time, duration, volume); break;
-      case 'trumpet': this._trumpet(ctx, dest, freq, time, duration, volume); break;
+      case 'piano':      this._piano(ctx, dest, freq, time, duration, volume); break;
+      case 'guitar':     this._guitar(ctx, dest, freq, time, duration, volume); break;
+      case 'violin':     this._violin(ctx, dest, freq, time, duration, volume); break;
+      case 'flute':      this._flute(ctx, dest, freq, time, duration, volume); break;
+      case 'bass':       this._bass(ctx, dest, freq, time, duration, volume); break;
+      case 'trumpet':    this._trumpet(ctx, dest, freq, time, duration, volume); break;
+      case 'synth':      this._synth(ctx, dest, freq, time, duration, volume); break;
+      case 'elec_piano': this._elecPiano(ctx, dest, freq, time, duration, volume); break;
+      case 'pad':        this._pad(ctx, dest, freq, time, duration, volume); break;
+      case 'lead':       this._lead(ctx, dest, freq, time, duration, volume); break;
     }
   }
 
   _drums(ctx, dest, type, t, dur, vol) {
     switch (type) {
-      case 1: { // Kick
+      case 1: { // Kick — 频率扫描 + 点击
+        const click = ctx.createOscillator();
+        click.type = 'square'; click.frequency.value = 1500;
+        const cg = ctx.createGain();
+        cg.gain.setValueAtTime(vol * 0.15, t);
+        cg.gain.exponentialRampToValueAtTime(0.001, t + 0.005);
+        click.connect(cg).connect(dest);
+        click.start(t); click.stop(t + 0.005);
+
         const osc = ctx.createOscillator();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(150, t);
-        osc.frequency.exponentialRampToValueAtTime(50, t + 0.12);
+        osc.frequency.setValueAtTime(160, t);
+        osc.frequency.exponentialRampToValueAtTime(45, t + 0.1);
         const g = ctx.createGain();
-        g.gain.setValueAtTime(vol * 0.5, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        g.gain.setValueAtTime(vol * 0.6, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
         osc.connect(g).connect(dest);
-        osc.start(t); osc.stop(t + 0.15);
+        osc.start(t); osc.stop(t + 0.18);
         break;
       }
-      case 2: { // Snare
-        const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
-        const nd = noiseBuf.getChannelData(0);
-        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+      case 2: { // Snare — 噪声 + 低频体声
         const noise = ctx.createBufferSource();
-        noise.buffer = noiseBuf;
+        noise.buffer = this._noiseBuffer(ctx, 0.25);
         const nf = ctx.createBiquadFilter();
-        nf.type = 'highpass'; nf.frequency.value = 1000;
+        nf.type = 'highpass'; nf.frequency.value = 1200;
         const ng = ctx.createGain();
-        ng.gain.setValueAtTime(vol * 0.35, t);
+        ng.gain.setValueAtTime(vol * 0.4, t);
         ng.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
         noise.connect(nf).connect(ng).connect(dest);
         noise.start(t);
+
         const tone = ctx.createOscillator();
-        tone.type = 'triangle'; tone.frequency.value = 180;
+        tone.type = 'triangle'; tone.frequency.value = 220;
         const tg = ctx.createGain();
         tg.gain.setValueAtTime(vol * 0.2, t);
         tg.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
@@ -396,13 +420,10 @@ class AudioEngine {
         break;
       }
       case 3: { // HiHat closed
-        const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.06, ctx.sampleRate);
-        const nd = noiseBuf.getChannelData(0);
-        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
         const noise = ctx.createBufferSource();
-        noise.buffer = noiseBuf;
+        noise.buffer = this._noiseBuffer(ctx, 0.08);
         const nf = ctx.createBiquadFilter();
-        nf.type = 'highpass'; nf.frequency.value = 7000;
+        nf.type = 'highpass'; nf.frequency.value = 8000;
         const ng = ctx.createGain();
         ng.gain.setValueAtTime(vol * 0.2, t);
         ng.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
@@ -411,13 +432,10 @@ class AudioEngine {
         break;
       }
       case 4: { // HiHat open
-        const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
-        const nd = noiseBuf.getChannelData(0);
-        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
         const noise = ctx.createBufferSource();
-        noise.buffer = noiseBuf;
+        noise.buffer = this._noiseBuffer(ctx, 0.35);
         const nf = ctx.createBiquadFilter();
-        nf.type = 'highpass'; nf.frequency.value = 7000;
+        nf.type = 'highpass'; nf.frequency.value = 8000;
         const ng = ctx.createGain();
         ng.gain.setValueAtTime(vol * 0.15, t);
         ng.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
@@ -427,189 +445,442 @@ class AudioEngine {
       }
       case 5: { // Tom low
         const osc = ctx.createOscillator();
-        osc.type = 'sine'; osc.frequency.value = 100;
-        osc.frequency.exponentialRampToValueAtTime(70, t + 0.2);
+        osc.type = 'sine'; osc.frequency.value = 110;
+        osc.frequency.exponentialRampToValueAtTime(65, t + 0.2);
         const g = ctx.createGain();
-        g.gain.setValueAtTime(vol * 0.4, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        g.gain.setValueAtTime(vol * 0.45, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
         osc.connect(g).connect(dest);
-        osc.start(t); osc.stop(t + 0.2);
+        osc.start(t); osc.stop(t + 0.22);
         break;
       }
       case 6: { // Tom high
         const osc = ctx.createOscillator();
-        osc.type = 'sine'; osc.frequency.value = 160;
+        osc.type = 'sine'; osc.frequency.value = 180;
         osc.frequency.exponentialRampToValueAtTime(110, t + 0.15);
         const g = ctx.createGain();
         g.gain.setValueAtTime(vol * 0.4, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.17);
         osc.connect(g).connect(dest);
-        osc.start(t); osc.stop(t + 0.15);
+        osc.start(t); osc.stop(t + 0.17);
         break;
       }
       case 7: { // Crash
-        const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
-        const nd = noiseBuf.getChannelData(0);
-        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
         const noise = ctx.createBufferSource();
-        noise.buffer = noiseBuf;
-        const nf = ctx.createBiquadFilter();
-        nf.type = 'highpass'; nf.frequency.value = 5000;
+        noise.buffer = this._noiseBuffer(ctx, 0.6);
+        const hp = ctx.createBiquadFilter();
+        hp.type = 'highpass'; hp.frequency.value = 5000;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 8000; bp.Q.value = 0.5;
         const ng = ctx.createGain();
         ng.gain.setValueAtTime(vol * 0.25, t);
         ng.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-        noise.connect(nf).connect(ng).connect(dest);
+        noise.connect(hp).connect(bp).connect(ng).connect(dest);
         noise.start(t);
         break;
       }
     }
   }
 
+  /* === 钢琴 — 8 次谐波 + 非谐波拉伸 + 击锤噪声 === */
   _piano(ctx, dest, freq, t, dur, vol) {
-    const harmonics = [{m:1,a:1},{m:2,a:0.5},{m:3,a:0.25},{m:4,a:0.12}];
+    // 击锤噪声
+    const noise = ctx.createBufferSource();
+    noise.buffer = this._noiseBuffer(ctx, 0.015);
+    const nf = ctx.createBiquadFilter();
+    nf.type = 'bandpass'; nf.frequency.value = freq * 3; nf.Q.value = 1;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(vol * 0.06, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.012);
+    noise.connect(nf).connect(ng).connect(dest);
+    noise.start(t);
+
+    // 谐波（含非谐波拉伸）
+    const harmonics = [
+      {m:1, a:1.0}, {m:2, a:0.45}, {m:3, a:0.22}, {m:4, a:0.15},
+      {m:5, a:0.08}, {m:6, a:0.06}, {m:7, a:0.04}, {m:8, a:0.03},
+    ];
+    const inharmonicity = 1.0014; // 拉伸因子
     harmonics.forEach(h => {
       const osc = ctx.createOscillator();
       osc.type = h.m === 1 ? 'triangle' : 'sine';
-      osc.frequency.value = freq * h.m;
+      osc.frequency.value = freq * h.m * Math.pow(inharmonicity, h.m - 1);
       const g = ctx.createGain();
       g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(h.a * vol * 0.3, t + 0.005);
-      g.gain.exponentialRampToValueAtTime(h.a * vol * 0.1, t + 0.1);
+      g.gain.linearRampToValueAtTime(h.a * vol * 0.28, t + 0.003);
+      g.gain.exponentialRampToValueAtTime(h.a * vol * 0.08, t + 0.15);
+      g.gain.exponentialRampToValueAtTime(h.a * vol * 0.02, t + Math.max(0.15, dur * 0.6));
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       osc.connect(g).connect(dest);
       osc.start(t); osc.stop(t + dur);
     });
   }
 
+  /* === 吉他 — Karplus-Strong 风格拨弦 + 琴箱共振 === */
   _guitar(ctx, dest, freq, t, dur, vol) {
-    // 1. 拨弦噪声起音 (pluck attack)
-    const noiseDur = 0.025;
-    const noiseBuf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * noiseDur), ctx.sampleRate);
-    const nd = noiseBuf.getChannelData(0);
-    for (let i = 0; i < nd.length; i++) {
-      nd[i] = (Math.random() * 2 - 1) * Math.exp(-i / (nd.length * 0.15));
-    }
+    // 拨弦噪声
     const noise = ctx.createBufferSource();
-    noise.buffer = noiseBuf;
+    noise.buffer = this._noiseBuffer(ctx, 0.03);
+    const nd = noise.buffer.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] *= Math.exp(-i / (nd.length * 0.1));
     const nFilt = ctx.createBiquadFilter();
-    nFilt.type = 'bandpass';
-    nFilt.frequency.value = freq * 2.5;
-    nFilt.Q.value = 0.6;
+    nFilt.type = 'bandpass'; nFilt.frequency.value = freq * 2.5; nFilt.Q.value = 0.8;
     const nGain = ctx.createGain();
-    nGain.gain.value = vol * 0.07;
+    nGain.gain.value = vol * 0.08;
     noise.connect(nFilt).connect(nGain).connect(dest);
     noise.start(t);
 
-    // 2. 弦振动 — 多重谐波 (温暖木吉他音色)
-    const partials = [
-      {m:1, a:1.0}, {m:2, a:0.55}, {m:3, a:0.35},
-      {m:4, a:0.22}, {m:5, a:0.14}, {m:6, a:0.07},
-    ];
-    partials.forEach(p => {
-      const osc = ctx.createOscillator();
-      osc.type = p.m === 1 ? 'triangle' : 'sine';
-      osc.frequency.value = freq * p.m;
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(p.a * vol * 0.26, t + 0.004);
-      g.gain.exponentialRampToValueAtTime(p.a * vol * 0.1, t + 0.06);
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = freq * (p.m === 1 ? 1.3 : 2.8);
-      bp.Q.value = 0.7;
-      osc.connect(bp).connect(g).connect(dest);
-      osc.start(t); osc.stop(t + dur);
-    });
+    // 弦振动 — Karplus-Strong 近似
+    const ksDur = Math.min(dur, 3);
+    const ksLen = Math.max(2, Math.floor(ctx.sampleRate / freq));
+    const ksBuf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * ksDur), ctx.sampleRate);
+    const ksData = ksBuf.getChannelData(0);
+    for (let i = 0; i < ksLen; i++) ksData[i] = (Math.random() * 2 - 1) * vol * 0.3;
+    for (let i = ksLen; i < ksData.length; i++) {
+      ksData[i] = (ksData[i - ksLen] + ksData[i - ksLen + 1]) * 0.495;
+    }
+    const ks = ctx.createBufferSource();
+    ks.buffer = ksBuf;
+    const ksFilt = ctx.createBiquadFilter();
+    ksFilt.type = 'lowpass'; ksFilt.frequency.value = freq * 4;
+    ks.connect(ksFilt).connect(dest);
+    ks.start(t);
 
-    // 3. 琴箱共振 (body resonance)
-    const body = ctx.createOscillator();
-    body.type = 'sine';
-    body.frequency.value = freq * 0.5;
-    const bg = ctx.createGain();
-    bg.gain.setValueAtTime(0, t);
-    bg.gain.linearRampToValueAtTime(vol * 0.08, t + 0.02);
-    bg.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.8);
-    body.connect(bg).connect(dest);
-    body.start(t); body.stop(t + dur);
+    // 琴箱共振
+    [100, 200].forEach(fr => {
+      const body = ctx.createBiquadFilter();
+      body.type = 'bandpass'; body.frequency.value = fr; body.Q.value = 3;
+      const bg = ctx.createGain();
+      bg.gain.setValueAtTime(0, t);
+      bg.gain.linearRampToValueAtTime(vol * 0.05, t + 0.02);
+      bg.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.7);
+      ks.connect(body).connect(bg).connect(dest);
+    });
   }
 
+  /* === 小提琴 — 弓噪声 + 共振峰滤波 + 延迟颤音 === */
   _violin(ctx, dest, freq, t, dur, vol) {
     const osc = ctx.createOscillator();
     osc.type = 'sawtooth';
     osc.frequency.value = freq;
-    const lfo = ctx.createOscillator();
-    lfo.frequency.value = 5;
-    const lfoG = ctx.createGain();
-    lfoG.gain.value = 3;
-    lfo.connect(lfoG).connect(osc.frequency);
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = freq * 3;
+
+    // 颤音（延迟启动）
+    const vibLfo = ctx.createOscillator();
+    vibLfo.frequency.value = 5.5;
+    const vibGain = ctx.createGain();
+    vibGain.gain.value = 0;
+    vibGain.gain.setValueAtTime(0, t + 0.15);
+    vibGain.gain.linearRampToValueAtTime(4, t + 0.4);
+    vibLfo.connect(vibGain).connect(osc.frequency);
+
+    // 弓噪声
+    const bowNoise = ctx.createBufferSource();
+    bowNoise.buffer = this._noiseBuffer(ctx, dur);
+    const bnf = ctx.createBiquadFilter();
+    bnf.type = 'bandpass'; bnf.frequency.value = freq * 1.5; bnf.Q.value = 0.5;
+    const bng = ctx.createGain();
+    bng.gain.setValueAtTime(0, t);
+    bng.gain.linearRampToValueAtTime(vol * 0.04, t + 0.05);
+    bng.gain.setValueAtTime(vol * 0.04, t + Math.max(0.05, dur * 0.8));
+    bng.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    bowNoise.connect(bnf).connect(bng).connect(dest);
+    bowNoise.start(t); bowNoise.stop(t + dur);
+
+    // 共振峰滤波器
+    const formants = [{f:300, q:5}, {f:600, q:6}, {f:1500, q:7}, {f:2500, q:8}];
+    const sumGain = ctx.createGain();
+    sumGain.gain.value = 1;
+    formants.forEach(f => {
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = f.f; bp.Q.value = f.q;
+      const fg = ctx.createGain();
+      fg.gain.value = 0.25;
+      osc.connect(bp).connect(fg).connect(sumGain);
+    });
+
     const g = ctx.createGain();
     g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol * 0.2, t + 0.08);
-    g.gain.setValueAtTime(vol * 0.2, t + Math.max(0.08, dur * 0.7));
+    g.gain.linearRampToValueAtTime(vol * 0.18, t + 0.06);
+    g.gain.setValueAtTime(vol * 0.18, t + Math.max(0.06, dur * 0.7));
     g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    osc.connect(filter).connect(g).connect(dest);
-    lfo.start(t); osc.start(t);
-    lfo.stop(t + dur); osc.stop(t + dur);
+    sumGain.connect(g).connect(dest);
+
+    osc.start(t); vibLfo.start(t);
+    osc.stop(t + dur); vibLfo.stop(t + dur);
   }
 
+  /* === 长笛 — 三角波 + 气声 + 二次谐波 + 延迟颤音 === */
   _flute(ctx, dest, freq, t, dur, vol) {
     const osc = ctx.createOscillator();
-    osc.type = 'sine';
+    osc.type = 'triangle';
     osc.frequency.value = freq;
-    const lfo = ctx.createOscillator();
-    lfo.frequency.value = 6;
-    const lfoG = ctx.createGain();
-    lfoG.gain.value = 2;
-    lfo.connect(lfoG).connect(osc.frequency);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol * 0.25, t + 0.05);
-    g.gain.setValueAtTime(vol * 0.25, t + Math.max(0.05, dur * 0.8));
-    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    osc.connect(g).connect(dest);
-    lfo.start(t); osc.start(t);
-    lfo.stop(t + dur); osc.stop(t + dur);
-  }
 
-  _bass(ctx, dest, freq, t, dur, vol) {
-    const osc = ctx.createOscillator();
-    osc.type = 'square';
-    osc.frequency.value = freq * 0.5;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = freq * 2;
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol * 0.35, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    osc.connect(filter).connect(g).connect(dest);
-    osc.start(t); osc.stop(t + dur);
-  }
+    const vibLfo = ctx.createOscillator();
+    vibLfo.frequency.value = 5.5;
+    const vibGain = ctx.createGain();
+    vibGain.gain.value = 0;
+    vibGain.gain.setValueAtTime(0, t + 0.2);
+    vibGain.gain.linearRampToValueAtTime(3, t + 0.5);
+    vibLfo.connect(vibGain).connect(osc.frequency);
 
-  _trumpet(ctx, dest, freq, t, dur, vol) {
-    const osc1 = ctx.createOscillator();
-    osc1.type = 'sawtooth';
-    osc1.frequency.value = freq;
+    // 气声
+    const breath = ctx.createBufferSource();
+    breath.buffer = this._noiseBuffer(ctx, dur);
+    const bf = ctx.createBiquadFilter();
+    bf.type = 'bandpass'; bf.frequency.value = freq * 2; bf.Q.value = 0.3;
+    const bg = ctx.createGain();
+    bg.gain.setValueAtTime(0, t);
+    bg.gain.linearRampToValueAtTime(vol * 0.05, t + 0.04);
+    bg.gain.setValueAtTime(vol * 0.05, t + Math.max(0.04, dur * 0.85));
+    bg.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    breath.connect(bf).connect(bg).connect(dest);
+    breath.start(t); breath.stop(t + dur);
+
+    // 二次谐波
     const osc2 = ctx.createOscillator();
-    osc2.type = 'sawtooth';
-    osc2.frequency.value = freq * 1.005;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.value = freq * 2;
-    filter.Q.value = 2;
+    osc2.type = 'sine';
+    osc2.frequency.value = freq * 2;
+    const g2 = ctx.createGain();
+    g2.gain.setValueAtTime(0, t);
+    g2.gain.linearRampToValueAtTime(vol * 0.04, t + 0.05);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc2.connect(g2).connect(dest);
+
     const g = ctx.createGain();
     g.gain.setValueAtTime(0, t);
     g.gain.linearRampToValueAtTime(vol * 0.2, t + 0.04);
-    g.gain.setValueAtTime(vol * 0.18, t + Math.max(0.04, dur * 0.7));
+    g.gain.setValueAtTime(vol * 0.2, t + Math.max(0.04, dur * 0.85));
     g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    osc1.connect(filter); osc2.connect(filter);
-    filter.connect(g).connect(dest);
-    osc1.start(t); osc2.start(t);
-    osc1.stop(t + dur); osc2.stop(t + dur);
+    osc.connect(g).connect(dest);
+
+    osc.start(t); vibLfo.start(t); osc2.start(t);
+    osc.stop(t + dur); vibLfo.stop(t + dur); osc2.stop(t + dur);
+  }
+
+  /* === 贝斯 — 锯齿波低通 + 子八度 + 品位噪声 === */
+  _bass(ctx, dest, freq, t, dur, vol) {
+    // 品位噪声
+    const noise = ctx.createBufferSource();
+    noise.buffer = this._noiseBuffer(ctx, 0.02);
+    const nf = ctx.createBiquadFilter();
+    nf.type = 'bandpass'; nf.frequency.value = freq * 4; nf.Q.value = 1;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(vol * 0.05, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+    noise.connect(nf).connect(ng).connect(dest);
+    noise.start(t);
+
+    // 主音
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = freq * 0.5;
+
+    // 子八度
+    const sub = ctx.createOscillator();
+    sub.type = 'sine';
+    sub.frequency.value = freq * 0.25;
+    const subG = ctx.createGain();
+    subG.gain.value = vol * 0.15;
+    sub.connect(subG).connect(dest);
+
+    // 低通滤波包络
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(freq * 4, t);
+    filter.frequency.exponentialRampToValueAtTime(freq * 1.5, t + dur);
+    filter.Q.value = 2;
+
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.3, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.connect(filter).connect(g).connect(dest);
+    osc.start(t); sub.start(t);
+    osc.stop(t + dur); sub.stop(t + dur);
+  }
+
+  /* === 小号 — 双锯齿 + 共振峰 + 攻击 blat + 延迟颤音 === */
+  _trumpet(ctx, dest, freq, t, dur, vol) {
+    const osc1 = ctx.createOscillator();
+    osc1.type = 'sawtooth';
+    osc1.frequency.setValueAtTime(freq * 0.97, t);
+    osc1.frequency.linearRampToValueAtTime(freq, t + 0.04); // attack blat
+
+    const osc2 = ctx.createOscillator();
+    osc2.type = 'sawtooth';
+    osc2.frequency.value = freq * 1.005;
+
+    // 颤音
+    const vibLfo = ctx.createOscillator();
+    vibLfo.frequency.value = 5;
+    const vibGain = ctx.createGain();
+    vibGain.gain.value = 0;
+    vibGain.gain.setValueAtTime(0, t + 0.2);
+    vibGain.gain.linearRampToValueAtTime(freq * 0.015, t + 0.4);
+    vibLfo.connect(vibGain);
+    vibGain.connect(osc1.frequency); vibGain.connect(osc2.frequency);
+
+    // 共振峰
+    const formants = [{f:800, q:8}, {f:1200, q:9}, {f:2000, q:10}, {f:2800, q:12}];
+    const sum = ctx.createGain(); sum.gain.value = 1;
+    formants.forEach(f => {
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = f.f; bp.Q.value = f.q;
+      const fg = ctx.createGain(); fg.gain.value = 0.3;
+      osc1.connect(bp).connect(fg).connect(sum);
+      osc2.connect(bp);
+    });
+
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.18, t + 0.03);
+    g.gain.setValueAtTime(vol * 0.16, t + Math.max(0.03, dur * 0.7));
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    sum.connect(g).connect(dest);
+
+    osc1.start(t); osc2.start(t); vibLfo.start(t);
+    osc1.stop(t + dur); osc2.stop(t + dur); vibLfo.stop(t + dur);
+  }
+
+  /* === 合成器 — 减法合成：多锯齿 + 低通包络扫频 === */
+  _synth(ctx, dest, freq, t, dur, vol) {
+    const detunes = [-7, 0, 7]; // cents
+    const sum = ctx.createGain(); sum.gain.value = 1;
+    detunes.forEach(d => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.value = freq * Math.pow(2, d / 1200);
+      const g = ctx.createGain(); g.gain.value = 0.33;
+      osc.connect(g).connect(sum);
+      osc.start(t); osc.stop(t + dur);
+    });
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(freq * 8, t);
+    filter.frequency.exponentialRampToValueAtTime(freq * 2, t + dur * 0.7);
+    filter.Q.value = 3;
+
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.2, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    sum.connect(filter).connect(g).connect(dest);
+  }
+
+  /* === 电钢琴 — FM 合成 + 泛音衰减 === */
+  _elecPiano(ctx, dest, freq, t, dur, vol) {
+    // FM: carrier 被 modulator 调制
+    const mod = ctx.createOscillator();
+    mod.type = 'sine';
+    mod.frequency.value = freq * 2; // ratio 2:1
+    const modGain = ctx.createGain();
+    modGain.gain.setValueAtTime(freq * 3, t);
+    modGain.gain.exponentialRampToValueAtTime(freq * 0.5, t + 0.3);
+    mod.connect(modGain);
+
+    const carrier = ctx.createOscillator();
+    carrier.type = 'sine';
+    carrier.frequency.value = freq;
+    modGain.connect(carrier.frequency);
+
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.25, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(vol * 0.08, t + 0.2);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    carrier.connect(g).connect(dest);
+
+    // 泛音
+    const tine = ctx.createOscillator();
+    tine.type = 'sine';
+    tine.frequency.value = freq * 4;
+    const tg = ctx.createGain();
+    tg.gain.setValueAtTime(vol * 0.03, t);
+    tg.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    tine.connect(tg).connect(dest);
+
+    mod.start(t); carrier.start(t); tine.start(t);
+    mod.stop(t + dur); carrier.stop(t + dur); tine.stop(t + dur);
+  }
+
+  /* === 铺底合成 — 多锯齿延迟攻击 + 低通慢扫 + 颤音 === */
+  _pad(ctx, dest, freq, t, dur, vol) {
+    const detunes = [-12, -4, 4, 12];
+    const sum = ctx.createGain(); sum.gain.value = 1;
+    detunes.forEach(d => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.value = freq * Math.pow(2, d / 1200);
+      const g = ctx.createGain(); g.gain.value = 0.25;
+      osc.connect(g).connect(sum);
+      osc.start(t); osc.stop(t + dur);
+    });
+
+    // 慢攻击
+    const attackTime = Math.min(0.3, dur * 0.25);
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(freq * 1.5, t);
+    filter.frequency.linearRampToValueAtTime(freq * 4, t + attackTime);
+    filter.frequency.linearRampToValueAtTime(freq * 2, t + dur);
+    filter.Q.value = 1;
+
+    // LFO 颤音
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.8;
+    const lfoG = ctx.createGain();
+    lfoG.gain.value = vol * 0.05;
+    const tremolo = ctx.createGain();
+    tremolo.gain.value = 1;
+    lfo.connect(lfoG).connect(tremolo.gain);
+    lfo.start(t); lfo.stop(t + dur);
+
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.15, t + attackTime);
+    g.gain.setValueAtTime(vol * 0.15, t + Math.max(attackTime, dur * 0.6));
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    sum.connect(filter).connect(tremolo).connect(g).connect(dest);
+  }
+
+  /* === 主音合成 — 方波 unison + 明亮低通 + 颤音 === */
+  _lead(ctx, dest, freq, t, dur, vol) {
+    const detunes = [-8, 0, 8];
+    const sum = ctx.createGain(); sum.gain.value = 1;
+    const oscs = [];
+    detunes.forEach(d => {
+      const osc = ctx.createOscillator();
+      osc.type = 'square';
+      osc.frequency.value = freq * Math.pow(2, d / 1200);
+      const g = ctx.createGain(); g.gain.value = 0.33;
+      osc.connect(g).connect(sum);
+      osc.start(t); osc.stop(t + dur);
+      oscs.push(osc);
+    });
+
+    // 颤音（延迟启动）
+    const vibLfo = ctx.createOscillator();
+    vibLfo.frequency.value = 5.5;
+    const vibGain = ctx.createGain();
+    vibGain.gain.setValueAtTime(0, t + 0.15);
+    vibGain.gain.linearRampToValueAtTime(freq * 0.01, t + 0.3);
+    vibLfo.connect(vibGain);
+    oscs.forEach(osc => vibGain.connect(osc.frequency));
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = freq * 6;
+    filter.Q.value = 2;
+
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.18, t + 0.01);
+    g.gain.setValueAtTime(vol * 0.16, t + Math.max(0.01, dur * 0.7));
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    sum.connect(filter).connect(g).connect(dest);
+
+    vibLfo.start(t); vibLfo.stop(t + dur);
   }
 
   playMetronome(time, accent) {
@@ -664,12 +935,16 @@ class AudioEngine {
 
   _renderInstrument(ctx, dest, inst, freq, t, dur, vol) {
     switch (inst) {
-      case 'piano':   this._piano(ctx, dest, freq, t, dur, vol); break;
-      case 'guitar':  this._guitar(ctx, dest, freq, t, dur, vol); break;
-      case 'violin':  this._violin(ctx, dest, freq, t, dur, vol); break;
-      case 'flute':   this._flute(ctx, dest, freq, t, dur, vol); break;
-      case 'bass':    this._bass(ctx, dest, freq, t, dur, vol); break;
-      case 'trumpet': this._trumpet(ctx, dest, freq, t, dur, vol); break;
+      case 'piano':      this._piano(ctx, dest, freq, t, dur, vol); break;
+      case 'guitar':     this._guitar(ctx, dest, freq, t, dur, vol); break;
+      case 'violin':     this._violin(ctx, dest, freq, t, dur, vol); break;
+      case 'flute':      this._flute(ctx, dest, freq, t, dur, vol); break;
+      case 'bass':       this._bass(ctx, dest, freq, t, dur, vol); break;
+      case 'trumpet':    this._trumpet(ctx, dest, freq, t, dur, vol); break;
+      case 'synth':      this._synth(ctx, dest, freq, t, dur, vol); break;
+      case 'elec_piano': this._elecPiano(ctx, dest, freq, t, dur, vol); break;
+      case 'pad':        this._pad(ctx, dest, freq, t, dur, vol); break;
+      case 'lead':       this._lead(ctx, dest, freq, t, dur, vol); break;
     }
   }
 }
