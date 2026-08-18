@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Composer — 简谱音乐创作 | Jerry520-YES</title>
+<meta name="description" content="网页音乐创作工具：多音轨、多种乐器音色、简谱数字输入、节拍器、导出 MP3，让小白也能自在创作音乐。">
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#faf8f5;--bg2:#f3ede4;--ink:#2c2418;--muted:#8a7e6b;
+  --rule:#e0d5c4;--accent:#E89614;--accent2:#c47810;--accent-dim:#fef3e2;
+  --radius:10px;--max-w:1200px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:"SF Mono","Fira Code",Consolas,monospace;
+  --danger:#E74C3C;--ok:#27AE60;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+
+.site-nav{position:sticky;top:0;z-index:100;background:rgba(250,248,245,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule);padding:12px 24px}
+.nav-inner{max-width:var(--max-w);margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.nav-back{color:var(--accent);font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.nav-brand{font-weight:700;color:var(--ink);font-size:0.9rem}
+
+.hero{background:linear-gradient(135deg,#E89614 0%,#c47810 50%,#8b5408 100%);color:#fff;padding:64px 24px 48px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:-40%;right:-15%;width:500px;height:500px;background:radial-gradient(circle,rgba(255,255,255,0.08) 0%,transparent 70%);border-radius:50%}
+.hero h1{font-size:2.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px;position:relative}
+.hero .tagline{font-size:1.1rem;opacity:0.92;margin-bottom:24px;position:relative;font-weight:300}
+.hero-badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;position:relative}
+.badge{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);padding:5px 14px;border-radius:18px;font-size:0.8rem}
+
+.workspace{display:grid;grid-template-columns:280px 1fr 240px;gap:14px;padding:20px;max-width:var(--max-w);margin:0 auto;align-items:start}
+.panel{background:#fff;border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden}
+.panel-head{padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--rule);font-weight:700;font-size:0.85rem;display:flex;justify-content:space-between;align-items:center}
+.panel-body{padding:12px}
+
+.track-list{display:flex;flex-direction:column;gap:8px}
+.track-item{border:1.5px solid var(--rule);border-radius:8px;padding:10px;cursor:pointer;transition:all 0.15s;background:#fff}
+.track-item:hover{border-color:var(--accent)}
+.track-item.active{border-color:var(--accent);background:var(--accent-dim);box-shadow:0 2px 8px rgba(232,150,20,0.15)}
+.track-item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.track-name{font-weight:700;font-size:0.88rem}
+.track-instrument{font-size:0.76rem;color:var(--muted)}
+.track-controls{display:flex;align-items:center;gap:6px;margin-top:6px}
+.track-vol{flex:1;height:4px;-webkit-appearance:none;appearance:none;background:var(--rule);border-radius:2px;outline:none}
+.track-vol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:pointer}
+.track-vol::-moz-range-thumb{width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:pointer;border:none}
+.track-btn{width:24px;height:24px;border:1px solid var(--rule);border-radius:4px;background:#fff;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.track-btn:hover{border-color:var(--accent);color:var(--accent)}
+.track-btn.muted{background:var(--danger);color:#fff;border-color:var(--danger)}
+.track-btn.soloed{background:var(--accent);color:#fff;border-color:var(--accent)}
+.track-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.btn-add-track{width:100%;padding:10px;border:1.5px dashed var(--rule);border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;font-size:0.85rem;font-weight:600}
+.btn-add-track:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.track-delete{font-size:0.72rem;color:var(--danger);cursor:pointer;margin-left:4px}
+.track-delete:hover{text-decoration:underline}
+
+.notation-editor{min-height:400px;display:flex;flex-direction:column}
+.notation-grid{flex:1;overflow:auto;padding:12px}
+.notation-row{display:flex;align-items:flex-start;gap:0;margin-bottom:10px;border-bottom:1px solid var(--rule);padding-bottom:10px}
+.notation-row:last-child{border-bottom:none}
+.notation-label{flex:0 0 90px;font-size:0.78rem;font-weight:700;color:var(--muted);padding-top:8px;display:flex;align-items:center;gap:4px}
+.note-cell{flex:0 0 auto;min-width:36px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid #f0ebe2;font-family:var(--mono);font-size:1rem;font-weight:700;cursor:pointer;position:relative;transition:background 0.1s}
+.note-cell:hover{background:var(--accent-dim)}
+.note-cell.cursor{background:var(--accent-dim);box-shadow:inset 0 -3px 0 var(--accent)}
+.note-cell.playing{background:var(--accent);color:#fff;transform:scale(1.08)}
+.note-cell .octave-dot-up{position:absolute;top:2px;font-size:0.5rem;line-height:1}
+.note-cell .octave-dot-down{position:absolute;bottom:2px;font-size:0.5rem;line-height:1}
+.note-cell .duration-line{position:absolute;bottom:0;left:2px;right:2px;height:2px;background:currentColor}
+.note-cell .duration-line2{bottom:-3px}
+.note-cell.rest{color:var(--muted);font-style:italic}
+.beat-marker{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);z-index:5;pointer-events:none;transition:left 0.05s linear;opacity:0.7}
+.notation-empty{padding:40px;text-align:center;color:var(--muted);font-size:0.9rem}
+
+.props-section{margin-bottom:16px}
+.props-label{font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.duration-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+.dur-btn{padding:8px;border:1.5px solid var(--rule);border-radius:6px;background:#fff;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.1s}
+.dur-btn:hover{border-color:var(--accent)}
+.dur-btn.active{background:var(--accent);color:#fff;border-color:var(--accent2)}
+.input-row{display:flex;align-items:center;gap:8px}
+.input-row input[type=number]{flex:1;padding:6px 8px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.85rem;font-family:var(--mono)}
+.input-row input[type=number]:focus{outline:none;border-color:var(--accent)}
+.octave-display{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--accent)}
+.preset-list{display:flex;flex-direction:column;gap:4px}
+.preset-btn{text-align:left;padding:8px 10px;border:1px solid var(--rule);border-radius:6px;background:#fff;cursor:pointer;font-size:0.82rem;transition:all 0.1s}
+.preset-btn:hover{border-color:var(--accent);background:var(--accent-dim)}
+
+.transport{position:sticky;bottom:0;background:rgba(250,248,245,0.97);backdrop-filter:blur(8px);border-top:1px solid var(--rule);padding:12px 24px;z-index:50}
+.transport-inner{max-width:var(--max-w);margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.t-btn{width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.t-btn-play{background:var(--accent);color:#fff}
+.t-btn-play:hover{background:var(--accent2);transform:scale(1.05)}
+.t-btn-play.playing{background:var(--danger)}
+.t-btn-stop{background:#fff;border:1.5px solid var(--rule);color:var(--ink)}
+.t-btn-stop:hover{border-color:var(--accent)}
+.tempo-display{font-family:var(--mono);font-size:0.85rem;color:var(--muted)}
+.tempo-display b{color:var(--ink);font-size:1rem}
+.tempo-slider{width:120px;height:4px;-webkit-appearance:none;appearance:none;background:var(--rule);border-radius:2px;outline:none}
+.tempo-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--accent);border-radius:50%;cursor:pointer}
+.tempo-slider::-moz-range-thumb{width:16px;height:16px;background:var(--accent);border-radius:50%;cursor:pointer;border:none}
+.transport-spacer{flex:1}
+.export-btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.15s}
+.export-mp3{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#fff}
+.export-mp3:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(232,150,20,0.3)}
+.export-json{background:#fff;border:1.5px solid var(--rule);color:var(--ink)}
+.export-json:hover{border-color:var(--accent);color:var(--accent)}
+.metronome-btn{padding:6px 12px;border:1.5px solid var(--rule);border-radius:6px;background:#fff;cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--muted)}
+.metronome-btn.active{background:var(--accent);color:#fff;border-color:var(--accent2)}
+
+.kbd-hint{padding:10px 24px;background:var(--bg2);border-top:1px solid var(--rule);font-size:0.76rem;color:var(--muted);text-align:center}
+.kbd-hint kbd{display:inline-block;padding:1px 6px;border:1px solid var(--rule);border-radius:3px;background:#fff;font-family:var(--mono);font-size:0.72rem;color:var(--ink);margin:0 2px}
+
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:0.85rem;opacity:0;transition:all 0.3s;z-index:200;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:900px){
+  .workspace{grid-template-columns:1fr}
+  .notation-label{flex:0 0 60px}
+}
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="https://jerry520-yes.github.io/" class="nav-back">← 返回首页</a>
+    <span class="nav-brand">Jerry520-YES</span>
+  </div>
+</nav>
+
+<header class="hero">
+  <h1>Composer</h1>
+  <p class="tagline">用简谱数字自由创作你的音乐 — 多音轨 · 多乐器 · 导出 MP3</p>
+  <div class="hero-badges">
+    <span class="badge">Web Audio API</span>
+    <span class="badge">多音轨</span>
+    <span class="badge">简谱输入</span>
+    <span class="badge">MP3 导出</span>
+  </div>
+</header>
+
+<main class="workspace">
+  <aside class="panel" id="track-panel">
+    <div class="panel-head"><span>音轨</span><span id="track-count" style="font-size:0.75rem;color:var(--muted)">0 条</span></div>
+    <div class="panel-body">
+      <div class="track-list" id="track-list"></div>
+      <button class="btn-add-track" id="btn-add-track" style="margin-top:8px">+ 添加音轨</button>
+    </div>
+  </aside>
+
+  <section class="panel notation-editor" id="notation-panel">
+    <div class="panel-head"><span>简谱编辑器</span><span id="notation-info" style="font-size:0.75rem;color:var(--muted)">点击音轨开始创作</span></div>
+    <div class="notation-grid" id="notation-grid">
+      <div class="notation-empty">请在左侧选择或添加一条音轨开始创作<br><br>按数字键 <kbd>1</kbd>-<kbd>7</kbd> 输入音符，<kbd>0</kbd> 输入休止符</div>
+    </div>
+  </section>
+
+  <aside class="panel" id="props-panel">
+    <div class="panel-head">设置</div>
+    <div class="panel-body">
+      <div class="props-section">
+        <div class="props-label">音符时值</div>
+        <div class="duration-grid">
+          <button class="dur-btn active" data-dur="4">♩ 四分</button>
+          <button class="dur-btn" data-dur="8">♪ 八分</button>
+          <button class="dur-btn" data-dur="2">𝅗𝅥 二分</button>
+          <button class="dur-btn" data-dur="1">𝅝 全音</button>
+          <button class="dur-btn" data-dur="16">𝅘𝅥𝅯 十六分</button>
+          <button class="dur-btn" data-dur="3">♩. 附点</button>
+        </div>
+      </div>
+      <div class="props-section">
+        <div class="props-label">八度</div>
+        <div class="input-row">
+          <button class="dur-btn" id="oct-down" style="flex:0 0 32px">−</button>
+          <span class="octave-display" id="oct-display" style="flex:1;text-align:center">0</span>
+          <button class="dur-btn" id="oct-up" style="flex:0 0 32px">+</button>
+        </div>
+      </div>
+      <div class="props-section">
+        <div class="props-label">节拍 / 调号</div>
+        <div class="input-row">
+          <select id="time-sig" style="flex:1;padding:6px 8px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.82rem;background:#fff">
+            <option value="4/4">4/4 拍</option>
+            <option value="3/4">3/4 拍</option>
+            <option value="2/4">2/4 拍</option>
+            <option value="6/8">6/8 拍</option>
+          </select>
+          <select id="key-sig" style="flex:1;padding:6px 8px;border:1.5px solid var(--rule);border-radius:6px;font-size:0.82rem;background:#fff">
+            <option value="C">C 调</option>
+            <option value="G">G 调</option>
+            <option value="D">D 调</option>
+            <option value="F">F 调</option>
+          </select>
+        </div>
+      </div>
+      <div class="props-section">
+        <div class="props-label">示例曲库</div>
+        <div class="preset-list">
+          <button class="preset-btn" data-preset="twinkle">小星星</button>
+          <button class="preset-btn" data-preset="birthday">生日快乐</button>
+          <button class="preset-btn" data-preset="ode">欢乐颂</button>
+          <button class="preset-btn" data-preset="jasmine">茉莉花</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="kbd-hint">
+  <kbd>1</kbd>-<kbd>7</kbd> 输入音符 ·
+  <kbd>0</kbd> 休止符 ·
+  <kbd>←</kbd><kbd>→</kbd> 移动光标 ·
+  <kbd>↑</kbd><kbd>↓</kbd> 升降八度 ·
+  <kbd>⌫</kbd> 删除 ·
+  <kbd>空格</kbd> 播放/停止
+</div>
+
+<footer class="transport">
+  <div class="transport-inner">
+    <button class="t-btn t-btn-play" id="btn-play" title="播放/停止">▶</button>
+    <button class="t-btn t-btn-stop" id="btn-stop" title="停止">■</button>
+    <span class="tempo-display">速度 <b id="tempo-val">120</b> BPM</span>
+    <input type="range" class="tempo-slider" id="tempo-slider" min="40" max="240" value="120">
+    <button class="metronome-btn" id="btn-metronome">节拍器 关</button>
+    <div class="transport-spacer"></div>
+    <button class="export-btn export-json" id="btn-save">保存项目</button>
+    <button class="export-btn export-json" id="btn-load">加载项目</button>
+    <button class="export-btn export-mp3" id="btn-export-mp3">导出 MP3</button>
+  </div>
+</footer>
+
+<input type="file" id="load-file" accept=".json" style="display:none">
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   常量
+   ============================================================ */
+const INSTRUMENTS = {
+  piano:   {name:'钢琴',     color:'#E74C3C', icon:'🎹'},
+  guitar:  {name:'吉他',     color:'#E89614', icon:'🎸'},
+  violin:  {name:'小提琴',   color:'#27AE60', icon:'🎻'},
+  flute:   {name:'长笛',     color:'#00B4D8', icon:'🪈'},
+  bass:    {name:'贝斯',     color:'#7C3AED', icon:'🎵'},
+  trumpet: {name:'小号',     color:'#F1C40F', icon:'🎺'},
+};
+const INSTRUMENT_LIST = Object.keys(INSTRUMENTS);
+const NOTE_SEMITONES = {1:0, 2:2, 3:4, 4:5, 5:7, 6:9, 7:11};
+const TRACK_COLORS = ['#E74C3C','#E89614','#27AE60','#00B4D8','#7C3AED','#F1C40F','#4A90D9','#b366ff'];
+
+function noteToFreq(pitch, octave) {
+  if (pitch === 0) return 0;
+  const midi = 60 + NOTE_SEMITONES[pitch] + octave * 12;
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+/* ============================================================
+   音频引擎 — Web Audio API 合成
+   ============================================================ */
+class AudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.masterGain = null;
+    this.compressor = null;
+  }
+
+  ensureCtx() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.compressor = this.ctx.createDynamicsCompressor();
+      this.compressor.threshold.value = -10;
+      this.compressor.knee.value = 10;
+      this.compressor.ratio.value = 4;
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.value = 0.8;
+      this.compressor.connect(this.masterGain);
+      this.masterGain.connect(this.ctx.destination);
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    return this.ctx;
+  }
+
+  playNote(instrument, freq, time, duration, volume) {
+    if (freq === 0 || volume === 0) return;
+    const ctx = this.ensureCtx();
+    const dest = this.compressor;
+    switch (instrument) {
+      case 'piano':   this._piano(ctx, dest, freq, time, duration, volume); break;
+      case 'guitar':  this._guitar(ctx, dest, freq, time, duration, volume); break;
+      case 'violin':  this._violin(ctx, dest, freq, time, duration, volume); break;
+      case 'flute':   this._flute(ctx, dest, freq, time, duration, volume); break;
+      case 'bass':    this._bass(ctx, dest, freq, time, duration, volume); break;
+      case 'trumpet': this._trumpet(ctx, dest, freq, time, duration, volume); break;
+    }
+  }
+
+  _piano(ctx, dest, freq, t, dur, vol) {
+    const harmonics = [{m:1,a:1},{m:2,a:0.5},{m:3,a:0.25},{m:4,a:0.12}];
+    harmonics.forEach(h => {
+      const osc = ctx.createOscillator();
+      osc.type = h.m === 1 ? 'triangle' : 'sine';
+      osc.frequency.value = freq * h.m;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(h.a * vol * 0.3, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(h.a * vol * 0.1, t + 0.1);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      osc.connect(g).connect(dest);
+      osc.start(t); osc.stop(t + dur);
+    });
+  }
+
+  _guitar(ctx, dest, freq, t, dur, vol) {
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = freq;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(freq * 5, t);
+    filter.frequency.exponentialRampToValueAtTime(freq * 1.5, t + dur);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.25, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.connect(filter).connect(g).connect(dest);
+    osc.start(t); osc.stop(t + dur);
+  }
+
+  _violin(ctx, dest, freq, t, dur, vol) {
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = freq;
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 5;
+    const lfoG = ctx.createGain();
+    lfoG.gain.value = 3;
+    lfo.connect(lfoG).connect(osc.frequency);
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = freq * 3;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.2, t + 0.08);
+    g.gain.setValueAtTime(vol * 0.2, t + Math.max(0.08, dur * 0.7));
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.connect(filter).connect(g).connect(dest);
+    lfo.start(t); osc.start(t);
+    lfo.stop(t + dur); osc.stop(t + dur);
+  }
+
+  _flute(ctx, dest, freq, t, dur, vol) {
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 6;
+    const lfoG = ctx.createGain();
+    lfoG.gain.value = 2;
+    lfo.connect(lfoG).connect(osc.frequency);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.25, t + 0.05);
+    g.gain.setValueAtTime(vol * 0.25, t + Math.max(0.05, dur * 0.8));
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.connect(g).connect(dest);
+    lfo.start(t); osc.start(t);
+    lfo.stop(t + dur); osc.stop(t + dur);
+  }
+
+  _bass(ctx, dest, freq, t, dur, vol) {
+    const osc = ctx.createOscillator();
+    osc.type = 'square';
+    osc.frequency.value = freq * 0.5;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = freq * 2;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.35, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.connect(filter).connect(g).connect(dest);
+    osc.start(t); osc.stop(t + dur);
+  }
+
+  _trumpet(ctx, dest, freq, t, dur, vol) {
+    const osc1 = ctx.createOscillator();
+    osc1.type = 'sawtooth';
+    osc1.frequency.value = freq;
+    const osc2 = ctx.createOscillator();
+    osc2.type = 'sawtooth';
+    osc2.frequency.value = freq * 1.005;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = freq * 2;
+    filter.Q.value = 2;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.2, t + 0.04);
+    g.gain.setValueAtTime(vol * 0.18, t + Math.max(0.04, dur * 0.7));
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc1.connect(filter); osc2.connect(filter);
+    filter.connect(g).connect(dest);
+    osc1.start(t); osc2.start(t);
+    osc1.stop(t + dur); osc2.stop(t + dur);
+  }
+
+  playMetronome(time, accent) {
+    const ctx = this.ensureCtx();
+    const osc = ctx.createOscillator();
+    osc.type = 'square';
+    osc.frequency.value = accent ? 1200 : 800;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, time);
+    g.gain.linearRampToValueAtTime(0.15, time + 0.001);
+    g.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+    osc.connect(g).connect(this.compressor);
+    osc.start(time); osc.stop(time + 0.05);
+  }
+
+  renderOffline(tracks, tempo, beatsPerBar, callback) {
+    const sampleRate = 44100;
+    let totalBeats = 0;
+    for (const tr of tracks) {
+      let b = 0;
+      for (const n of tr.notes) b += 4 / n.duration;
+      totalBeats = Math.max(totalBeats, b);
+    }
+    totalBeats = Math.ceil(totalBeats) + 2;
+    const totalDuration = totalBeats * 60 / tempo;
+    const length = Math.ceil(totalDuration * sampleRate);
+    const offlineCtx = new OfflineAudioContext(2, length, sampleRate);
+    const comp = offlineCtx.createDynamicsCompressor();
+    const master = offlineCtx.createGain();
+    master.gain.value = 0.8;
+    comp.connect(master); master.connect(offlineCtx.destination);
+
+    const beatDur = 60 / tempo;
+    for (const tr of tracks) {
+      if (tr.muted) continue;
+      let t = 0;
+      for (const n of tr.notes) {
+        const dur = (4 / n.duration) * beatDur;
+        if (n.pitch !== 0) {
+          const freq = noteToFreq(n.pitch, n.octave);
+          this._renderInstrument(offlineCtx, comp, tr.instrument, freq, t, dur, tr.volume);
+        }
+        t += dur;
+      }
+    }
+    offlineCtx.startRendering().then(buffer => callback(buffer));
+  }
+
+  _renderInstrument(ctx, dest, inst, freq, t, dur, vol) {
+    const tmp = {...this};
+    tmp.ctx = ctx;
+    switch (inst) {
+      case 'piano':   this._piano(ctx, dest, freq, t, dur, vol); break;
+      case 'guitar':  this._guitar(ctx, dest, freq, t, dur, vol); break;
+      case 'violin':  this._violin(ctx, dest, freq, t, dur, vol); break;
+      case 'flute':   this._flute(ctx, dest, freq, t, dur, vol); break;
+      case 'bass':    this._bass(ctx, dest, freq, t, dur, vol); break;
+      case 'trumpet': this._trumpet(ctx, dest, freq, t, dur, vol); break;
+    }
+  }
+}
+
+/* ============================================================
+   状态
+   ============================================================ */
+const state = {
+  tracks: [],
+  activeTrackId: 0,
+  cursor: 0,
+  octave: 0,
+  duration: 4,
+  tempo: 120,
+  timeSig: '4/4',
+  key: 'C',
+  metronome: false,
+  playing: false,
+  playTimer: null,
+  beatMarker: null,
+};
+let nextTrackId = 0;
+const audio = new AudioEngine();
+
+/* ============================================================
+   音轨管理
+   ============================================================ */
+function createTrack(instrument) {
+  const id = nextTrackId++;
+  return {
+    id,
+    name: INSTRUMENTS[instrument].name + ' ' + (id + 1),
+    instrument,
+    notes: [],
+    volume: 0.8,
+    muted: false,
+    solo: false,
+    color: TRACK_COLORS[id % TRACK_COLORS.length],
+  };
+}
+
+function addTrack(instrument) {
+  const tr = createTrack(instrument);
+  state.tracks.push(tr);
+  state.activeTrackId = tr.id;
+  renderTracks();
+  renderNotation();
+}
+
+function deleteTrack(id) {
+  if (state.tracks.length <= 1) return;
+  state.tracks = state.tracks.filter(t => t.id !== id);
+  if (state.activeTrackId === id) state.activeTrackId = state.tracks[0].id;
+  renderTracks();
+  renderNotation();
+}
+
+function getActiveTrack() {
+  return state.tracks.find(t => t.id === state.activeTrackId);
+}
+
+/* ============================================================
+   渲染 — 音轨面板
+   ============================================================ */
+function renderTracks() {
+  const list = $('track-list');
+  list.innerHTML = '';
+  $('track-count').textContent = state.tracks.length + ' 条';
+  for (const tr of state.tracks) {
+    const div = document.createElement('div');
+    div.className = 'track-item' + (tr.id === state.activeTrackId ? ' active' : '');
+    div.onclick = () => {
+      state.activeTrackId = tr.id;
+      state.cursor = tr.notes.length;
+      renderTracks();
+      renderNotation();
+    };
+    const inst = INSTRUMENTS[tr.instrument];
+    div.innerHTML = `
+      <div class="track-item-head">
+        <span class="track-color-dot" style="background:${tr.color}"></span>
+        <span class="track-name">${tr.name}</span>
+        <span class="track-delete" onclick="event.stopPropagation();deleteTrack(${tr.id})">删除</span>
+      </div>
+      <div class="track-instrument">${inst.icon} ${inst.name}</div>
+      <div class="track-controls">
+        <input type="range" class="track-vol" min="0" max="1" step="0.01" value="${tr.volume}" onclick="event.stopPropagation()" oninput="updateVol(${tr.id},this.value)">
+        <button class="track-btn ${tr.muted?'muted':''}" onclick="event.stopPropagation();toggleMute(${tr.id})" title="静音">M</button>
+        <button class="track-btn ${tr.solo?'soloed':''}" onclick="event.stopPropagation();toggleSolo(${tr.id})" title="独奏">S</button>
+      </div>
+    `;
+    list.appendChild(div);
+  }
+}
+
+function updateVol(id, v) {
+  const tr = state.tracks.find(t => t.id === id);
+  if (tr) tr.volume = parseFloat(v);
+}
+
+function toggleMute(id) {
+  const tr = state.tracks.find(t => t.id === id);
+  if (tr) tr.muted = !tr.muted;
+  renderTracks();
+}
+
+function toggleSolo(id) {
+  const tr = state.tracks.find(t => t.id === id);
+  if (tr) tr.solo = !tr.solo;
+  renderTracks();
+}
+
+/* ============================================================
+   渲染 — 简谱编辑器
+   ============================================================ */
+function renderNotation() {
+  const grid = $('notation-grid');
+  const tr = getActiveTrack();
+  if (!tr || tr.notes.length === 0) {
+    grid.innerHTML = `<div class="notation-empty">当前音轨为空<br><br>按数字键 <kbd>1</kbd>-<kbd>7</kbd> 输入音符，<kbd>0</kbd> 输入休止符<br>或从右侧加载示例曲目</div>`;
+    $('notation-info').textContent = tr ? `${tr.name} · 0 音符` : '无音轨';
+    return;
+  }
+  $('notation-info').textContent = `${tr.name} · ${tr.notes.length} 音符`;
+  grid.innerHTML = '';
+  const row = document.createElement('div');
+  row.className = 'notation-row';
+  const label = document.createElement('div');
+  label.className = 'notation-label';
+  const inst = INSTRUMENTS[tr.instrument];
+  label.innerHTML = `<span class="track-color-dot" style="background:${tr.color}"></span> ${inst.icon}<br>${tr.name}`;
+  row.appendChild(label);
+
+  for (let i = 0; i < tr.notes.length; i++) {
+    const n = tr.notes[i];
+    const cell = document.createElement('div');
+    cell.className = 'note-cell' + (i === state.cursor ? ' cursor' : '') + (n.pitch === 0 ? ' rest' : '');
+    cell.dataset.idx = i;
+    let html = '';
+    if (n.pitch === 0) {
+      html = '0';
+    } else {
+      html = String(n.pitch);
+      if (n.octave > 0) {
+        html = `<span class="octave-dot-up">${'·'.repeat(n.octave)}</span>` + html;
+      }
+      if (n.octave < 0) {
+        html = html + `<span class="octave-dot-down">${'·'.repeat(-n.octave)}</span>`;
+      }
+    }
+    if (n.duration === 8) html += '<span class="duration-line"></span>';
+    if (n.duration === 16) html += '<span class="duration-line"></span><span class="duration-line duration-line2"></span>';
+    if (n.duration === 3) html += '.'; // 附点
+    cell.innerHTML = html;
+    cell.onclick = () => {
+      state.cursor = i;
+      renderNotation();
+    };
+    row.appendChild(cell);
+  }
+  grid.appendChild(row);
+}
+
+/* ============================================================
+   输入 — 键盘
+   ============================================================ */
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  const tr = getActiveTrack();
+  if (!tr) return;
+
+  if (e.key >= '0' && e.key <= '7') {
+    e.preventDefault();
+    const pitch = parseInt(e.key);
+    const note = {pitch, octave: state.octave, duration: state.duration};
+    tr.notes.splice(state.cursor, 0, note);
+    state.cursor++;
+    renderNotation();
+    if (pitch > 0) {
+      audio.playNote(tr.instrument, noteToFreq(pitch, state.octave), audio.ensureCtx().currentTime, 0.3, tr.volume);
+    }
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    if (state.cursor > 0) { state.cursor--; renderNotation(); }
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    if (state.cursor < tr.notes.length) { state.cursor++; renderNotation(); }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (state.cursor > 0 && tr.notes[state.cursor - 1] && tr.notes[state.cursor - 1].pitch !== 0) {
+      tr.notes[state.cursor - 1].octave = Math.min(2, tr.notes[state.cursor - 1].octave + 1);
+      renderNotation();
+    } else {
+      state.octave = Math.min(2, state.octave + 1);
+      $('oct-display').textContent = (state.octave > 0 ? '+' : '') + state.octave;
+    }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (state.cursor > 0 && tr.notes[state.cursor - 1] && tr.notes[state.cursor - 1].pitch !== 0) {
+      tr.notes[state.cursor - 1].octave = Math.max(-2, tr.notes[state.cursor - 1].octave - 1);
+      renderNotation();
+    } else {
+      state.octave = Math.max(-2, state.octave - 1);
+      $('oct-display').textContent = (state.octave > 0 ? '+' : '') + state.octave;
+    }
+  } else if (e.key === 'Backspace') {
+    e.preventDefault();
+    if (state.cursor > 0) {
+      tr.notes.splice(state.cursor - 1, 1);
+      state.cursor--;
+      renderNotation();
+    }
+  } else if (e.key === ' ') {
+    e.preventDefault();
+    togglePlay();
+  }
+});
+
+/* ============================================================
+   播放
+   ============================================================ */
+function togglePlay() {
+  if (state.playing) { stopPlay(); return; }
+  startPlay();
+}
+
+function startPlay() {
+  const tr = getActiveTrack();
+  if (!tr || tr.notes.length === 0) { showToast('当前音轨为空'); return; }
+  const ctx = audio.ensureCtx();
+  const beatDur = 60 / state.tempo;
+  let anyTrack = state.tracks.filter(t => !t.muted && (!state.tracks.some(s => s.solo) || t.solo));
+  if (anyTrack.length === 0) anyTrack = state.tracks;
+  const hasSolo = state.tracks.some(t => t.solo);
+  const playTracks = hasSolo ? state.tracks.filter(t => t.solo) : state.tracks.filter(t => !t.muted);
+
+  state.playing = true;
+  $('btn-play').classList.add('playing');
+  $('btn-play').textContent = '⏸';
+
+  const startTime = ctx.currentTime + 0.1;
+  const noteTimes = [];
+  let totalBeats = 0;
+
+  for (const trk of playTracks) {
+    let t = 0;
+    for (let i = 0; i < trk.notes.length; i++) {
+      const n = trk.notes[i];
+      const dur = (4 / n.duration) * beatDur;
+      const absTime = startTime + t;
+      if (n.pitch !== 0) {
+        audio.playNote(trk.instrument, noteToFreq(n.pitch, n.octave), absTime, dur, trk.volume);
+      }
+      t += dur;
+    }
+    totalBeats = Math.max(totalBeats, t / beatDur);
+  }
+
+  // 节拍器
+  if (state.metronome) {
+    const beatsPerBar = parseInt(state.timeSig);
+    for (let b = 0; b < totalBeats + 1; b++) {
+      audio.playMetronome(startTime + b * beatDur, b % beatsPerBar === 0);
+    }
+  }
+
+  // 光标跟随
+  const totalDuration = (totalBeats + 1) * beatDur;
+  let startMs = performance.now() + 100;
+  state.playTimer = setInterval(() => {
+    const elapsed = (performance.now() - startMs) / 1000;
+    if (elapsed >= totalDuration) { stopPlay(); return; }
+    const beatPos = elapsed / beatDur;
+    highlightPlayingNote(beatPos);
+  }, 50);
+}
+
+function stopPlay() {
+  state.playing = false;
+  $('btn-play').classList.remove('playing');
+  $('btn-play').textContent = '▶';
+  if (state.playTimer) { clearInterval(state.playTimer); state.playTimer = null; }
+  document.querySelectorAll('.note-cell.playing').forEach(c => c.classList.remove('playing'));
+}
+
+function highlightPlayingNote(beatPos) {
+  const tr = getActiveTrack();
+  if (!tr) return;
+  let b = 0;
+  let idx = -1;
+  for (let i = 0; i < tr.notes.length; i++) {
+    const d = 4 / tr.notes[i].duration;
+    if (b + d > beatPos) { idx = i; break; }
+    b += d;
+  }
+  document.querySelectorAll('.note-cell.playing').forEach(c => c.classList.remove('playing'));
+  if (idx >= 0) {
+    const cells = document.querySelectorAll('.note-cell');
+    if (cells[idx]) cells[idx].classList.add('playing');
+  }
+}
+
+/* ============================================================
+   导出 — MP3
+   ============================================================ */
+function exportMP3() {
+  if (state.tracks.length === 0 || state.tracks.every(t => t.notes.length === 0)) {
+    showToast('没有可导出的内容'); return;
+  }
+  showToast('正在渲染音频...');
+  const hasSolo = state.tracks.some(t => t.solo);
+  const exportTracks = hasSolo ? state.tracks.filter(t => t.solo) : state.tracks.filter(t => !t.muted);
+  const beatsPerBar = parseInt(state.timeSig);
+
+  audio.renderOffline(exportTracks, state.tempo, beatsPerBar, buffer => {
+    showToast('正在编码 MP3...');
+    const data = bufferToMP3(buffer);
+    if (data) {
+      downloadBlob(new Blob(data, {type: 'audio/mp3'}), 'composer-export.mp3');
+      showToast('MP3 导出成功！');
+    } else {
+      const wav = bufferToWAV(buffer);
+      downloadBlob(new Blob([wav], {type: 'audio/wav'}), 'composer-export.wav');
+      showToast('MP3 编码库加载失败，已导出 WAV');
+    }
+  });
+}
+
+function bufferToMP3(buffer) {
+  if (typeof lamejs === 'undefined' || !lamejs.Mp3Encoder) return null;
+  const channels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const kbps = 128;
+  const encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
+  const samplesL = buffer.getChannelData(0);
+  const samplesR = channels > 1 ? buffer.getChannelData(1) : samplesL;
+  const len = samplesL.length;
+  const blockSize = 1152;
+  const data = [];
+  const left = new Int16Array(blockSize);
+  const right = new Int16Array(blockSize);
+  for (let i = 0; i < len; i += blockSize) {
+    const l = Math.min(blockSize, len - i);
+    for (let j = 0; j < l; j++) {
+      left[j] = Math.max(-1, Math.min(1, samplesL[i + j])) * 32767;
+      right[j] = Math.max(-1, Math.min(1, samplesR[i + j])) * 32767;
+    }
+    const buf = channels > 1
+      ? encoder.encodeBuffer(left.subarray(0, l), right.subarray(0, l))
+      : encoder.encodeBuffer(left.subarray(0, l));
+    if (buf.length > 0) data.push(new Uint8Array(buf));
+  }
+  const end = encoder.flush();
+  if (end.length > 0) data.push(new Uint8Array(end));
+  return data;
+}
+
+function bufferToWAV(buffer) {
+  const numCh = buffer.numberOfChannels;
+  const len = buffer.length * numCh * 2;
+  const ab = new ArrayBuffer(44 + len);
+  const view = new DataView(ab);
+  const write = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
+  write(0, 'RIFF'); view.setUint32(4, 36 + len, true); write(8, 'WAVE'); write(12, 'fmt ');
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, numCh, true);
+  view.setUint32(24, buffer.sampleRate, true); view.setUint32(28, buffer.sampleRate * numCh * 2, true);
+  view.setUint16(32, numCh * 2, true); view.setUint16(34, 16, true); write(36, 'data');
+  view.setUint32(40, len, true);
+  let off = 44;
+  for (let i = 0; i < buffer.length; i++) {
+    for (let ch = 0; ch < numCh; ch++) {
+      const s = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+      view.setInt16(off, s * 32767, true);
+      off += 2;
+    }
+  }
+  return ab;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ============================================================
+   保存 / 加载
+   ============================================================ */
+function saveProject() {
+  const data = {
+    tracks: state.tracks.map(t => ({
+      name: t.name, instrument: t.instrument,
+      notes: t.notes, volume: t.volume, color: t.color
+    })),
+    tempo: state.tempo, timeSig: state.timeSig, key: state.key,
+  };
+  downloadBlob(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}), 'composer-project.json');
+  showToast('项目已保存');
+}
+
+function loadProject(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      state.tracks = (data.tracks || []).map((t, i) => ({
+        id: nextTrackId++,
+        name: t.name || ('Track ' + (i + 1)),
+        instrument: t.instrument || 'piano',
+        notes: t.notes || [],
+        volume: t.volume ?? 0.8,
+        muted: false, solo: false,
+        color: t.color || TRACK_COLORS[i % TRACK_COLORS.length],
+      }));
+      state.tempo = data.tempo || 120;
+      state.timeSig = data.timeSig || '4/4';
+      state.key = data.key || 'C';
+      state.activeTrackId = state.tracks[0]?.id ?? 0;
+      state.cursor = 0;
+      $('tempo-slider').value = state.tempo;
+      $('tempo-val').textContent = state.tempo;
+      $('time-sig').value = state.timeSig;
+      $('key-sig').value = state.key;
+      renderTracks();
+      renderNotation();
+      showToast('项目加载成功');
+    } catch (err) { showToast('加载失败：文件格式错误'); }
+  };
+  reader.readAsText(file);
+}
+
+/* ============================================================
+   预设曲目
+   ============================================================ */
+const PRESETS = {
+  twinkle: {
+    name: '小星星',
+    tracks: [{
+      instrument: 'piano',
+      notes: [1,1,5,5,6,6,5, 4,4,3,3,2,2,1, 5,5,4,4,3,3,2, 5,5,4,4,3,3,2, 1,1,5,5,6,6,5, 4,4,3,3,2,2,1]
+        .map(p => ({pitch:p, octave:0, duration:4})),
+    }]
+  },
+  birthday: {
+    name: '生日快乐',
+    tracks: [{
+      instrument: 'violin',
+      notes: [
+        {pitch:5,octave:0,duration:8},{pitch:5,octave:0,duration:8},{pitch:6,octave:0,duration:4},{pitch:5,octave:0,duration:4},{pitch:1,octave:1,duration:4},{pitch:7,octave:0,duration:2},
+        {pitch:5,octave:0,duration:8},{pitch:5,octave:0,duration:8},{pitch:6,octave:0,duration:4},{pitch:5,octave:0,duration:4},{pitch:2,octave:1,duration:4},{pitch:1,octave:1,duration:2},
+        {pitch:5,octave:0,duration:8},{pitch:5,octave:0,duration:8},{pitch:5,octave:1,duration:4},{pitch:3,octave:1,duration:4},{pitch:1,octave:1,duration:4},{pitch:7,octave:0,duration:4},{pitch:6,octave:0,duration:4},
+        {pitch:4,octave:1,duration:8},{pitch:4,octave:1,duration:8},{pitch:3,octave:1,duration:4},{pitch:1,octave:1,duration:4},{pitch:2,octave:1,duration:4},{pitch:1,octave:1,duration:2},
+      ],
+    }]
+  },
+  ode: {
+    name: '欢乐颂',
+    tracks: [{
+      instrument: 'trumpet',
+      notes: [3,3,4,5, 5,4,3,2, 1,1,2,3, 3,2,2, 3,3,4,5, 5,4,3,2, 1,1,2,3, 2,1,1]
+        .map(p => ({pitch:p, octave:0, duration:4}))
+        .map((n,i) => i === 14 || i === 28 ? {...n, duration:2} : n),
+    }]
+  },
+  jasmine: {
+    name: '茉莉花',
+    tracks: [{
+      instrument: 'flute',
+      notes: [
+        {pitch:3,octave:0,duration:4},{pitch:3,octave:0,duration:4},{pitch:5,octave:0,duration:8},{pitch:6,octave:0,duration:8},{pitch:5,octave:0,duration:4},
+        {pitch:3,octave:0,duration:8},{pitch:5,octave:0,duration:8},{pitch:5,octave:0,duration:4},{pitch:3,octave:0,duration:4},{pitch:2,octave:0,duration:4},{pitch:1,octave:0,duration:4},
+        {pitch:3,octave:0,duration:8},{pitch:5,octave:0,duration:8},{pitch:5,octave:0,duration:4},{pitch:6,octave:0,duration:4},{pitch:5,octave:0,duration:4},{pitch:3,octave:0,duration:4},
+        {pitch:2,octave:0,duration:8},{pitch:3,octave:0,duration:8},{pitch:1,octave:0,duration:2},
+      ],
+    }]
+  },
+};
+
+function loadPreset(name) {
+  const preset = PRESETS[name];
+  if (!preset) return;
+  state.tracks = preset.tracks.map((t, i) => ({
+    id: nextTrackId++,
+    name: t.instrument ? INSTRUMENTS[t.instrument].name + ' - ' + preset.name : preset.name,
+    instrument: t.instrument || 'piano',
+    notes: t.notes.map(n => ({...n})),
+    volume: 0.8, muted: false, solo: false,
+    color: TRACK_COLORS[i % TRACK_COLORS.length],
+  }));
+  state.activeTrackId = state.tracks[0].id;
+  state.cursor = state.tracks[0].notes.length;
+  renderTracks();
+  renderNotation();
+  showToast('已加载：' + preset.name);
+}
+
+/* ============================================================
+   工具
+   ============================================================ */
+function $(id) { return document.getElementById(id); }
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ============================================================
+   事件绑定
+   ============================================================ */
+$('btn-add-track').onclick = () => {
+  const inst = INSTRUMENT_LIST[state.tracks.length % INSTRUMENT_LIST.length];
+  addTrack(inst);
+};
+
+$('btn-play').onclick = togglePlay;
+$('btn-stop').onclick = stopPlay;
+
+$('btn-metronome').onclick = () => {
+  state.metronome = !state.metronome;
+  const btn = $('btn-metronome');
+  btn.textContent = '节拍器 ' + (state.metronome ? '开' : '关');
+  btn.classList.toggle('active', state.metronome);
+};
+
+$('tempo-slider').oninput = e => {
+  state.tempo = parseInt(e.target.value);
+  $('tempo-val').textContent = state.tempo;
+};
+
+$('time-sig').onchange = e => { state.timeSig = e.target.value; };
+$('key-sig').onchange = e => { state.key = e.target.value; };
+
+document.querySelectorAll('.dur-btn[data-dur]').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.dur-btn[data-dur]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.duration = parseInt(btn.dataset.dur);
+  };
+});
+
+$('oct-up').onclick = () => {
+  state.octave = Math.min(2, state.octave + 1);
+  $('oct-display').textContent = (state.octave > 0 ? '+' : '') + state.octave;
+};
+$('oct-down').onclick = () => {
+  state.octave = Math.max(-2, state.octave - 1);
+  $('oct-display').textContent = (state.octave > 0 ? '+' : '') + state.octave;
+};
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.onclick = () => loadPreset(btn.dataset.preset);
+});
+
+$('btn-save').onclick = saveProject;
+$('btn-load').onclick = () => $('load-file').click();
+$('load-file').onchange = e => { if (e.target.files[0]) loadProject(e.target.files[0]); };
+$('btn-export-mp3').onclick = exportMP3;
+
+/* ============================================================
+   初始化
+   ============================================================ */
+addTrack('piano');
+renderTracks();
+renderNotation();
+</script>
+</body>
+</html>
