@@ -75,6 +75,14 @@ a{color:var(--accent);text-decoration:none}
 .note-cell.rest{color:var(--muted);font-style:italic}
 .beat-marker{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);z-index:5;pointer-events:none;transition:left 0.05s linear;opacity:0.7}
 .notation-empty{padding:40px;text-align:center;color:var(--muted);font-size:0.9rem}
+.input-status{padding:8px 12px;background:var(--accent-dim);border-bottom:1px solid var(--rule);font-size:0.8rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.input-status .status-item{display:flex;align-items:center;gap:4px}
+.input-status .status-label{color:var(--muted);font-size:0.72rem}
+.input-status .status-val{font-weight:700;color:var(--accent);font-family:var(--mono);font-size:0.85rem}
+.input-status .octave-preview{display:inline-flex;flex-direction:column;align-items:center;line-height:1}
+.input-status .octave-preview .dots-up{font-size:0.5rem;color:var(--accent);min-height:6px}
+.input-status .octave-preview .dots-down{font-size:0.5rem;color:var(--accent);min-height:6px}
+.input-status .octave-preview .num{font-size:0.9rem;font-weight:700}
 
 .props-section{margin-bottom:16px}
 .props-label{font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
@@ -155,6 +163,11 @@ a{color:var(--accent);text-decoration:none}
 
   <section class="panel notation-editor" id="notation-panel">
     <div class="panel-head"><span>简谱编辑器</span><span id="notation-info" style="font-size:0.75rem;color:var(--muted)">点击音轨开始创作</span></div>
+    <div class="input-status" id="input-status">
+      <div class="status-item"><span class="status-label">当前八度</span><span class="octave-preview" id="oct-preview"><span class="dots-up" id="oct-dots-up"></span><span class="num">1</span><span class="dots-down" id="oct-dots-down"></span></span></div>
+      <div class="status-item"><span class="status-label">时值</span><span class="status-val" id="dur-preview">♩ 四分</span></div>
+      <div class="status-item" style="margin-left:auto"><span class="status-label">提示</span><span style="color:var(--muted)">按 1-7 输入 · ↑↓ 调八度</span></div>
+    </div>
     <div class="notation-grid" id="notation-grid">
       <div class="notation-empty">请在左侧选择或添加一条音轨开始创作<br><br>按数字键 <kbd>1</kbd>-<kbd>7</kbd> 输入音符，<kbd>0</kbd> 输入休止符</div>
     </div>
@@ -317,19 +330,56 @@ class AudioEngine {
   }
 
   _guitar(ctx, dest, freq, t, dur, vol) {
-    const osc = ctx.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.value = freq;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(freq * 5, t);
-    filter.frequency.exponentialRampToValueAtTime(freq * 1.5, t + dur);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol * 0.25, t + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    osc.connect(filter).connect(g).connect(dest);
-    osc.start(t); osc.stop(t + dur);
+    // 1. 拨弦噪声起音 (pluck attack)
+    const noiseDur = 0.025;
+    const noiseBuf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * noiseDur), ctx.sampleRate);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) {
+      nd[i] = (Math.random() * 2 - 1) * Math.exp(-i / (nd.length * 0.15));
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuf;
+    const nFilt = ctx.createBiquadFilter();
+    nFilt.type = 'bandpass';
+    nFilt.frequency.value = freq * 2.5;
+    nFilt.Q.value = 0.6;
+    const nGain = ctx.createGain();
+    nGain.gain.value = vol * 0.07;
+    noise.connect(nFilt).connect(nGain).connect(dest);
+    noise.start(t);
+
+    // 2. 弦振动 — 多重谐波 (温暖木吉他音色)
+    const partials = [
+      {m:1, a:1.0}, {m:2, a:0.55}, {m:3, a:0.35},
+      {m:4, a:0.22}, {m:5, a:0.14}, {m:6, a:0.07},
+    ];
+    partials.forEach(p => {
+      const osc = ctx.createOscillator();
+      osc.type = p.m === 1 ? 'triangle' : 'sine';
+      osc.frequency.value = freq * p.m;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(p.a * vol * 0.26, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(p.a * vol * 0.1, t + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = freq * (p.m === 1 ? 1.3 : 2.8);
+      bp.Q.value = 0.7;
+      osc.connect(bp).connect(g).connect(dest);
+      osc.start(t); osc.stop(t + dur);
+    });
+
+    // 3. 琴箱共振 (body resonance)
+    const body = ctx.createOscillator();
+    body.type = 'sine';
+    body.frequency.value = freq * 0.5;
+    const bg = ctx.createGain();
+    bg.gain.setValueAtTime(0, t);
+    bg.gain.linearRampToValueAtTime(vol * 0.08, t + 0.02);
+    bg.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.8);
+    body.connect(bg).connect(dest);
+    body.start(t); body.stop(t + dur);
   }
 
   _violin(ctx, dest, freq, t, dur, vol) {
@@ -530,6 +580,19 @@ function getActiveTrack() {
 /* ============================================================
    渲染 — 音轨面板
    ============================================================ */
+function updateOctaveDisplay() {
+  $('oct-display').textContent = (state.octave > 0 ? '+' : '') + state.octave;
+  const up = $('oct-dots-up'), down = $('oct-dots-down');
+  if (up) up.textContent = state.octave > 0 ? '·'.repeat(state.octave) : '';
+  if (down) down.textContent = state.octave < 0 ? '·'.repeat(-state.octave) : '';
+}
+
+const DUR_NAMES = {1:'𝅝 全音', 2:'𝅗𝅥 二分', 4:'♩ 四分', 8:'♪ 八分', 16:'𝅘𝅥𝅯 十六分', 3:'♩. 附点'};
+function updateInputStatus() {
+  updateOctaveDisplay();
+  $('dur-preview').textContent = DUR_NAMES[state.duration] || '♩';
+}
+
 function renderTracks() {
   const list = $('track-list');
   list.innerHTML = '';
@@ -655,22 +718,12 @@ document.addEventListener('keydown', e => {
     if (state.cursor < tr.notes.length) { state.cursor++; renderNotation(); }
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
-    if (state.cursor > 0 && tr.notes[state.cursor - 1] && tr.notes[state.cursor - 1].pitch !== 0) {
-      tr.notes[state.cursor - 1].octave = Math.min(2, tr.notes[state.cursor - 1].octave + 1);
-      renderNotation();
-    } else {
-      state.octave = Math.min(2, state.octave + 1);
-      $('oct-display').textContent = (state.octave > 0 ? '+' : '') + state.octave;
-    }
+    state.octave = Math.min(2, state.octave + 1);
+    updateOctaveDisplay();
   } else if (e.key === 'ArrowDown') {
     e.preventDefault();
-    if (state.cursor > 0 && tr.notes[state.cursor - 1] && tr.notes[state.cursor - 1].pitch !== 0) {
-      tr.notes[state.cursor - 1].octave = Math.max(-2, tr.notes[state.cursor - 1].octave - 1);
-      renderNotation();
-    } else {
-      state.octave = Math.max(-2, state.octave - 1);
-      $('oct-display').textContent = (state.octave > 0 ? '+' : '') + state.octave;
-    }
+    state.octave = Math.max(-2, state.octave - 1);
+    updateOctaveDisplay();
   } else if (e.key === 'Backspace') {
     e.preventDefault();
     if (state.cursor > 0) {
@@ -1009,16 +1062,17 @@ document.querySelectorAll('.dur-btn[data-dur]').forEach(btn => {
     document.querySelectorAll('.dur-btn[data-dur]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     state.duration = parseInt(btn.dataset.dur);
+    updateInputStatus();
   };
 });
 
 $('oct-up').onclick = () => {
   state.octave = Math.min(2, state.octave + 1);
-  $('oct-display').textContent = (state.octave > 0 ? '+' : '') + state.octave;
+  updateInputStatus();
 };
 $('oct-down').onclick = () => {
   state.octave = Math.max(-2, state.octave - 1);
-  $('oct-display').textContent = (state.octave > 0 ? '+' : '') + state.octave;
+  updateInputStatus();
 };
 
 document.querySelectorAll('.preset-btn').forEach(btn => {
@@ -1036,6 +1090,7 @@ $('btn-export-mp3').onclick = exportMP3;
 addTrack('piano');
 renderTracks();
 renderNotation();
+updateInputStatus();
 </script>
 </body>
 </html>
