@@ -69,6 +69,13 @@ section{padding:72px 0}
 }
 .word-input:focus{outline:none;border-color:var(--accent)}
 .word-input::placeholder{color:#adb5bd}
+.input-area{position:relative}
+.lang-detect{
+  position:absolute;right:16px;top:50%;transform:translateY(-50%);
+  font-size:0.75rem;color:#fff;background:var(--accent);padding:2px 10px;
+  border-radius:8px;font-weight:600;opacity:0;transition:opacity 0.3s;pointer-events:none;
+}
+.lang-detect.show{opacity:1}
 
 .tool-bar{
   display:flex;align-items:center;gap:16px;margin-top:20px;flex-wrap:wrap;
@@ -292,6 +299,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
       <div class="tool-panels" style="padding:28px">
         <div class="input-area">
           <input type="text" id="word-input" class="word-input" placeholder="输入单词，如 extractable, portable, inspection..." autofocus />
+          <span id="lang-detect" class="lang-detect"></span>
         </div>
         <div class="tool-bar">
           <div class="tool-bar-left">
@@ -304,7 +312,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
                 <option value="es">西班牙语</option>
                 <option value="it">意大利语</option>
                 <option value="pt">葡萄牙语</option>
-                <option value="auto">自动检测</option>
+                <option value="auto" selected>自动检测</option>
               </select>
             </div>
             <div class="ai-toggle-wrap">
@@ -6455,6 +6463,18 @@ const ROOTS_BY_TYPE = {
   suffix: ROOT_DB.filter(e => e.type === 'suffix').sort((a, b) => b.priority - a.priority)
 };
 
+const LANG_MAP = { en: '英语', de: '德语', fr: '法语', es: '西班牙语', it: '意大利语', pt: '葡萄牙语' };
+
+function detectLanguage(word) {
+  const w = word.trim().toLowerCase();
+  if (/ß|sch|ei[^n]|au[^t]|eu|cht|pf|sp[aeiou]|st[aeiou]/.test(w)) return 'de';
+  if (/[éèêëàâîïôùûç]|eau|oux|ois|ez$|ment$|tion$|sse$/.test(w)) return 'fr';
+  if (/ción$|miento$|dad$|mente$|ñ|ll/.test(w)) return 'es';
+  if (/zione$|mento$|ità$|gli|sci|sce/.test(w)) return 'it';
+  if (/ção$|dade$|mento$|lho$|nha$|[ãõ]/.test(w)) return 'pt';
+  return 'en';
+}
+
 /**
  * 分析单词的词根结构
  * 匹配时去掉词根中的连字符（如 "tract-" -> "tract"），以便匹配用户输入的单词
@@ -6541,16 +6561,27 @@ let debounceTimer;
 input.addEventListener('input', function() {
   clearTimeout(debounceTimer);
   const word = this.value.trim();
+  const langDetect = document.getElementById('lang-detect');
   if (word.length === 0) {
     resultsEl.innerHTML = '<div class="placeholder">输入单词，自动拆解词根...</div>';
     document.getElementById('ai-summary').style.display = 'none';
+    langDetect.classList.remove('show');
     return;
+  }
+  // 自动检测语言
+  const langSelect = document.getElementById('lang-select');
+  if (langSelect.value === 'auto') {
+    const detected = detectLanguage(word);
+    langDetect.textContent = '检测到：' + (LANG_MAP[detected] || '英语');
+    langDetect.classList.add('show');
+  } else {
+    langDetect.classList.remove('show');
   }
   debounceTimer = setTimeout(() => {
     const result = analyzeWord(word);
     renderResults(result);
     if (aiEnabled && apiKey && result && result.parts.length > 0) {
-      const lang = document.getElementById('lang-select').value;
+      const lang = langSelect.value === 'auto' ? detectLanguage(word) : langSelect.value;
       analyzeWithAI(word, lang);
     }
   }, 300);
@@ -6646,7 +6677,8 @@ function toggleAI() {
       const result = analyzeWord(word);
       renderResults(result);
       if (aiEnabled && apiKey) {
-        analyzeWithAI(word, document.getElementById('lang-select').value);
+        const lang = document.getElementById('lang-select').value;
+        analyzeWithAI(word, lang === 'auto' ? detectLanguage(word) : lang);
       }
     }, 300);
   }
