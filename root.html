@@ -6483,72 +6483,65 @@ function analyzeWord(word) {
   if (!word || word.trim().length === 0) return null;
   const w = word.trim().toLowerCase();
   const parts = [];
-  let remaining = w;
+  const unrecognized = [];
 
-  // 1. 前缀匹配 — 从开头匹配最长前缀（去掉连字符）
-  let matchedPrefix = null;
-  for (const p of ROOTS_BY_TYPE.prefix) {
-    const cleanRoot = p.root.replace(/[-\s]/g, '');
-    if (remaining.startsWith(cleanRoot)) {
-      matchedPrefix = { ...p, matchedText: cleanRoot, start: 0, end: cleanRoot.length };
-      remaining = remaining.slice(cleanRoot.length);
-      break;
-    }
-  }
-  if (matchedPrefix) parts.push(matchedPrefix);
-
-  // 2. 词根匹配 — 从剩余部分找最长匹配（去掉连字符）
-  let matchedRoot = null;
+  // 1. 在单词中找最长匹配的词根（优先语义匹配，防止误配前缀/后缀）
+  let bestRoot = null;
+  let bestRootIdx = -1;
   for (const r of ROOTS_BY_TYPE.root) {
     const cleanRoot = r.root.replace(/[-\s]/g, '');
-    const idx = remaining.indexOf(cleanRoot);
+    const idx = w.indexOf(cleanRoot);
     if (idx !== -1) {
-      if (!matchedRoot || cleanRoot.length > matchedRoot.matchedText.length) {
-        matchedRoot = {
-          ...r,
-          matchedText: cleanRoot,
-          start: (matchedPrefix ? matchedPrefix.end : 0) + idx,
-          end: (matchedPrefix ? matchedPrefix.end : 0) + idx + cleanRoot.length
-        };
+      if (!bestRoot || cleanRoot.length > bestRoot.matchedText.length) {
+        bestRoot = { ...r, matchedText: cleanRoot, start: idx, end: idx + cleanRoot.length };
+        bestRootIdx = idx;
       }
     }
   }
-  if (matchedRoot) parts.push(matchedRoot);
 
-  // 3. 后缀匹配 — 从剩余尾部匹配最长后缀（去掉连字符）
-  remaining = w;
-  if (matchedPrefix) remaining = remaining.slice(matchedPrefix.matchedText.length);
-  if (matchedRoot) {
-    const rootIdx = remaining.indexOf(matchedRoot.matchedText);
-    if (rootIdx !== -1) {
-      remaining = remaining.slice(rootIdx + matchedRoot.matchedText.length);
+  if (!bestRoot) {
+    // 没有匹配到任何词根，返回空结果
+    unrecognized.push({ text: w, type: 'unrecognized' });
+    return { word: w, parts, unrecognized };
+  }
+
+  parts.push(bestRoot);
+
+  // 2. 检查词根前是否有匹配的前缀（剩余文本必须精确匹配前缀）
+  const beforeRoot = w.slice(0, bestRootIdx);
+  if (beforeRoot.length > 0) {
+    let matchedPrefix = null;
+    for (const p of ROOTS_BY_TYPE.prefix) {
+      const cleanPrefix = p.root.replace(/[-\s]/g, '');
+      if (beforeRoot === cleanPrefix) {
+        matchedPrefix = { ...p, matchedText: cleanPrefix, start: 0, end: cleanPrefix.length };
+        break;
+      }
+    }
+    if (matchedPrefix) {
+      parts.unshift(matchedPrefix);
+    } else {
+      unrecognized.push({ text: beforeRoot, type: 'unrecognized' });
     }
   }
 
-  let matchedSuffix = null;
-  for (const s of ROOTS_BY_TYPE.suffix) {
-    const cleanRoot = s.root.replace(/[-\s]/g, '');
-    if (remaining.endsWith(cleanRoot)) {
-      matchedSuffix = { ...s, matchedText: cleanRoot, start: w.length - cleanRoot.length, end: w.length };
-      remaining = remaining.slice(0, remaining.length - cleanRoot.length);
-      break;
+  // 3. 检查词根后是否有匹配的后缀（剩余文本必须精确匹配后缀）
+  const afterRoot = w.slice(bestRoot.end);
+  if (afterRoot.length > 0) {
+    let matchedSuffix = null;
+    for (const s of ROOTS_BY_TYPE.suffix) {
+      const cleanSuffix = s.root.replace(/[-\s]/g, '');
+      if (afterRoot === cleanSuffix) {
+        matchedSuffix = { ...s, matchedText: cleanSuffix, start: bestRoot.end, end: w.length };
+        break;
+      }
+    }
+    if (matchedSuffix) {
+      parts.push(matchedSuffix);
+    } else {
+      unrecognized.push({ text: afterRoot, type: 'unrecognized' });
     }
   }
-  if (matchedSuffix) parts.push(matchedSuffix);
-
-  // 4. 计算未识别部分
-  const unrecognized = [];
-  let checkStr = w;
-  if (matchedPrefix) checkStr = checkStr.slice(matchedPrefix.matchedText.length);
-  if (matchedRoot) {
-    const rootIdx = checkStr.indexOf(matchedRoot.matchedText);
-    if (rootIdx > 0) unrecognized.push({ text: checkStr.slice(0, rootIdx), type: 'unrecognized' });
-    checkStr = checkStr.slice(rootIdx + matchedRoot.matchedText.length);
-  }
-  if (matchedSuffix) {
-    checkStr = checkStr.slice(0, checkStr.length - matchedSuffix.matchedText.length);
-  }
-  if (checkStr.length > 0) unrecognized.push({ text: checkStr, type: 'unrecognized' });
 
   return { word: w, parts, unrecognized };
 }
