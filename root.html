@@ -6486,11 +6486,16 @@ const LANG_MAP = { en: '英语', de: '德语', fr: '法语', es: '西班牙语',
 
 function detectLanguage(word) {
   const w = word.trim().toLowerCase();
-  if (/ß|sch|ei[^n]|au[^t]|eu|cht|pf|sp[aeiou]|st[aeiou]/.test(w)) return 'de';
-  if (/[éèêëàâîïôùûç]|eau|oux|ois|ez$|ment$|tion$|sse$/.test(w)) return 'fr';
-  if (/ción$|miento$|dad$|mente$|ñ|ll/.test(w)) return 'es';
-  if (/zione$|mento$|ità$|gli|sci|sce/.test(w)) return 'it';
+  // 葡萄牙语（优先检测，因其特殊字符 ã/õ/ç 也出现在法语中）
   if (/ção$|dade$|mento$|lho$|nha$|[ãõ]/.test(w)) return 'pt';
+  // 西班牙语
+  if (/ción$|miento$|dad$|mente$|ñ|ll/.test(w)) return 'es';
+  // 意大利语
+  if (/zione$|mento$|ità$|gli|sci|sce/.test(w)) return 'it';
+  // 法语：仅使用含有法语特殊字符或独特词尾的模式
+  if (/[éèêëàâîïôùûç]|eau|oux|ez$/.test(w)) return 'fr';
+  // 德语：仅使用高度独特的特征
+  if (/ß|cht|pf/.test(w)) return 'de';
   return 'en';
 }
 
