@@ -80,8 +80,9 @@ a{color:var(--accent);text-decoration:none}
 .note-cell.cursor{background:var(--accent-dim);box-shadow:inset 0 -3px 0 var(--accent)}
 .note-cell.selected{background:#fff3cd !important;box-shadow:inset 0 0 0 2px var(--accent) !important;z-index:3}
 .note-cell.playing{background:var(--accent);color:#fff;transform:scale(1.08)}
-.slur-line{position:absolute;top:-2px;height:10px;border:2px solid var(--accent);border-bottom:none;border-radius:50% 50% 0 0 / 100% 100% 0 0;pointer-events:auto;cursor:pointer;z-index:4}
-.slur-line:hover{border-color:var(--danger)}
+.notation-row.has-slur{padding-top:26px}
+.slur-line{position:absolute;top:3px;height:20px;overflow:visible;pointer-events:auto;cursor:pointer;z-index:5}
+.slur-line:hover path{stroke:var(--danger)!important}
 .slur-btn{padding:8px 14px;border-radius:8px;border:1.5px solid var(--rule);background:#fff;cursor:pointer;font-size:0.85rem;font-weight:600;color:var(--ink);transition:all 0.15s}
 .slur-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
 .slur-btn.active{background:var(--accent);color:#fff;border-color:var(--accent2)}
@@ -1360,26 +1361,45 @@ function renderNotation() {
       row.appendChild(cell);
     }
 
-    // 渲染连音线
+    if (tr.slurs && tr.slurs.length > 0) {
+      row.classList.add('has-slur');
+    }
+
+    grid.appendChild(row);
+
+    // 渲染连音线 (SVG弧线) — 需在row已挂载后读取offsetLeft
     if (tr.slurs && tr.slurs.length > 0) {
       const cells = row.querySelectorAll('.note-cell');
+      const svgNS = 'http://www.w3.org/2000/svg';
       tr.slurs.forEach((slur, slurIdx) => {
         if (slur.startIdx >= cells.length || slur.endIdx >= cells.length) return;
         const firstCell = cells[slur.startIdx];
         const lastCell = cells[slur.endIdx];
         const startX = firstCell.offsetLeft;
         const endX = lastCell.offsetLeft + lastCell.offsetWidth;
-        const slurEl = document.createElement('div');
-        slurEl.className = 'slur-line';
-        slurEl.style.left = startX + 'px';
-        slurEl.style.width = (endX - startX) + 'px';
-        slurEl.title = '点击取消连音';
-        slurEl.onclick = (e) => { e.stopPropagation(); removeSlur(tr.id, slurIdx); };
-        row.appendChild(slurEl);
+        const w = endX - startX;
+
+        const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('class', 'slur-line');
+        svg.setAttribute('width', w);
+        svg.setAttribute('height', 20);
+        svg.setAttribute('overflow', 'visible');
+        svg.style.left = startX + 'px';
+        svg.style.width = w + 'px';
+
+        const path = document.createElementNS(svgNS, 'path');
+        path.setAttribute('d', `M 2 19 Q ${w/2} -2, ${w-2} 19`);
+        path.setAttribute('stroke', 'var(--accent)');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(path);
+
+        svg.title = '点击取消连音';
+        svg.onclick = (e) => { e.stopPropagation(); removeSlur(tr.id, slurIdx); };
+        row.appendChild(svg);
       });
     }
-
-    grid.appendChild(row);
   }
 }
 
