@@ -7665,8 +7665,8 @@ function detectLanguage(word) {
   if (/ñ/.test(w)) return 'es';
   // 意大利语：gli/sci/sce 等特有组合
   if (/gli|sci|sce/.test(w)) return 'it';
-  // 法语：特殊重音字符
-  if (/[éèêëàâîïôùûç]/.test(w)) return 'fr';
+  // 法语：特殊重音字符 + 独特词尾组合
+  if (/[éèêëàâîïôùûç]|eau|oux|ez$|eur$|ois$/.test(w)) return 'fr';
   // 德语：ß 字符
   if (/ß/.test(w)) return 'de';
   return 'en';
