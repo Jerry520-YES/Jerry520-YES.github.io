@@ -920,7 +920,7 @@ const ROOT_DB = [
     meaning_en: "avoid",
     origin: "拉丁语",
     from: "evitare",
-    examples: ["inevitable", "evitable", "inevitability", "eviternal", "inevitably"],
+    examples: ["inevitable", "evitable", "inevitability", "inevitably", "unavoidable"],
     priority: 3,
     languages: ["en", "fr", "es"]
   },
@@ -3505,7 +3505,7 @@ const ROOT_DB = [
     meaning_en: "lift, raise",
     origin: "拉丁语",
     from: "tollere",
-    examples: ["toll", "extol", "tollbooth", "tollgate", "tollhouse"],
+    examples: ["extol", "tolerate", "tolerance", "intolerant", "extolling"],
     priority: 3,
     languages: ["en", "fr", "es"]
   },
@@ -6551,7 +6551,7 @@ input.addEventListener('input', function() {
     renderResults(result);
     if (aiEnabled && apiKey && result && result.parts.length > 0) {
       const lang = document.getElementById('lang-select').value;
-      analyzeWithAI(word, lang, result);
+      analyzeWithAI(word, lang);
     }
   }, 300);
 });
@@ -6646,7 +6646,7 @@ function toggleAI() {
       const result = analyzeWord(word);
       renderResults(result);
       if (aiEnabled && apiKey) {
-        analyzeWithAI(word, document.getElementById('lang-select').value, result);
+        analyzeWithAI(word, document.getElementById('lang-select').value);
       }
     }, 300);
   }
@@ -6662,11 +6662,15 @@ function saveApiKey() {
   document.getElementById('api-key-panel').classList.remove('show');
 }
 
-async function analyzeWithAI(word, language, localResult) {
+let aiAnalyzing = false;
+
+async function analyzeWithAI(word, language) {
   if (!apiKey) {
     showToast('请先设置 API Key');
     return;
   }
+  if (aiAnalyzing) return;
+  aiAnalyzing = true;
   
   const aiSummary = document.getElementById('ai-summary');
   aiSummary.innerHTML = '<div class="ai-loading"><span class="spinner"></span> AI 分析中...</div>';
@@ -6702,6 +6706,8 @@ async function analyzeWithAI(word, language, localResult) {
   } catch (err) {
     console.error('AI analysis failed:', err);
     aiSummary.innerHTML = '<div class="ai-error">AI 分析失败，请检查网络连接和 API Key。</div>';
+  } finally {
+    aiAnalyzing = false;
   }
 }
 
