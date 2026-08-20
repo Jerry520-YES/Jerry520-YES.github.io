@@ -87,9 +87,17 @@ section{padding:72px 0}
   font-family:var(--font);font-size:1.1rem;color:var(--ink);background:var(--bg);
   transition:border-color 0.2s;text-align:center;
 }
-.word-input:focus{outline:none;border-color:var(--accent)}
+.word-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(39,174,96,0.12)}
 .word-input::placeholder{color:#adb5bd}
 .input-area{position:relative}
+.clear-btn{
+  position:absolute;right:52px;top:50%;transform:translateY(-50%);
+  width:28px;height:28px;border-radius:50%;border:none;
+  background:var(--bg2);color:var(--muted);font-size:1.1rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;z-index:2;line-height:1;
+}
+.clear-btn:hover{background:var(--rule);color:var(--ink)}
 .lang-detect{
   position:absolute;right:16px;top:50%;transform:translateY(-50%);
   font-size:0.75rem;color:#fff;background:var(--accent);padding:2px 10px;
@@ -155,6 +163,8 @@ section{padding:72px 0}
   border:1px solid var(--rule);min-height:180px;
 }
 .results-area .placeholder{color:var(--muted);text-align:center;padding:40px 0;font-size:0.95rem}
+.results-area .placeholder .ph-icon{font-size:2.5rem;opacity:0.3;display:block;margin-bottom:12px}
+.results-area .placeholder .placeholder-hint{font-size:0.82rem;color:var(--muted);margin-top:8px;opacity:0.7}
 
 .word-header{
   text-align:center;padding:24px 0 20px;margin-bottom:20px;
@@ -335,6 +345,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
       <div class="tool-panels">
         <div class="input-area">
           <input type="text" id="word-input" class="word-input" placeholder="输入单词，如 extractable, portable, inspection..." autofocus />
+          <button id="clear-btn" class="clear-btn" onclick="clearInput()" aria-label="清除输入" style="display:none">&times;</button>
           <span id="lang-detect" class="lang-detect"></span>
         </div>
         <div class="tool-bar">
@@ -352,7 +363,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
               </select>
             </div>
             <div class="ai-toggle-wrap">
-              <button id="ai-toggle" class="ai-toggle" onclick="toggleAI()"></button>
+              <button id="ai-toggle" class="ai-toggle" onclick="toggleAI()" aria-label="切换 AI 增强模式" role="switch" aria-checked="false"></button>
               <span class="ai-toggle-label">AI 增强</span>
             </div>
           </div>
@@ -366,8 +377,8 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
           </div>
           <p class="api-key-hint">API Key 仅保存在本地浏览器，不会上传到服务器。<br>需要 <code>gpt-3.5-turbo</code> 及以上模型。</p>
         </div>
-        <div id="results" class="results-area">
-          <div class="placeholder">输入单词，自动拆解词根...</div>
+        <div id="results" class="results-area" aria-live="polite">
+          <div class="placeholder"><div class="ph-icon">🌿</div>输入单词，自动拆解词根<br><span class="placeholder-hint">试试输入 extractable、portable、inspection</span></div>
         </div>
         <div id="ai-summary"></div>
       </div>
@@ -443,11 +454,11 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 
 /* =============================================
    ROOT_DB — 词根数据库
-   Latin roots: 333
-   Greek roots: 48
-   Prefixes:    83
+   Latin roots: 417
+   Greek roots: 52
+   Prefixes:    98
    Suffixes:    85
-   Total:       549
+   Total:       653
    ============================================= */
 
 const ROOT_DB = [
@@ -6489,6 +6500,1150 @@ const ROOT_DB = [
     examples: ["happy", "angry", "sunny", "rainy", "daddy"],
     priority: 2,
     languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "alt-",
+    type: "root",
+    meaning: "高，高耸",
+    meaning_en: "high, lofty",
+    origin: "拉丁语",
+    from: "altus",
+    examples: ["altitude", "altar", "exalt", "altimeter", "alto"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "ang-",
+    type: "root",
+    meaning: "挤压，痛苦",
+    meaning_en: "squeeze, pain",
+    origin: "拉丁语",
+    from: "angere",
+    examples: ["anger", "anxious", "angina", "angst", "anguish"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "art-",
+    type: "root",
+    meaning: "技艺，艺术",
+    meaning_en: "skill, craft",
+    origin: "拉丁语",
+    from: "ars, artis",
+    examples: ["art", "artist", "artificial", "artisan", "artifact"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "bat-",
+    type: "root",
+    meaning: "打，击",
+    meaning_en: "beat, strike",
+    origin: "拉丁语",
+    from: "battuere",
+    examples: ["battle", "combat", "battalion", "debate", "batter"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cad-",
+    type: "root",
+    meaning: "落下",
+    meaning_en: "fall",
+    origin: "拉丁语",
+    from: "cadere",
+    examples: ["cadence", "casual", "decay", "cascade", "accident"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "calc-",
+    type: "root",
+    meaning: "石头，算",
+    meaning_en: "stone, reckon",
+    origin: "拉丁语",
+    from: "calx, calcis",
+    examples: ["calculate", "calcium", "calcify", "calculus", "reckon"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "camp-",
+    type: "root",
+    meaning: "田野",
+    meaning_en: "field",
+    origin: "拉丁语",
+    from: "campus",
+    examples: ["camp", "campus", "campaign", "encamp", "camper"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "can-",
+    type: "root",
+    meaning: "白色，发光",
+    meaning_en: "white, glow",
+    origin: "拉丁语",
+    from: "candere",
+    examples: ["candle", "candidate", "candid", "incandescent", "candor"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cant-",
+    type: "root",
+    meaning: "唱",
+    meaning_en: "sing",
+    origin: "拉丁语",
+    from: "canere",
+    examples: ["chant", "cantata", "canticle", "incantation", "accent"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cap-",
+    type: "root",
+    meaning: "拿，取",
+    meaning_en: "take, hold",
+    origin: "拉丁语",
+    from: "capere",
+    examples: ["capacity", "capture", "capable", "captive", "accept"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cav-",
+    type: "root",
+    meaning: "中空",
+    meaning_en: "hollow",
+    origin: "拉丁语",
+    from: "cavus",
+    examples: ["cave", "cavity", "excavate", "cavern", "concave"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "centr-",
+    type: "root",
+    meaning: "中心",
+    meaning_en: "center",
+    origin: "拉丁语",
+    from: "centrum",
+    examples: ["center", "central", "concentrate", "eccentric", "centrifugal"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cert-",
+    type: "root",
+    meaning: "确定",
+    meaning_en: "sure, certain",
+    origin: "拉丁语",
+    from: "certus",
+    examples: ["certain", "certify", "certificate", "ascertain", "certitude"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cit-",
+    type: "root",
+    meaning: "唤起，召唤",
+    meaning_en: "rouse, summon",
+    origin: "拉丁语",
+    from: "citare",
+    examples: ["excite", "recite", "cite", "incite", "solicit"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "clin-",
+    type: "root",
+    meaning: "倾斜",
+    meaning_en: "lean, bend",
+    origin: "拉丁语",
+    from: "clinare",
+    examples: ["incline", "decline", "recline", "clinic", "climate"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "col-",
+    type: "root",
+    meaning: "耕种",
+    meaning_en: "cultivate",
+    origin: "拉丁语",
+    from: "colere",
+    examples: ["colony", "cultivate", "agriculture", "colonial", "cult"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "copi-",
+    type: "root",
+    meaning: "丰富",
+    meaning_en: "plenty",
+    origin: "拉丁语",
+    from: "copia",
+    examples: ["copious", "cornucopia", "copy", "copiously", "opulent"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "coron-",
+    type: "root",
+    meaning: "冠",
+    meaning_en: "crown",
+    origin: "拉丁语",
+    from: "corona",
+    examples: ["crown", "corona", "coronary", "coronation", "coronet"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cours-",
+    type: "root",
+    meaning: "跑",
+    meaning_en: "run",
+    origin: "拉丁语",
+    from: "currere",
+    examples: ["course", "current", "concourse", "courser", "discourse"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cre-",
+    type: "root",
+    meaning: "创造",
+    meaning_en: "create",
+    origin: "拉丁语",
+    from: "creare",
+    examples: ["create", "creature", "creation", "creative", "recreate"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cresc-",
+    type: "root",
+    meaning: "生长",
+    meaning_en: "grow",
+    origin: "拉丁语",
+    from: "crescere",
+    examples: ["crescent", "increase", "crescendo", "decrease", "accrete"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "crim-",
+    type: "root",
+    meaning: "判断，罪行",
+    meaning_en: "judgment, crime",
+    origin: "拉丁语",
+    from: "crimen",
+    examples: ["crime", "criminal", "incriminate", "discriminate", "recrimination"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "crit-",
+    type: "root",
+    meaning: "判断",
+    meaning_en: "judge",
+    origin: "希腊语",
+    from: "krinein",
+    examples: ["critic", "crisis", "critical", "critique", "criterion"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cub-",
+    type: "root",
+    meaning: "躺",
+    meaning_en: "lie down",
+    origin: "拉丁语",
+    from: "cubare",
+    examples: ["incubate", "incubator", "cubicle", "concubine", "succumb"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "culp-",
+    type: "root",
+    meaning: "罪",
+    meaning_en: "fault, blame",
+    origin: "拉丁语",
+    from: "culpa",
+    examples: ["culprit", "culpable", "exculpate", "inculpate", "mea culpa"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cumul-",
+    type: "root",
+    meaning: "堆积",
+    meaning_en: "heap up",
+    origin: "拉丁语",
+    from: "cumulare",
+    examples: ["accumulate", "cumulative", "cumulus", "accumulation", "cumulative"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "cur-",
+    type: "root",
+    meaning: "关心",
+    meaning_en: "care",
+    origin: "拉丁语",
+    from: "cura",
+    examples: ["cure", "curious", "curator", "curate", "procure"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "curv-",
+    type: "root",
+    meaning: "弯曲",
+    meaning_en: "bend",
+    origin: "拉丁语",
+    from: "curvare",
+    examples: ["curve", "curvature", "curvy", "curvilinear", "curvate"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "damn-",
+    type: "root",
+    meaning: "损失",
+    meaning_en: "loss, damage",
+    origin: "拉丁语",
+    from: "damnum",
+    examples: ["damage", "condemn", "damn", "indemnity", "damnation"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "dec-",
+    type: "root",
+    meaning: "合适",
+    meaning_en: "proper, fitting",
+    origin: "拉丁语",
+    from: "decere",
+    examples: ["decent", "decorate", "decency", "decorum", "decorous"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "deci-",
+    type: "root",
+    meaning: "十",
+    meaning_en: "ten",
+    origin: "拉丁语",
+    from: "decem",
+    examples: ["decimal", "decade", "decimate", "decibel", "deciliter"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "decor-",
+    type: "root",
+    meaning: "装饰",
+    meaning_en: "ornament",
+    origin: "拉丁语",
+    from: "decorus",
+    examples: ["decorate", "decorum", "decoration", "decorative", "decorous"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "dens-",
+    type: "root",
+    meaning: "浓密",
+    meaning_en: "thick",
+    origin: "拉丁语",
+    from: "densus",
+    examples: ["dense", "density", "condense", "densification", "densimeter"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "dexter-",
+    type: "root",
+    meaning: "右手",
+    meaning_en: "right hand",
+    origin: "拉丁语",
+    from: "dexter",
+    examples: ["dexterity", "dexterous", "ambidextrous", "dexter", "dextral"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "di-",
+    type: "root",
+    meaning: "日",
+    meaning_en: "day",
+    origin: "拉丁语",
+    from: "dies",
+    examples: ["diary", "dial", "diurnal", "meridian", "sojourn"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "digit-",
+    type: "root",
+    meaning: "手指",
+    meaning_en: "finger",
+    origin: "拉丁语",
+    from: "digitus",
+    examples: ["digital", "digit", "digitize", "digitization", "prestidigitation"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "dol-",
+    type: "root",
+    meaning: "悲伤",
+    meaning_en: "sorrow",
+    origin: "拉丁语",
+    from: "dolor",
+    examples: ["doleful", "dolor", "condolence", "indolent", "dolorous"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "dom-",
+    type: "root",
+    meaning: "家",
+    meaning_en: "house",
+    origin: "拉丁语",
+    from: "domus",
+    examples: ["domain", "domestic", "dome", "domicile", "domesticate"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "dub-",
+    type: "root",
+    meaning: "怀疑",
+    meaning_en: "doubt",
+    origin: "拉丁语",
+    from: "dubitare",
+    examples: ["doubt", "dubious", "dubitable", "indubitable", "dubiously"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "dulc-",
+    type: "root",
+    meaning: "甜",
+    meaning_en: "sweet",
+    origin: "拉丁语",
+    from: "dulcis",
+    examples: ["dulcet", "dulcimer", "dulcify", "dulcinea", "dulcitude"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "ed-",
+    type: "root",
+    meaning: "吃",
+    meaning_en: "eat",
+    origin: "拉丁语",
+    from: "edere",
+    examples: ["edible", "edibility", "inedible", "edacious", "obese"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "equ-",
+    type: "root",
+    meaning: "相等",
+    meaning_en: "equal",
+    origin: "拉丁语",
+    from: "aequus",
+    examples: ["equal", "equate", "equation", "equator", "adequate"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "ess-",
+    type: "root",
+    meaning: "存在",
+    meaning_en: "being, existence",
+    origin: "拉丁语",
+    from: "esse",
+    examples: ["essence", "essential", "essentially", "quintessence", "nonessential"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "est-",
+    type: "root",
+    meaning: "价值",
+    meaning_en: "value",
+    origin: "拉丁语",
+    from: "aestimare",
+    examples: ["estimate", "esteem", "estimation", "overestimate", "underestimate"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fab-",
+    type: "root",
+    meaning: "说，讲",
+    meaning_en: "speak, story",
+    origin: "拉丁语",
+    from: "fabula",
+    examples: ["fable", "fabulous", "fabulist", "confabulate", "fabulation"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fabr-",
+    type: "root",
+    meaning: "制造",
+    meaning_en: "craft, make",
+    origin: "拉丁语",
+    from: "fabrica",
+    examples: ["fabric", "fabricate", "fabrication", "fabricator", "prefabricate"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fall-",
+    type: "root",
+    meaning: "欺骗，出错",
+    meaning_en: "deceive, error",
+    origin: "拉丁语",
+    from: "fallere",
+    examples: ["fall", "false", "fault", "fallacy", "fallible"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fam-",
+    type: "root",
+    meaning: "名声",
+    meaning_en: "fame, reputation",
+    origin: "拉丁语",
+    from: "fama",
+    examples: ["fame", "famous", "infamous", "defame", "infamy"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "famili-",
+    type: "root",
+    meaning: "家庭",
+    meaning_en: "family",
+    origin: "拉丁语",
+    from: "familia",
+    examples: ["family", "familiar", "familiarize", "familiarity", "unfamiliar"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fan-",
+    type: "root",
+    meaning: "神殿",
+    meaning_en: "temple",
+    origin: "拉丁语",
+    from: "fanum",
+    examples: ["fan", "fanatic", "profane", "fanaticism", "fanatical"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fant-",
+    type: "root",
+    meaning: "说话",
+    meaning_en: "speak",
+    origin: "拉丁语",
+    from: "fari",
+    examples: ["fantasy", "infant", "infantile", "fancy", "fate"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fasci-",
+    type: "root",
+    meaning: "捆，束",
+    meaning_en: "bundle, band",
+    origin: "拉丁语",
+    from: "fascis",
+    examples: ["fascinate", "fascism", "fascist", "fascia", "fascination"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fatig-",
+    type: "root",
+    meaning: "疲劳",
+    meaning_en: "tiredness",
+    origin: "拉丁语",
+    from: "fatigare",
+    examples: ["fatigue", "indefatigable", "fatigued", "fatiguing", "fatigability"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "favor-",
+    type: "root",
+    meaning: "好感",
+    meaning_en: "good will",
+    origin: "拉丁语",
+    from: "favor",
+    examples: ["favor", "favorite", "favorable", "disfavor", "unfavorable"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fec-",
+    type: "root",
+    meaning: "做",
+    meaning_en: "do, make",
+    origin: "拉丁语",
+    from: "facere",
+    examples: ["infect", "effect", "affect", "defect", "perfect"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fel-",
+    type: "root",
+    meaning: "幸福",
+    meaning_en: "happy",
+    origin: "拉丁语",
+    from: "felix",
+    examples: ["felicity", "felicitous", "felicitate", "infelicitous", "felicific"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "femin-",
+    type: "root",
+    meaning: "女性",
+    meaning_en: "woman",
+    origin: "拉丁语",
+    from: "femina",
+    examples: ["female", "feminine", "feminist", "femininity", "feminism"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fen-",
+    type: "root",
+    meaning: "击",
+    meaning_en: "hit, strike",
+    origin: "拉丁语",
+    from: "fendere",
+    examples: ["fence", "defend", "defense", "offend", "offense"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fest-",
+    type: "root",
+    meaning: "节日",
+    meaning_en: "festival",
+    origin: "拉丁语",
+    from: "festum",
+    examples: ["festival", "festive", "festivity", "fest", "festoon"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fict-",
+    type: "root",
+    meaning: "塑造",
+    meaning_en: "form, shape",
+    origin: "拉丁语",
+    from: "fingere",
+    examples: ["fiction", "fictional", "fictitious", "fictive", "nonfiction"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "figur-",
+    type: "root",
+    meaning: "形状",
+    meaning_en: "shape",
+    origin: "拉丁语",
+    from: "figura",
+    examples: ["figure", "configuration", "figurative", "disfigure", "prefigure"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fil-",
+    type: "root",
+    meaning: "线",
+    meaning_en: "thread",
+    origin: "拉丁语",
+    from: "filum",
+    examples: ["file", "fillet", "filament", "profile", "defile"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fili-",
+    type: "root",
+    meaning: "子女",
+    meaning_en: "son, daughter",
+    origin: "拉丁语",
+    from: "filius",
+    examples: ["filial", "affiliate", "affiliation", "filiation", "unfilial"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "flag-",
+    type: "root",
+    meaning: "烧",
+    meaning_en: "burn",
+    origin: "拉丁语",
+    from: "flagrare",
+    examples: ["flagrant", "conflagration", "flagrance", "flagrancy", "deflagrate"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "flat-",
+    type: "root",
+    meaning: "吹",
+    meaning_en: "blow",
+    origin: "拉丁语",
+    from: "flare",
+    examples: ["inflate", "flatulence", "deflate", "inflation", "flatus"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "flig-",
+    type: "root",
+    meaning: "打击",
+    meaning_en: "strike",
+    origin: "拉丁语",
+    from: "fligere",
+    examples: ["conflict", "inflict", "afflict", "affliction", "conflictive"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "flori-",
+    type: "root",
+    meaning: "花",
+    meaning_en: "flower",
+    origin: "拉丁语",
+    from: "flos, floris",
+    examples: ["florist", "florid", "floral", "florescence", "flourish"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "foli-",
+    type: "root",
+    meaning: "叶",
+    meaning_en: "leaf",
+    origin: "拉丁语",
+    from: "folium",
+    examples: ["foliage", "portfolio", "foliate", "defoliate", "foliar"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "font-",
+    type: "root",
+    meaning: "泉",
+    meaning_en: "spring",
+    origin: "拉丁语",
+    from: "fons, fontis",
+    examples: ["fountain", "font", "fount", "fontanel", "fontal"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "for-",
+    type: "root",
+    meaning: "强",
+    meaning_en: "strong",
+    origin: "拉丁语",
+    from: "fortis",
+    examples: ["force", "enforce", "forcible", "reinforce", "forceful"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "frig-",
+    type: "root",
+    meaning: "冷",
+    meaning_en: "cold",
+    origin: "拉丁语",
+    from: "frigus",
+    examples: ["frigid", "refrigerator", "frigidity", "refrigerate", "frigidly"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "front-",
+    type: "root",
+    meaning: "前额，前面",
+    meaning_en: "forehead, front",
+    origin: "拉丁语",
+    from: "frons, frontis",
+    examples: ["front", "confront", "frontier", "frontal", "affront"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "frug-",
+    type: "root",
+    meaning: "果实",
+    meaning_en: "fruit",
+    origin: "拉丁语",
+    from: "frux, frugis",
+    examples: ["frugal", "fruit", "fructify", "frugality", "fructose"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fulmin-",
+    type: "root",
+    meaning: "闪电",
+    meaning_en: "lightning",
+    origin: "拉丁语",
+    from: "fulmen",
+    examples: ["fulminate", "fulmination", "fulminant", "fulminatory", "fulminic"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fum-",
+    type: "root",
+    meaning: "烟",
+    meaning_en: "smoke",
+    origin: "拉丁语",
+    from: "fumus",
+    examples: ["fume", "perfume", "fumigate", "fumatory", "fumigation"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "fung-",
+    type: "root",
+    meaning: "执行",
+    meaning_en: "perform",
+    origin: "拉丁语",
+    from: "fungi",
+    examples: ["function", "defunct", "functional", "dysfunction", "fungible"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "gel-",
+    type: "root",
+    meaning: "冻",
+    meaning_en: "freeze",
+    origin: "拉丁语",
+    from: "gelu",
+    examples: ["gelatin", "congeal", "gel", "gelid", "gelation"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "gem-",
+    type: "root",
+    meaning: "双",
+    meaning_en: "twin",
+    origin: "拉丁语",
+    from: "gemini",
+    examples: ["geminate", "gemination", "geminous", "geminative", "bigeminy"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "gener-",
+    type: "root",
+    meaning: "种类，产生",
+    meaning_en: "kind, race",
+    origin: "拉丁语",
+    from: "genus, generis",
+    examples: ["generation", "general", "generate", "generous", "generic"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "gent-",
+    type: "root",
+    meaning: "族",
+    meaning_en: "clan, family",
+    origin: "拉丁语",
+    from: "gens, gentis",
+    examples: ["gentle", "gentile", "gentry", "gentleman", "genteel"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "germ-",
+    type: "root",
+    meaning: "芽",
+    meaning_en: "sprout",
+    origin: "拉丁语",
+    from: "germen",
+    examples: ["germ", "germinate", "germinal", "germination", "regerminate"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "gnos-",
+    type: "root",
+    meaning: "知道",
+    meaning_en: "know",
+    origin: "希腊语",
+    from: "gnosis",
+    examples: ["diagnosis", "prognosis", "agnostic", "gnostic", "prognostic"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "gram-",
+    type: "root",
+    meaning: "写，画",
+    meaning_en: "write, draw",
+    origin: "希腊语",
+    from: "gramma",
+    examples: ["grammar", "program", "diagram", "telegram", "grammatical"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "gust-",
+    type: "root",
+    meaning: "品尝",
+    meaning_en: "taste",
+    origin: "拉丁语",
+    from: "gustus",
+    examples: ["gusto", "disgust", "gustatory", "gustation", "degustation"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "habit-",
+    type: "root",
+    meaning: "居住",
+    meaning_en: "live, dwell",
+    origin: "拉丁语",
+    from: "habitare",
+    examples: ["habit", "inhabit", "habitat", "habitant", "cohabit"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "hal-",
+    type: "root",
+    meaning: "呼吸",
+    meaning_en: "breathe",
+    origin: "拉丁语",
+    from: "halare",
+    examples: ["inhale", "exhale", "inhaler", "halitus", "exhalation"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "hap-",
+    type: "root",
+    meaning: "运气",
+    meaning_en: "luck, chance",
+    origin: "古英语",
+    from: "hap",
+    examples: ["happen", "perhaps", "happy", "mishap", "hapless"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "heli-",
+    type: "root",
+    meaning: "太阳",
+    meaning_en: "sun",
+    origin: "希腊语",
+    from: "helios",
+    examples: ["helicopter", "helium", "heliocentric", "heliotrope", "aphelion"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "hes-",
+    type: "root",
+    meaning: "粘",
+    meaning_en: "stick",
+    origin: "拉丁语",
+    from: "haerere",
+    examples: ["hesitate", "adhere", "cohesion", "inherent", "adhesive"],
+    priority: 3,
+    languages: ["en", "fr", "es"]
+  },
+  {
+    root: "be-",
+    type: "prefix",
+    meaning: "使，成为",
+    meaning_en: "make, cause",
+    origin: "古英语",
+    from: "be",
+    examples: ["become", "befriend", "belittle", "befall", "beguile"],
+    priority: 2,
+    languages: ["en"]
+  },
+  {
+    root: "bene-",
+    type: "prefix",
+    meaning: "好",
+    meaning_en: "well, good",
+    origin: "拉丁语",
+    from: "bene",
+    examples: ["benevolent", "benefit", "benediction", "benefactor", "beneficial"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "by-",
+    type: "prefix",
+    meaning: "旁，副",
+    meaning_en: "side, secondary",
+    origin: "古英语",
+    from: "by",
+    examples: ["bypass", "byproduct", "bygone", "bystander", "byway"],
+    priority: 2,
+    languages: ["en"]
+  },
+  {
+    root: "cata-",
+    type: "prefix",
+    meaning: "向下，完全",
+    meaning_en: "down, completely",
+    origin: "希腊语",
+    from: "kata",
+    examples: ["catalog", "category", "catastrophe", "catalyst", "catapult"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "cis-",
+    type: "prefix",
+    meaning: "同侧",
+    meaning_en: "on this side",
+    origin: "拉丁语",
+    from: "cis",
+    examples: ["cisatlantic", "cisgender", "cisalpine", "cislunar", "cisplatina"],
+    priority: 2,
+    languages: ["en"]
+  },
+  {
+    root: "cor-",
+    type: "prefix",
+    meaning: "共同",
+    meaning_en: "together",
+    origin: "拉丁语",
+    from: "cum",
+    examples: ["correct", "correspond", "correlate", "corrode", "corrupt"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "dif-",
+    type: "prefix",
+    meaning: "分开",
+    meaning_en: "apart, away",
+    origin: "拉丁语",
+    from: "dis",
+    examples: ["differ", "difficult", "diffuse", "different", "differential"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "em-",
+    type: "prefix",
+    meaning: "使，进入",
+    meaning_en: "cause, put into",
+    origin: "拉丁语",
+    from: "en",
+    examples: ["embrace", "employ", "embody", "empower", "embark"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "en-",
+    type: "prefix",
+    meaning: "使，进入",
+    meaning_en: "cause, put into",
+    origin: "希腊语/拉丁语",
+    from: "en",
+    examples: ["enable", "enjoy", "enlarge", "enrich", "encourage"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "epi-",
+    type: "prefix",
+    meaning: "在...上",
+    meaning_en: "upon, above",
+    origin: "希腊语",
+    from: "epi",
+    examples: ["episode", "epidemic", "epilogue", "epitaph", "epicenter"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "hecto-",
+    type: "prefix",
+    meaning: "百",
+    meaning_en: "hundred",
+    origin: "希腊语",
+    from: "hekaton",
+    examples: ["hectare", "hectogram", "hectoliter", "hectometer", "hectopascal"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "hepta-",
+    type: "prefix",
+    meaning: "七",
+    meaning_en: "seven",
+    origin: "希腊语",
+    from: "hepta",
+    examples: ["heptagon", "heptathlon", "heptane", "heptarchy", "heptameter"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "hexa-",
+    type: "prefix",
+    meaning: "六",
+    meaning_en: "six",
+    origin: "希腊语",
+    from: "hex",
+    examples: ["hexagon", "hexameter", "hexadecimal", "hexapod", "hexagram"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "holo-",
+    type: "prefix",
+    meaning: "全部",
+    meaning_en: "whole, entire",
+    origin: "希腊语",
+    from: "holos",
+    examples: ["holocaust", "hologram", "holistic", "holocene", "holography"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
+  },
+  {
+    root: "infra-",
+    type: "prefix",
+    meaning: "下，低于",
+    meaning_en: "below, beneath",
+    origin: "拉丁语",
+    from: "infra",
+    examples: ["infrastructure", "infrared", "infrasound", "infrasonic", "infralapsarian"],
+    priority: 2,
+    languages: ["en", "fr", "es", "it"]
   }
 ];
 
@@ -6503,16 +7658,17 @@ const LANG_MAP = { en: '英语', de: '德语', fr: '法语', es: '西班牙语',
 
 function detectLanguage(word) {
   const w = word.trim().toLowerCase();
-  // 葡萄牙语（优先检测，因其特殊字符 ã/õ/ç 也出现在法语中）
-  if (/ção$|dade$|mento$|lho$|nha$|[ãõ]/.test(w)) return 'pt';
-  // 西班牙语
-  if (/ción$|miento$|dad$|mente$|ñ|ll/.test(w)) return 'es';
-  // 意大利语
-  if (/zione$|mento$|ità$|gli|sci|sce/.test(w)) return 'it';
-  // 法语：仅使用含有法语特殊字符或独特词尾的模式
-  if (/[éèêëàâîïôùûç]|eau|oux|ez$/.test(w)) return 'fr';
-  // 德语：仅使用高度独特的特征
-  if (/ß|cht|pf/.test(w)) return 'de';
+  // 默认为英语，仅在有明确非英语特征时切换
+  // 葡萄牙语：ã/õ 等鼻音字符
+  if (/ção$|[ãõ]/.test(w)) return 'pt';
+  // 西班牙语：ñ 字符
+  if (/ñ/.test(w)) return 'es';
+  // 意大利语：gli/sci/sce 等特有组合
+  if (/gli|sci|sce/.test(w)) return 'it';
+  // 法语：特殊重音字符
+  if (/[éèêëàâîïôùûç]/.test(w)) return 'fr';
+  // 德语：ß 字符
+  if (/ß/.test(w)) return 'de';
   return 'en';
 }
 
@@ -6626,14 +7782,25 @@ const input = document.getElementById('word-input');
 const resultsEl = document.getElementById('results');
 let debounceTimer;
 
+function clearInput() {
+  input.value = '';
+  input.focus();
+  input.dispatchEvent(new Event('input'));
+}
+
 input.addEventListener('input', function() {
   clearTimeout(debounceTimer);
   const word = this.value.trim();
   const langDetect = document.getElementById('lang-detect');
+  const clearBtn = document.getElementById('clear-btn');
+  // 显示/隐藏清除按钮
+  if (clearBtn) clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
   if (word.length === 0) {
-    resultsEl.innerHTML = '<div class="placeholder">输入单词，自动拆解词根...</div>';
-    document.getElementById('ai-summary').style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'none';
     langDetect.classList.remove('show');
+    // 显示初始引导
+    resultsEl.innerHTML = '<div class="placeholder"><div class="ph-icon">🌿</div>输入单词，自动拆解词根<br><span class="placeholder-hint">试试输入 extractable、portable、inspection</span></div>';
+    document.getElementById('ai-summary').style.display = 'none';
     return;
   }
   // 自动检测语言
@@ -7515,12 +8682,18 @@ let aiEnabled = localStorage.getItem('root_ai_enabled') === 'true';
 let apiKey = localStorage.getItem('root_api_key') || '';
 
 // 初始化 AI 开关状态
-if (aiEnabled) document.getElementById('ai-toggle').classList.add('on');
+if (aiEnabled) {
+  const t = document.getElementById('ai-toggle');
+  t.classList.add('on');
+  t.setAttribute('aria-checked', 'true');
+}
 
 function toggleAI() {
   aiEnabled = !aiEnabled;
   localStorage.setItem('root_ai_enabled', aiEnabled);
-  document.getElementById('ai-toggle').classList.toggle('on', aiEnabled);
+  const toggle = document.getElementById('ai-toggle');
+  toggle.classList.toggle('on', aiEnabled);
+  toggle.setAttribute('aria-checked', aiEnabled);
   // 如果有当前结果，重新分析
   const word = input.value.trim();
   if (word) {
