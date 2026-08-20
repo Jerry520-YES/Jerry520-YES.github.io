@@ -237,12 +237,19 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 .ai-section{
   background:linear-gradient(135deg,#e8f5e9 0%,#f1f8e9 100%);
   border-radius:var(--radius);padding:24px;border:1px solid #c8e6c9;
+  margin-top:20px;
 }
 .ai-section-header{display:flex;align-items:center;margin-bottom:16px}
 .ai-badge{
   background:var(--accent);color:#fff;padding:3px 12px;border-radius:10px;
   font-size:0.75rem;font-weight:700;
 }
+.confidence-badge{
+  display:inline-flex;align-items:center;padding:4px 14px;border-radius:10px;
+  font-size:0.78rem;font-weight:700;color:#fff;
+}
+.ai-suggestion{font-size:0.82rem;color:var(--muted)}
+.ai-suggestion a{color:var(--accent);font-weight:600;cursor:pointer}
 .ai-parts{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
 .ai-part{padding:8px 12px;background:rgba(255,255,255,0.7);border-radius:6px;font-size:0.9rem}
 .ai-part-type{
@@ -6500,9 +6507,8 @@ function analyzeWord(word) {
   }
 
   if (!bestRoot) {
-    // 没有匹配到任何词根，返回空结果
     unrecognized.push({ text: w, type: 'unrecognized' });
-    return { word: w, parts, unrecognized };
+    return { word: w, parts, unrecognized, confidence: 0 };
   }
 
   parts.push(bestRoot);
@@ -6543,7 +6549,42 @@ function analyzeWord(word) {
     }
   }
 
-  return { word: w, parts, unrecognized };
+  // 4. 计算置信度
+  const confidence = calcConfidence(w, parts, unrecognized);
+
+  return { word: w, parts, unrecognized, confidence };
+}
+
+/**
+ * 计算本地词根匹配的置信度
+ * 基于：覆盖率、词根长度、未识别比例
+ */
+function calcConfidence(w, parts, unrecognized) {
+  const totalLen = w.length;
+  if (totalLen === 0) return 0;
+
+  let matchedLen = 0;
+  for (const p of parts) {
+    matchedLen += p.matchedText.length;
+  }
+
+  const coverage = matchedLen / totalLen;
+  const root = parts.find(p => p.type === 'root');
+  const rootLen = root ? root.matchedText.length : 0;
+
+  // 覆盖率权重 60%，词根长度权重 40%（词根越长越可靠）
+  let score = coverage * 0.6 + Math.min(rootLen / 4, 1) * 0.4;
+
+  // 惩罚：有未识别部分
+  if (unrecognized.length > 0) score *= 0.85;
+
+  return Math.round(Math.min(score * 100, 100));
+}
+
+function getConfidenceLevel(score) {
+  if (score >= 80) return { label: '高', color: 'var(--accent)' };
+  if (score >= 50) return { label: '中', color: '#E89614' };
+  return { label: '低', color: '#E74C3C' };
 }
 
 // 输入框自动分析逻辑（带 300ms 防抖）
@@ -6585,16 +6626,34 @@ input.addEventListener('input', function() {
  */
 function renderResults(result) {
   if (!result || result.parts.length === 0) {
-    resultsEl.innerHTML = `
+    let html = `
       <div class="no-match">
         <div class="no-match-icon">🔍</div>
-        <p>未找到词根匹配</p>
-        <p class="no-match-hint">试试启用 AI 增强模式，或检查单词拼写</p>
-      </div>`;
+        <p>未找到词根匹配</p>`;
+    if (!aiEnabled || !apiKey) {
+      html += `<p class="no-match-hint">试试启用 AI 增强模式（输入 API Key），获得更准确的词源分析</p>`;
+    } else {
+      html += `<p class="no-match-hint">本地词根库未匹配到结果，等待 AI 分析中...</p>`;
+    }
+    html += `</div>`;
+    resultsEl.innerHTML = html;
     return;
   }
   
-  let html = '<div class="cards-grid">';
+  // 置信度与 AI 提示
+  const conf = getConfidenceLevel(result.confidence);
+  let html = `<div class="confidence-bar" style="margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span class="confidence-badge" style="background:${conf.color}">本地匹配 · 置信度 ${conf.label}（${result.confidence}%）</span>
+  `;
+  
+  if (result.confidence < 50 && (!aiEnabled || !apiKey)) {
+    html += `<span class="ai-suggestion">⚠️ 置信度较低，<a href="#" onclick="document.getElementById('btn-api-key').click();return false">启用 AI 增强</a> 获取更准确分析</span>`;
+  } else if (result.confidence < 50 && aiEnabled && apiKey) {
+    html += `<span class="ai-suggestion">⏳ AI 分析中，将提供更准确的结果...</span>`;
+  }
+  html += '</div>';
+  
+  html += '<div class="cards-grid">';
   
   // 先展示未识别部分
   for (const u of result.unrecognized) {
