@@ -7658,17 +7658,16 @@ const LANG_MAP = { en: '英语', de: '德语', fr: '法语', es: '西班牙语',
 
 function detectLanguage(word) {
   const w = word.trim().toLowerCase();
-  // 默认为英语，仅在有明确非英语特征时切换
-  // 葡萄牙语：ã/õ 等鼻音字符
-  if (/ção$|[ãõ]/.test(w)) return 'pt';
-  // 西班牙语：ñ 字符
-  if (/ñ/.test(w)) return 'es';
-  // 意大利语：gli/sci/sce 等特有组合
-  if (/gli|sci|sce/.test(w)) return 'it';
-  // 法语：特殊重音字符 + 独特词尾组合
-  if (/[éèêëàâîïôùûç]|eau|oux|ez$|eur$|ois$/.test(w)) return 'fr';
-  // 德语：ß 字符
-  if (/ß/.test(w)) return 'de';
+  // 葡萄牙语：特殊字符 ã/õ 和独特词尾
+  if (/ção$|[ãõ]|lho$|nha$/.test(w)) return 'pt';
+  // 西班牙语：ñ 和独特词尾
+  if (/ñ|ción$|miento$|dad$/.test(w)) return 'es';
+  // 意大利语：gli/sci/sce 和独特词尾
+  if (/gli|sci|sce|zione$|ità$/.test(w)) return 'it';
+  // 法语：特殊重音字符和独特词尾组合
+  if (/[éèêëàâîïôùûç]|eau|oux|ez$|eur$|ois$|ique$/.test(w)) return 'fr';
+  // 德语：ß 和独特组合
+  if (/ß|cht|pf/.test(w)) return 'de';
   return 'en';
 }
 
