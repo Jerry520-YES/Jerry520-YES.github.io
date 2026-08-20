@@ -23,11 +23,15 @@ a:hover{text-decoration:underline}
 
 /* ===== Site Nav ===== */
 .site-nav{
-  background:#fff;border-bottom:1px solid var(--rule);padding:12px 24px;
-  display:flex;justify-content:space-between;align-items:center;
-  max-width:var(--max-w);margin:0 auto;
+  background:#fff;border-bottom:1px solid var(--rule);
 }
-.nav-brand{font-weight:700;font-size:1.05rem;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:12px 24px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.nav-back{color:var(--accent);font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.nav-back:hover{text-decoration:underline}
+.nav-brand{font-weight:700;color:var(--ink);font-size:0.9rem}
 .nav-links{display:flex;gap:20px}
 .nav-links a{color:var(--muted);font-size:0.9rem;font-weight:500;transition:color 0.2s}
 .nav-links a:hover{color:var(--accent);text-decoration:none}
@@ -240,7 +244,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
   .tool-bar{flex-direction:column;align-items:stretch}
   .tool-bar-left{justify-content:space-between}
   .btn-api-key{margin-left:0;width:100%;justify-content:center}
-  .site-nav{flex-direction:column;gap:8px}
+  .nav-inner{flex-wrap:wrap;gap:8px}
   .nav-links{gap:12px}
 }
 
@@ -292,11 +296,14 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <body>
 
 <nav class="site-nav">
-  <a href="index" class="nav-brand">🌿 Root</a>
-  <div class="nav-links">
-    <a href="#try">工具</a>
-    <a href="#features">特性</a>
-    <a href="#usage">用法</a>
+  <div class="nav-inner">
+    <a href="index" class="nav-back">&larr; 返回首页</a>
+    <span class="nav-brand">Jerry520-YES</span>
+    <div class="nav-links">
+      <a href="#try">工具</a>
+      <a href="#features">特性</a>
+      <a href="#usage">用法</a>
+    </div>
   </div>
 </nav>
 
