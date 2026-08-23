@@ -111,10 +111,14 @@ a{color:var(--accent);text-decoration:none}
 
 .props-section{margin-bottom:14px}
 .props-label{font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:6px}
-.duration-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.duration-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .dur-btn{padding:7px 4px;border:1.5px solid var(--rule);border-radius:6px;background:#fff;cursor:pointer;font-size:0.76rem;font-weight:600;transition:all 0.1s;text-align:center}
 .dur-btn:hover{border-color:var(--accent)}
 .dur-btn.active{background:var(--accent);color:#fff;border-color:var(--accent2)}
+.dotted-toggle{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:0.76rem;font-weight:600;cursor:pointer;user-select:none}
+.dotted-toggle .dot-indicator{display:inline-flex;align-items:center;justify-content:center;width:28px;height:24px;border:1.5px solid var(--rule);border-radius:6px;background:#fff;transition:all 0.15s;font-size:0.85rem}
+.dotted-toggle .dot-indicator.active{background:var(--accent);color:#fff;border-color:var(--accent2)}
+.dotted-toggle .dot-hint{color:var(--muted);font-size:0.7rem;font-weight:400}
 .pitch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:4px}
 .pitch-btn{padding:10px 4px;border:1.5px solid var(--rule);border-radius:6px;background:#fff;cursor:pointer;font-size:1rem;font-weight:800;transition:all 0.1s;text-align:center;font-family:var(--mono)}
 .pitch-btn:hover{border-color:var(--accent);background:var(--accent-dim)}
@@ -234,11 +238,14 @@ a{color:var(--accent);text-decoration:none}
         <div class="duration-grid">
           <button class="dur-btn" data-dur="1">𝅝 全音</button>
           <button class="dur-btn" data-dur="2">𝅗𝅥 二分</button>
-          <button class="dur-btn" data-dur="3">♩. 附点</button>
           <button class="dur-btn active" data-dur="4">♩ 四分</button>
           <button class="dur-btn" data-dur="6">六分</button>
           <button class="dur-btn" data-dur="8">♪ 八分</button>
           <button class="dur-btn" data-dur="16">𝅘𝅥𝅯 十六分</button>
+        </div>
+        <div class="dotted-toggle" id="dotted-toggle">
+          <span class="dot-indicator" id="dot-indicator">.</span>
+          <span>附点 <span class="dot-hint">按 <kbd>.</kbd> 切换</span></span>
         </div>
       </div>
       <div class="props-section">
@@ -923,7 +930,7 @@ class AudioEngine {
       const bpm = tr.tempo || state.tempo;
       const beatDur = 60 / bpm;
       let t = 0;
-      for (const n of tr.notes) t += (4 / n.duration) * beatDur;
+      for (const n of tr.notes) t += (4 / n.duration) * (n.dotted ? 1.5 : 1) * beatDur;
       maxDuration = Math.max(maxDuration, t);
     }
     maxDuration += 2; // 预留 2 秒
@@ -940,7 +947,7 @@ class AudioEngine {
       const beatDur = 60 / bpm;
       let t = 0;
       for (const n of tr.notes) {
-        const dur = (4 / n.duration) * beatDur;
+        const dur = (4 / n.duration) * (n.dotted ? 1.5 : 1) * beatDur;
         if (n.pitch !== 0) {
           if (tr.instrument === 'drums') {
             this._drums(offlineCtx, comp, n.pitch, t, dur, tr.volume);
@@ -985,6 +992,7 @@ const state = {
   timeSig: '4/4',
   key: 'C',
   metronome: false,
+  dotted: false,
   playing: false,
   playTimer: null,
   beatMarker: null,
@@ -1143,7 +1151,7 @@ function addSection(label) {
   if (!tr) { showToast('请先选择音轨'); return; }
   let beatPos = 0;
   for (let i = 0; i < state.cursor && i < tr.notes.length; i++) {
-    beatPos += 4 / tr.notes[i].duration;
+    beatPos += 4 / tr.notes[i].duration * (tr.notes[i].dotted ? 1.5 : 1);
   }
   state.sections.push({id: nextSectionId++, label, beatPos});
   renderNotation();
@@ -1331,7 +1339,7 @@ function renderNotation() {
       cell.dataset.trackId = tr.id;
 
       // 按时值设置宽度: 十六分=1单位(15px), 四分=4单位(60px), 全音=16单位(240px)
-      const widthUnits = 16 / n.duration;
+      const widthUnits = 16 / n.duration * (n.dotted ? 1.5 : 1);
       const width = Math.max(widthUnits * UNIT_PX, 12);
       cell.style.flex = `0 0 ${width}px`;
       cell.style.minWidth = `${width}px`;
@@ -1347,6 +1355,7 @@ function renderNotation() {
         if (n.octave < 0) html = html + `<span class="octave-dot-down">${'·'.repeat(-n.octave)}</span>`;
       }
       if (n.duration === 3) html += '.';
+      if (n.dotted) html += '.';
       cell.innerHTML = html;
       cell.title = isDrum ? (DRUM_NAMES[n.pitch] || '') : (n.pitch === 0 ? '休止' : '');
 
@@ -1438,6 +1447,7 @@ function insertNote(pitch) {
   if (!tr) return;
   state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
   const note = {pitch, octave: state.octave, duration: state.duration};
+  if (state.dotted) note.dotted = true;
   tr.notes.splice(state.cursor, 0, note);
   state.cursor++;
   renderNotation();
@@ -1511,6 +1521,12 @@ document.addEventListener('keydown', e => {
   } else if (e.key === ' ') {
     e.preventDefault();
     togglePlay();
+  } else if (e.key === '.') {
+    e.preventDefault();
+    state.dotted = !state.dotted;
+    const ind = $('dot-indicator');
+    if (ind) ind.classList.toggle('active', state.dotted);
+    showToast(state.dotted ? '附点模式 开' : '附点模式 关');
   }
 });
 
@@ -1542,7 +1558,7 @@ function startPlay() {
     let t = 0;
     for (let i = 0; i < trk.notes.length; i++) {
       const n = trk.notes[i];
-      const dur = (4 / n.duration) * beatDur;
+      const dur = (4 / n.duration) * (n.dotted ? 1.5 : 1) * beatDur;
       const absTime = startTime + t;
       if (n.pitch !== 0) {
         if (trk.instrument === 'drums') {
@@ -1597,7 +1613,8 @@ function highlightPlayingNote(beatPos) {
   for (const tr of state.tracks) {
     let b = 0;
     for (let i = 0; i < tr.notes.length; i++) {
-      const d = 4 / tr.notes[i].duration;
+      const n = tr.notes[i];
+      const d = 4 / n.duration * (n.dotted ? 1.5 : 1);
       if (b <= beatPos && b + d > beatPos) {
         const cell = document.querySelector(`.note-cell[data-track-id="${tr.id}"][data-idx="${i}"]`);
         if (cell) cell.classList.add('playing');
@@ -1836,6 +1853,12 @@ function syncSidebarToActiveTrack() {
   $('time-sig').value = tr.timeSig;
   $('key-sig').value = tr.key;
 }
+
+$('dotted-toggle').onclick = () => {
+  state.dotted = !state.dotted;
+  $('dot-indicator').classList.toggle('active', state.dotted);
+  showToast(state.dotted ? '附点模式 开' : '附点模式 关');
+};
 
 document.querySelectorAll('.dur-btn[data-dur]').forEach(btn => {
   btn.onclick = () => {
