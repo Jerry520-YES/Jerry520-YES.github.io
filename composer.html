@@ -1887,6 +1887,23 @@ document.querySelectorAll('.dur-btn[data-dur]').forEach(btn => {
     btn.classList.add('active');
     state.duration = parseInt(btn.dataset.dur);
     updateInputStatus();
+
+    // 选中音符批量修改时值
+    if (state.selection.startIdx >= 0 && state.selection.trackId !== null) {
+      const tr = state.tracks.find(t => t.id === state.selection.trackId);
+      if (tr) {
+        const selMin = Math.min(state.selection.startIdx, state.selection.endIdx);
+        const selMax = Math.max(state.selection.startIdx, state.selection.endIdx);
+        for (let i = selMin; i <= selMax; i++) {
+          tr.notes[i].duration = state.duration;
+          tr.notes[i].dotted = state.dotted || false;
+          tr.notes[i].sharp = state.sharp || false;
+        }
+        state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
+        renderNotation();
+        showToast(`已修改 ${selMax - selMin + 1} 个音符时值`);
+      }
+    }
   };
 });
 
