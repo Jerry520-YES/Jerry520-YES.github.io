@@ -914,26 +914,28 @@ class AudioEngine {
     osc.start(time); osc.stop(time + 0.05);
   }
 
-  renderOffline(tracks, tempo, beatsPerBar, callback) {
+  renderOffline(tracks, callback) {
     const sampleRate = 44100;
-    let totalBeats = 0;
+    let maxDuration = 0;
     for (const tr of tracks) {
-      let b = 0;
-      for (const n of tr.notes) b += 4 / n.duration;
-      totalBeats = Math.max(totalBeats, b);
+      const bpm = tr.tempo || state.tempo;
+      const beatDur = 60 / bpm;
+      let t = 0;
+      for (const n of tr.notes) t += (4 / n.duration) * beatDur;
+      maxDuration = Math.max(maxDuration, t);
     }
-    totalBeats = Math.ceil(totalBeats) + 2;
-    const totalDuration = totalBeats * 60 / tempo;
-    const length = Math.ceil(totalDuration * sampleRate);
+    maxDuration += 2; // 预留 2 秒
+    const length = Math.ceil(maxDuration * sampleRate);
     const offlineCtx = new OfflineAudioContext(2, length, sampleRate);
     const comp = offlineCtx.createDynamicsCompressor();
     const master = offlineCtx.createGain();
     master.gain.value = 0.8;
     comp.connect(master); master.connect(offlineCtx.destination);
 
-    const beatDur = 60 / tempo;
     for (const tr of tracks) {
       if (tr.muted) continue;
+      const bpm = tr.tempo || state.tempo;
+      const beatDur = 60 / bpm;
       let t = 0;
       for (const n of tr.notes) {
         const dur = (4 / n.duration) * beatDur;
@@ -1009,6 +1011,9 @@ function createTrack(instrument) {
     muted: false,
     solo: false,
     color: TRACK_COLORS[id % TRACK_COLORS.length],
+    timeSig: state.timeSig,
+    tempo: state.tempo,
+    key: state.key,
   };
 }
 
@@ -1018,6 +1023,7 @@ function addTrack(instrument) {
   state.activeTrackId = tr.id;
   renderTracks();
   renderNotation();
+  syncSidebarToActiveTrack();
 }
 
 function deleteTrack(id) {
@@ -1032,6 +1038,7 @@ function deleteTrack(id) {
   state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
   renderTracks();
   renderNotation();
+  syncSidebarToActiveTrack();
 }
 
 function clearTrack(id) {
@@ -1194,6 +1201,7 @@ function renderTracks() {
       state.cursor = tr.notes.length;
       renderTracks();
       renderNotation();
+      syncSidebarToActiveTrack();
     };
     const inst = INSTRUMENTS[tr.instrument];
     div.innerHTML = `
@@ -1203,7 +1211,7 @@ function renderTracks() {
         <span class="track-clear" onclick="event.stopPropagation();clearTrack(${tr.id})">清除</span>
         <span class="track-delete" onclick="event.stopPropagation();deleteTrack(${tr.id})">删除</span>
       </div>
-      <div class="track-instrument">${inst.icon} ${inst.name}</div>
+      <div class="track-instrument">${inst.icon} ${inst.name} <span style="color:var(--muted);font-size:0.72rem">${tr.timeSig} ${tr.key} ${tr.tempo}bpm</span></div>
       <div class="track-controls">
         <input type="range" class="track-vol" min="0" max="1" step="0.01" value="${tr.volume}" onclick="event.stopPropagation()" oninput="updateVol(${tr.id},this.value)">
         <button class="track-btn ${tr.muted?'muted':''}" onclick="event.stopPropagation();toggleMute(${tr.id})" title="静音">M</button>
@@ -1253,8 +1261,8 @@ function renderNotation() {
 
   if (activeTr) {
     const info = state.tracks.length > 1
-      ? `${activeTr.name} · ${activeTr.notes.length} 音符 · 共 ${state.tracks.length} 轨`
-      : `${activeTr.name} · ${activeTr.notes.length} 音符`;
+      ? `${activeTr.name} · ${activeTr.notes.length} 音符 · 共 ${state.tracks.length} 轨 · ${activeTr.timeSig} ${activeTr.key} ${activeTr.tempo}bpm`
+      : `${activeTr.name} · ${activeTr.notes.length} 音符 · ${activeTr.timeSig} ${activeTr.key} ${activeTr.tempo}bpm`;
     $('notation-info').textContent = info;
   }
   grid.innerHTML = '';
@@ -1295,13 +1303,14 @@ function renderNotation() {
     const label = document.createElement('div');
     label.className = 'notation-label';
     const inst = INSTRUMENTS[tr.instrument];
-    label.innerHTML = `<span class="track-color-dot" style="background:${tr.color}"></span> ${inst.icon}<br><span style="font-size:0.72rem">${tr.name}</span>`;
+    label.innerHTML = `<span class="track-color-dot" style="background:${tr.color}"></span> ${inst.icon}<br><span style="font-size:0.72rem">${tr.name}</span><br><span style="font-size:0.62rem;color:var(--muted)">${tr.timeSig} ${tr.key} ${tr.tempo}bpm</span>`;
     label.onclick = () => {
       state.activeTrackId = tr.id;
       state.cursor = tr.notes.length;
       state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
       renderTracks();
       renderNotation();
+      syncSidebarToActiveTrack();
     };
     row.appendChild(label);
 
@@ -1515,9 +1524,6 @@ function startPlay() {
   const tr = getActiveTrack();
   if (!tr || tr.notes.length === 0) { showToast('当前音轨为空'); return; }
   const ctx = audio.ensureCtx();
-  const beatDur = 60 / state.tempo;
-  let anyTrack = state.tracks.filter(t => !t.muted && (!state.tracks.some(s => s.solo) || t.solo));
-  if (anyTrack.length === 0) anyTrack = state.tracks;
   const hasSolo = state.tracks.some(t => t.solo);
   const playTracks = hasSolo ? state.tracks.filter(t => t.solo) : state.tracks.filter(t => !t.muted);
 
@@ -1526,10 +1532,11 @@ function startPlay() {
   $('btn-play').textContent = '⏸';
 
   const startTime = ctx.currentTime + 0.1;
-  const noteTimes = [];
-  let totalBeats = 0;
+  let maxDuration = 0;
 
   for (const trk of playTracks) {
+    const bpm = trk.tempo || state.tempo;
+    const beatDur = 60 / bpm;
     let t = 0;
     for (let i = 0; i < trk.notes.length; i++) {
       const n = trk.notes[i];
@@ -1544,24 +1551,32 @@ function startPlay() {
       }
       t += dur;
     }
-    totalBeats = Math.max(totalBeats, t / beatDur);
+    maxDuration = Math.max(maxDuration, t);
   }
 
-  // 节拍器
+  // 节拍器（跟随当前激活音轨）
   if (state.metronome) {
-    const beatsPerBar = parseInt(state.timeSig);
-    for (let b = 0; b < totalBeats + 1; b++) {
-      audio.playMetronome(startTime + b * beatDur, b % beatsPerBar === 0);
+    const activeTr = getActiveTrack();
+    if (activeTr) {
+      const metBpm = activeTr.tempo || state.tempo;
+      const metBeatDur = 60 / metBpm;
+      const beatsPerBar = parseInt(activeTr.timeSig || state.timeSig);
+      const totalBeats = Math.ceil(maxDuration / metBeatDur) + 2;
+      for (let b = 0; b < totalBeats; b++) {
+        audio.playMetronome(startTime + b * metBeatDur, b % beatsPerBar === 0);
+      }
     }
   }
 
-  // 光标跟随
-  const totalDuration = (totalBeats + 1) * beatDur;
+  // 光标跟随（基于当前激活音轨的节拍）
+  const activeBpm = tr.tempo || state.tempo;
+  const activeBeatDur = 60 / activeBpm;
+  const totalDuration = maxDuration + activeBeatDur;
   let startMs = performance.now() + 100;
   state.playTimer = setInterval(() => {
     const elapsed = (performance.now() - startMs) / 1000;
     if (elapsed >= totalDuration) { stopPlay(); return; }
-    const beatPos = elapsed / beatDur;
+    const beatPos = elapsed / activeBeatDur;
     highlightPlayingNote(beatPos);
   }, 50);
 }
@@ -1601,9 +1616,8 @@ function exportMP3() {
   showToast('正在渲染音频...');
   const hasSolo = state.tracks.some(t => t.solo);
   const exportTracks = hasSolo ? state.tracks.filter(t => t.solo) : state.tracks.filter(t => !t.muted);
-  const beatsPerBar = parseInt(state.timeSig);
 
-  audio.renderOffline(exportTracks, state.tempo, beatsPerBar, buffer => {
+  audio.renderOffline(exportTracks, buffer => {
     showToast('正在编码 MP3...');
     const data = bufferToMP3(buffer);
     if (data) {
@@ -1684,7 +1698,8 @@ function saveProject() {
   const data = {
     tracks: state.tracks.map(t => ({
       name: t.name, instrument: t.instrument,
-      notes: t.notes, slurs: t.slurs || [], volume: t.volume, color: t.color
+      notes: t.notes, slurs: t.slurs || [], volume: t.volume, color: t.color,
+      timeSig: t.timeSig, tempo: t.tempo, key: t.key,
     })),
     sections: state.sections,
     tempo: state.tempo, timeSig: state.timeSig, key: state.key,
@@ -1707,17 +1722,17 @@ function loadProject(file) {
         volume: t.volume ?? 0.8,
         muted: false, solo: false,
         color: t.color || TRACK_COLORS[i % TRACK_COLORS.length],
+        timeSig: t.timeSig || data.timeSig || '4/4',
+        tempo: t.tempo ?? data.tempo ?? 120,
+        key: t.key || data.key || 'C',
       }));
-      state.tempo = data.tempo || 120;
-      state.timeSig = data.timeSig || '4/4';
-      state.key = data.key || 'C';
+      state.tempo = state.tracks[0]?.tempo || 120;
+      state.timeSig = state.tracks[0]?.timeSig || '4/4';
+      state.key = state.tracks[0]?.key || 'C';
       state.sections = data.sections || [];
       state.activeTrackId = state.tracks[0]?.id ?? 0;
       state.cursor = 0;
-      $('tempo-slider').value = state.tempo;
-      $('tempo-val').textContent = state.tempo;
-      $('time-sig').value = state.timeSig;
-      $('key-sig').value = state.key;
+      syncSidebarToActiveTrack();
       renderTracks();
       renderNotation();
       renderSectionList();
@@ -1794,12 +1809,31 @@ $('btn-metronome').onclick = () => {
 };
 
 $('tempo-slider').oninput = e => {
-  state.tempo = parseInt(e.target.value);
-  $('tempo-val').textContent = state.tempo;
+  const tr = getActiveTrack();
+  if (!tr) return;
+  tr.tempo = parseInt(e.target.value);
+  state.tempo = tr.tempo;
+  $('tempo-val').textContent = tr.tempo;
 };
 
-$('time-sig').onchange = e => { state.timeSig = e.target.value; };
-$('key-sig').onchange = e => { state.key = e.target.value; };
+$('time-sig').onchange = e => {
+  const tr = getActiveTrack();
+  if (tr) { tr.timeSig = e.target.value; state.timeSig = tr.timeSig; }
+};
+
+$('key-sig').onchange = e => {
+  const tr = getActiveTrack();
+  if (tr) { tr.key = e.target.value; state.key = tr.key; }
+};
+
+function syncSidebarToActiveTrack() {
+  const tr = getActiveTrack();
+  if (!tr) return;
+  $('tempo-slider').value = tr.tempo;
+  $('tempo-val').textContent = tr.tempo;
+  $('time-sig').value = tr.timeSig;
+  $('key-sig').value = tr.key;
+}
 
 document.querySelectorAll('.dur-btn[data-dur]').forEach(btn => {
   btn.onclick = () => {
