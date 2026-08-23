@@ -452,22 +452,22 @@ class AudioEngine {
         const osc = ctx.createOscillator();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(160, t);
-        osc.frequency.exponentialRampToValueAtTime(45, t + 0.1);
+        osc.frequency.exponentialRampToValueAtTime(45, t + Math.min(0.1, dur * 0.5));
         const g = ctx.createGain();
         g.gain.setValueAtTime(vol * 0.6, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        g.gain.exponentialRampToValueAtTime(0.001, t + Math.min(0.18, dur * 0.9));
         osc.connect(g).connect(dest);
-        osc.start(t); osc.stop(t + 0.18);
+        osc.start(t); osc.stop(t + Math.min(0.18, dur * 0.9));
         break;
       }
       case 2: { // Snare — 噪声 + 低频体声
         const noise = ctx.createBufferSource();
-        noise.buffer = this._noiseBuffer(ctx, 0.25);
+        noise.buffer = this._noiseBuffer(ctx, Math.min(0.25, dur * 0.8));
         const nf = ctx.createBiquadFilter();
         nf.type = 'highpass'; nf.frequency.value = 1200;
         const ng = ctx.createGain();
         ng.gain.setValueAtTime(vol * 0.4, t);
-        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + Math.min(0.15, dur * 0.5));
         noise.connect(nf).connect(ng).connect(dest);
         noise.start(t);
 
@@ -475,9 +475,9 @@ class AudioEngine {
         tone.type = 'triangle'; tone.frequency.value = 220;
         const tg = ctx.createGain();
         tg.gain.setValueAtTime(vol * 0.2, t);
-        tg.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        tg.gain.exponentialRampToValueAtTime(0.001, t + Math.min(0.1, dur * 0.4));
         tone.connect(tg).connect(dest);
-        tone.start(t); tone.stop(t + 0.1);
+        tone.start(t); tone.stop(t + Math.min(0.1, dur * 0.4));
         break;
       }
       case 3: { // HiHat closed
@@ -1452,10 +1452,11 @@ function insertNote(pitch) {
   state.cursor++;
   renderNotation();
   if (pitch > 0) {
+    const previewDur = state.dotted ? 0.5 : 0.3;
     if (tr.instrument === 'drums') {
-      audio.playNote('drums', 0, audio.ensureCtx().currentTime, 0.3, tr.volume, pitch);
+      audio.playNote('drums', 0, audio.ensureCtx().currentTime, previewDur, tr.volume, pitch);
     } else {
-      audio.playNote(tr.instrument, noteToFreq(pitch, state.octave), audio.ensureCtx().currentTime, 0.3, tr.volume);
+      audio.playNote(tr.instrument, noteToFreq(pitch, state.octave), audio.ensureCtx().currentTime, previewDur, tr.volume);
     }
   }
 }
