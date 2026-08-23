@@ -247,6 +247,10 @@ a{color:var(--accent);text-decoration:none}
           <span class="dot-indicator" id="dot-indicator">.</span>
           <span>附点 <span class="dot-hint">按 <kbd>.</kbd> 切换</span></span>
         </div>
+        <div class="dotted-toggle" id="sharp-toggle" style="margin-top:2px">
+          <span class="dot-indicator" id="sharp-indicator">#</span>
+          <span>升调 <span class="dot-hint">按 <kbd>,</kbd> 切换</span></span>
+        </div>
       </div>
       <div class="props-section">
         <div class="props-label">音符输入（在光标处插入）</div>
@@ -365,9 +369,10 @@ const INSTRUMENT_LIST = Object.keys(INSTRUMENTS);
 const NOTE_SEMITONES = {1:0, 2:2, 3:4, 4:5, 5:7, 6:9, 7:11};
 const TRACK_COLORS = ['#E74C3C','#E89614','#27AE60','#00B4D8','#7C3AED','#F1C40F','#34495E','#E91E63','#00ACC1','#3F51B5','#FF6E40','#b366ff','#4A90D9','#26C6DA'];
 
-function noteToFreq(pitch, octave) {
+function noteToFreq(pitch, octave, sharp) {
   if (pitch === 0) return 0;
-  const midi = 60 + NOTE_SEMITONES[pitch] + octave * 12;
+  let midi = 60 + NOTE_SEMITONES[pitch] + octave * 12;
+  if (sharp) midi += 1;
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
@@ -952,7 +957,7 @@ class AudioEngine {
           if (tr.instrument === 'drums') {
             this._drums(offlineCtx, comp, n.pitch, t, dur, tr.volume);
           } else {
-            const freq = noteToFreq(n.pitch, n.octave);
+            const freq = noteToFreq(n.pitch, n.octave, n.sharp);
             this._renderInstrument(offlineCtx, comp, tr.instrument, freq, t, dur, tr.volume);
           }
         }
@@ -993,6 +998,7 @@ const state = {
   key: 'C',
   metronome: false,
   dotted: false,
+  sharp: false,
   playing: false,
   playTimer: null,
   beatMarker: null,
@@ -1356,6 +1362,7 @@ function renderNotation() {
       }
       if (n.duration === 3) html += '.';
       if (n.dotted) html += '.';
+      if (n.sharp) html = '#' + html;
       cell.innerHTML = html;
       cell.title = isDrum ? (DRUM_NAMES[n.pitch] || '') : (n.pitch === 0 ? '休止' : '');
 
@@ -1448,6 +1455,7 @@ function insertNote(pitch) {
   state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
   const note = {pitch, octave: state.octave, duration: state.duration};
   if (state.dotted) note.dotted = true;
+  if (state.sharp) note.sharp = true;
   tr.notes.splice(state.cursor, 0, note);
   state.cursor++;
   renderNotation();
@@ -1456,7 +1464,7 @@ function insertNote(pitch) {
     if (tr.instrument === 'drums') {
       audio.playNote('drums', 0, audio.ensureCtx().currentTime, previewDur, tr.volume, pitch);
     } else {
-      audio.playNote(tr.instrument, noteToFreq(pitch, state.octave), audio.ensureCtx().currentTime, previewDur, tr.volume);
+      audio.playNote(tr.instrument, noteToFreq(pitch, state.octave, state.sharp), audio.ensureCtx().currentTime, previewDur, tr.volume);
     }
   }
 }
@@ -1528,6 +1536,12 @@ document.addEventListener('keydown', e => {
     const ind = $('dot-indicator');
     if (ind) ind.classList.toggle('active', state.dotted);
     showToast(state.dotted ? '附点模式 开' : '附点模式 关');
+  } else if (e.key === ',') {
+    e.preventDefault();
+    state.sharp = !state.sharp;
+    const si = $('sharp-indicator');
+    if (si) si.classList.toggle('active', state.sharp);
+    showToast(state.sharp ? '升调模式 开' : '升调模式 关');
   }
 });
 
@@ -1565,7 +1579,7 @@ function startPlay() {
         if (trk.instrument === 'drums') {
           audio.playNote('drums', 0, absTime, dur, trk.volume, n.pitch);
         } else {
-          audio.playNote(trk.instrument, noteToFreq(n.pitch, n.octave), absTime, dur, trk.volume);
+          audio.playNote(trk.instrument, noteToFreq(n.pitch, n.octave, n.sharp), absTime, dur, trk.volume);
         }
       }
       t += dur;
@@ -1859,6 +1873,12 @@ $('dotted-toggle').onclick = () => {
   state.dotted = !state.dotted;
   $('dot-indicator').classList.toggle('active', state.dotted);
   showToast(state.dotted ? '附点模式 开' : '附点模式 关');
+};
+
+$('sharp-toggle').onclick = () => {
+  state.sharp = !state.sharp;
+  $('sharp-indicator').classList.toggle('active', state.sharp);
+  showToast(state.sharp ? '升调模式 开' : '升调模式 关');
 };
 
 document.querySelectorAll('.dur-btn[data-dur]').forEach(btn => {
