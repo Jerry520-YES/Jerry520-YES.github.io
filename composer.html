@@ -82,7 +82,7 @@ a{color:var(--accent);text-decoration:none}
 .note-cell:hover{background:var(--accent-dim)}
 .note-cell.cursor{background:var(--accent-dim);box-shadow:inset 0 -3px 0 var(--accent)}
 .note-cell.selected{background:#fff3cd !important;box-shadow:inset 0 0 0 2px var(--accent) !important;z-index:3}
-.note-cell.playing{background:var(--accent);color:#fff}
+.note-cell.playing{background:var(--accent);color:#fff;transition:none}
 .notation-row.has-slur{padding-top:28px}
 .slur-line{position:absolute;top:3px;height:22px;overflow:visible;pointer-events:auto;cursor:pointer;z-index:5}
 .slur-line:hover svg path{stroke:var(--danger)!important;stroke-width:3!important}
@@ -1001,7 +1001,7 @@ const state = {
   dotted: false,
   sharp: false,
   playing: false,
-  playTimer: null,
+  playRaf: null,
   beatMarker: null,
   selection: {trackId: null, startIdx: -1, endIdx: -1, active: false},
   clipboard: [],
@@ -1608,24 +1608,27 @@ function startPlay() {
     }
   }
 
-  // 光标跟随（基于当前激活音轨的节拍）
+  // 光标跟随（基于当前激活音轨的节拍），使用 requestAnimationFrame 同步60fps
   const activeBpm = tr.tempo || state.tempo;
   const activeBeatDur = 60 / activeBpm;
   const totalDuration = maxDuration + activeBeatDur;
   let startMs = performance.now() + 100;
-  state.playTimer = setInterval(() => {
+  function playLoop() {
+    if (!state.playing) return;
     const elapsed = (performance.now() - startMs) / 1000;
     if (elapsed >= totalDuration) { stopPlay(); return; }
     const beatPos = elapsed / activeBeatDur;
     highlightPlayingNote(beatPos);
-  }, 50);
+    state.playRaf = requestAnimationFrame(playLoop);
+  }
+  state.playRaf = requestAnimationFrame(playLoop);
 }
 
 function stopPlay() {
   state.playing = false;
   $('btn-play').classList.remove('playing');
   $('btn-play').textContent = '▶';
-  if (state.playTimer) { clearInterval(state.playTimer); state.playTimer = null; }
+  if (state.playRaf) { cancelAnimationFrame(state.playRaf); state.playRaf = null; }
   audio.stopAll();
   if (state.lastPlayingCell) {
     state.lastPlayingCell.classList.remove('playing');
@@ -1657,7 +1660,7 @@ function highlightPlayingNote(beatPos) {
     }
   }
 
-  // 跑酷模式：用 requestAnimationFrame 同步浏览器刷新率，避免闪烁
+  // 跑酷模式：音符到达画面一半后乐谱自动居中（已在RAF循环中调用，无需额外RAF）
   if (state.lastPlayingCell && state.playing) {
     const grid = $('notation-grid');
     if (grid) {
@@ -1666,9 +1669,7 @@ function highlightPlayingNote(beatPos) {
       const cellCenter = cellRect.left + cellRect.width / 2 - gridRect.left;
       const gridCenter = gridRect.width / 2;
       if (cellCenter > gridCenter) {
-        requestAnimationFrame(() => {
-          grid.scrollLeft += cellCenter - gridCenter;
-        });
+        grid.scrollLeft += cellCenter - gridCenter;
       }
     }
   }
