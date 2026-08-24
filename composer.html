@@ -1641,11 +1641,21 @@ function startPlay() {
   const startTime = ctx.currentTime + 0.1;
   let maxDuration = 0;
 
+  // 计算光标前的节拍偏移（基于激活音轨），用于从光标处开始播放
+  const activeBpm = tr.tempo || state.tempo;
+  const activeBeatDur = 60 / activeBpm;
+  let cursorBeatOffset = 0;
+  for (let i = 0; i < state.cursor && i < tr.notes.length; i++) {
+    const n = tr.notes[i];
+    cursorBeatOffset += (4 / n.duration) * (n.dotted ? 1.5 : 1);
+  }
+
   for (const trk of playTracks) {
     const bpm = trk.tempo || state.tempo;
     const beatDur = 60 / bpm;
     let t = 0;
-    for (let i = 0; i < trk.notes.length; i++) {
+    const startIdx = (trk.id === tr.id) ? state.cursor : 0; // 非激活音轨从头开始
+    for (let i = startIdx; i < trk.notes.length; i++) {
       const n = trk.notes[i];
       const dur = (4 / n.duration) * (n.dotted ? 1.5 : 1) * beatDur;
       const absTime = startTime + t;
@@ -1675,16 +1685,14 @@ function startPlay() {
     }
   }
 
-  // 光标跟随（基于当前激活音轨的节拍），使用 requestAnimationFrame 同步60fps
-  const activeBpm = tr.tempo || state.tempo;
-  const activeBeatDur = 60 / activeBpm;
+  // 光标跟随，从光标位置开始
   const totalDuration = maxDuration + activeBeatDur;
   let startMs = performance.now() + 100;
   function playLoop() {
     if (!state.playing) return;
     const elapsed = (performance.now() - startMs) / 1000;
     if (elapsed >= totalDuration) { stopPlay(); return; }
-    const beatPos = elapsed / activeBeatDur;
+    const beatPos = cursorBeatOffset + elapsed / activeBeatDur;
     highlightPlayingNote(beatPos);
     state.playRaf = requestAnimationFrame(playLoop);
   }
