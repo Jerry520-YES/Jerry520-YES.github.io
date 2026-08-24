@@ -1631,6 +1631,7 @@ function stopPlay() {
 
 function highlightPlayingNote(beatPos) {
   document.querySelectorAll('.note-cell.playing').forEach(c => c.classList.remove('playing'));
+  let foundCell = null;
   for (const tr of state.tracks) {
     let b = 0;
     for (let i = 0; i < tr.notes.length; i++) {
@@ -1638,10 +1639,27 @@ function highlightPlayingNote(beatPos) {
       const d = 4 / n.duration * (n.dotted ? 1.5 : 1);
       if (b <= beatPos && b + d > beatPos) {
         const cell = document.querySelector(`.note-cell[data-track-id="${tr.id}"][data-idx="${i}"]`);
-        if (cell) cell.classList.add('playing');
+        if (cell) {
+          cell.classList.add('playing');
+          if (!foundCell) foundCell = cell;
+        }
         break;
       }
       b += d;
+    }
+  }
+
+  // 跑酷模式：播放音符到达画面一半后，乐谱自动滚动，音符保持在画面中心
+  if (foundCell) {
+    const grid = $('notation-grid');
+    if (grid) {
+      const gridRect = grid.getBoundingClientRect();
+      const cellRect = foundCell.getBoundingClientRect();
+      const cellCenter = cellRect.left + cellRect.width / 2 - gridRect.left;
+      const gridCenter = gridRect.width / 2;
+      if (cellCenter > gridCenter) {
+        grid.scrollLeft += cellCenter - gridCenter;
+      }
     }
   }
 }
