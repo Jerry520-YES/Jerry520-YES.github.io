@@ -174,7 +174,7 @@ a{color:var(--accent);text-decoration:none}
 .modal-close{background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
 .modal-close:hover{color:var(--ink)}
 .modal-body{padding:20px;overflow-y:auto;flex:1}
-.inst-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.inst-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .inst-card{border:2px solid var(--rule);border-radius:10px;padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.15s;background:#fff}
 .inst-card:hover{border-color:var(--accent);background:var(--accent-dim);transform:translateY(-2px)}
 .inst-card.selected{border-color:var(--accent);background:var(--accent-dim)}
@@ -358,11 +358,11 @@ const INSTRUMENTS = {
   bass:       {name:'贝斯',     color:'#7C3AED', icon:'🎵', desc:'低音沉稳，节奏根基'},
   trumpet:    {name:'小号',     color:'#F1C40F', icon:'🎺', desc:'嘹亮激昂，气势磅礴'},
   drums:      {name:'架子鼓',   color:'#34495E', icon:'🥁', desc:'节奏引擎，多种打击乐'},
+  guzheng:   {name:'古筝',     color:'#8BC34A', icon:'🪕', desc:'中国弹拨，明亮清脆'},
   synth:      {name:'合成器',   color:'#E91E63', icon:'🎛️', desc:'模拟电子合成音色'},
   elec_piano: {name:'电钢琴',   color:'#00ACC1', icon:'🎹', desc:'FM 电钢，温暖通透'},
   pad:        {name:'铺底合成', color:'#3F51B5', icon:'🌊', desc:'环境铺底，氛围感强'},
   lead:       {name:'主音合成', color:'#FF6E40', icon:'⚡', desc:'明亮主音，穿透力强'},
-  guzheng:   {name:'古筝',     color:'#8BC34A', icon:'🪕', desc:'中国弹拨，明亮清脆'},
 };
 const DRUM_NAMES = {1:'Kick',2:'Snare',3:'HiHat',4:'OpenH',5:'TomL',6:'TomH',7:'Crash'};
 const DRUM_SHORT = {1:'K',2:'S',3:'H',4:'O',5:'L',6:'T',7:'C'};
