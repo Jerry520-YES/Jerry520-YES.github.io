@@ -46,9 +46,10 @@ a{color:var(--accent);text-decoration:none}
 .track-name{font-weight:700;font-size:0.88rem}
 .track-instrument{font-size:0.76rem;color:var(--muted)}
 .track-controls{display:flex;align-items:center;gap:6px;margin-top:6px}
-.track-vol{flex:1;height:4px;-webkit-appearance:none;appearance:none;background:var(--rule);border-radius:2px;outline:none}
-.track-vol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:pointer}
-.track-vol::-moz-range-thumb{width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:pointer;border:none}
+.track-vol{flex:1;height:6px;-webkit-appearance:none;appearance:none;background:var(--rule);border-radius:3px;outline:none;cursor:pointer}
+.track-vol::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--accent);border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.track-vol::-moz-range-thumb{width:16px;height:16px;background:var(--accent);border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.track-vol-val{font-size:0.72rem;font-weight:700;color:var(--ink);min-width:28px;text-align:right;font-family:var(--mono);user-select:none}
 .track-btn{width:24px;height:24px;border:1px solid var(--rule);border-radius:4px;background:#fff;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .track-btn:hover{border-color:var(--accent);color:var(--accent)}
 .track-btn.muted{background:var(--danger);color:#fff;border-color:var(--danger)}
@@ -1229,6 +1230,7 @@ function renderTracks() {
       </div>
       <div class="track-instrument">${inst.icon} ${inst.name} <span style="color:var(--muted);font-size:0.72rem">${tr.timeSig} ${tr.key} ${tr.tempo}bpm</span></div>
       <div class="track-controls">
+        <span class="track-vol-val" id="vol-val-${tr.id}">${Math.round(tr.volume * 100)}</span>
         <input type="range" class="track-vol" min="0" max="1" step="0.01" value="${tr.volume}" onclick="event.stopPropagation()" oninput="updateVol(${tr.id},this.value)">
         <button class="track-btn ${tr.muted?'muted':''}" onclick="event.stopPropagation();toggleMute(${tr.id})" title="静音">M</button>
         <button class="track-btn ${tr.solo?'soloed':''}" onclick="event.stopPropagation();toggleSolo(${tr.id})" title="独奏">S</button>
@@ -1240,7 +1242,11 @@ function renderTracks() {
 
 function updateVol(id, v) {
   const tr = state.tracks.find(t => t.id === id);
-  if (tr) tr.volume = parseFloat(v);
+  if (tr) {
+    tr.volume = parseFloat(v);
+    const valEl = document.getElementById('vol-val-' + id);
+    if (valEl) valEl.textContent = Math.round(tr.volume * 100);
+  }
 }
 
 function toggleMute(id) {
