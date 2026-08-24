@@ -1007,6 +1007,7 @@ const state = {
   clipboard: [],
   sections: [],
   lastPlayingCell: null,
+  transformOffset: 0,     // 过半后 translateX 偏移量
 };
 let nextTrackId = 0;
 let nextSectionId = 0;
@@ -1634,6 +1635,13 @@ function stopPlay() {
     state.lastPlayingCell.classList.remove('playing');
     state.lastPlayingCell = null;
   }
+// 重置 transform 偏移
+  if (state.transformOffset) {
+    document.querySelectorAll('.notation-row').forEach(row => {
+      row.style.transform = '';
+    });
+    state.transformOffset = 0;
+  }
 }
 
 function highlightPlayingNote(beatPos) {
@@ -1654,7 +1662,7 @@ function highlightPlayingNote(beatPos) {
   }
 
   // 2. 提前读取布局信息（在DOM写操作之前，避免强制重排）
-  let grid = null, scrollExcess = 0;
+  let grid = null, needsScroll = false, excess = 0;
   if (currentCell && state.playing) {
     grid = $('notation-grid');
     if (grid) {
@@ -1663,12 +1671,13 @@ function highlightPlayingNote(beatPos) {
       const cellCenter = cellRect.left + cellRect.width / 2 - gridRect.left;
       const gridCenter = gridRect.width / 2;
       if (cellCenter > gridCenter) {
-        scrollExcess = cellCenter - gridCenter;
+        needsScroll = true;
+        excess = cellCenter - gridCenter;
       }
     }
   }
 
-  // 3. 批量执行所有 DOM 写操作（class 切换 + 滚动，一次重排完成）
+// 3. 批量执行所有 DOM 写操作（class 切换，一次重排完成）
   if (state.lastPlayingCell && state.lastPlayingCell !== currentCell) {
     state.lastPlayingCell.classList.remove('playing');
   }
@@ -1677,9 +1686,13 @@ function highlightPlayingNote(beatPos) {
   }
   state.lastPlayingCell = currentCell;
 
-  // 4. 滚动更新（与class切换在同一batch中）
-  if (scrollExcess > 0 && grid) {
-    grid.scrollLeft += scrollExcess * 0.5;
+  // 4. 一旦单元格超过中线，用 transform 平移音轨行（纯 GPU 合成，不触发重排）
+  //    transform 不触发 layout/reflow，彻底消除闪烁
+  if (needsScroll && grid) {
+    state.transformOffset -= excess * 0.5;
+    document.querySelectorAll('.notation-row').forEach(row => {
+      row.style.transform = `translateX(${state.transformOffset}px)`;
+    });
   }
 }
 
