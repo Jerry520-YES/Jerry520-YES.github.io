@@ -72,7 +72,7 @@ a{color:var(--accent);text-decoration:none}
 .fs-toggle:hover{background:var(--accent-dim)}
 .panel-head:hover .fs-toggle{opacity:1}
 .notation-grid{flex:1;overflow:auto;padding:12px}
-.notation-row{display:flex;align-items:flex-start;gap:0;margin-bottom:6px;border-bottom:1px solid var(--rule);padding:6px;position:relative}
+.notation-row{display:flex;align-items:flex-start;gap:0;margin-bottom:6px;border-bottom:1px solid var(--rule);padding:6px;position:relative;min-width:100%}
 .notation-row:last-child{border-bottom:none}
 .notation-row.active-track{background:var(--accent-dim);border-radius:6px}
 .notation-label{flex:0 0 110px;font-size:0.78rem;font-weight:700;color:var(--muted);padding-top:8px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;cursor:pointer}
@@ -1637,44 +1637,49 @@ function stopPlay() {
 }
 
 function highlightPlayingNote(beatPos) {
-  // 只移除上一个高亮单元格，避免全量查询抖动
-  if (state.lastPlayingCell && state.lastPlayingCell.classList.contains('playing')) {
-    state.lastPlayingCell.classList.remove('playing');
-  }
-  state.lastPlayingCell = null;
-
+  // 1. 先查找当前单元格（只读，不触发重排）
+  let currentCell = null;
   for (const tr of state.tracks) {
     let b = 0;
     for (let i = 0; i < tr.notes.length; i++) {
       const n = tr.notes[i];
       const d = 4 / n.duration * (n.dotted ? 1.5 : 1);
       if (b <= beatPos && b + d > beatPos) {
-        const cell = document.querySelector(`.note-cell[data-track-id="${tr.id}"][data-idx="${i}"]`);
-        if (cell) {
-          cell.classList.add('playing');
-          state.lastPlayingCell = cell;
-        }
+        currentCell = document.querySelector(`.note-cell[data-track-id="${tr.id}"][data-idx="${i}"]`);
         break;
       }
       b += d;
     }
+    if (currentCell) break;
   }
 
-  // 跑酷模式：平滑滚动，音符越过画面一半后渐进居中（避免跳跃）
-  if (state.lastPlayingCell && state.playing) {
-    const grid = $('notation-grid');
+  // 2. 提前读取布局信息（在DOM写操作之前，避免强制重排）
+  let grid = null, scrollExcess = 0;
+  if (currentCell && state.playing) {
+    grid = $('notation-grid');
     if (grid) {
-      // 合并 getBoundingClientRect 调用，避免布局抖动
       const gridRect = grid.getBoundingClientRect();
-      const cellRect = state.lastPlayingCell.getBoundingClientRect();
+      const cellRect = currentCell.getBoundingClientRect();
       const cellCenter = cellRect.left + cellRect.width / 2 - gridRect.left;
       const gridCenter = gridRect.width / 2;
       if (cellCenter > gridCenter) {
-        // 比例跟随：每次只滚动超出量的一半，产生渐进居中效果，避免跳跃
-        const excess = cellCenter - gridCenter;
-        grid.scrollLeft += excess * 0.5;
+        scrollExcess = cellCenter - gridCenter;
       }
     }
+  }
+
+  // 3. 批量执行所有 DOM 写操作（class 切换 + 滚动，一次重排完成）
+  if (state.lastPlayingCell && state.lastPlayingCell !== currentCell) {
+    state.lastPlayingCell.classList.remove('playing');
+  }
+  if (currentCell) {
+    currentCell.classList.add('playing');
+  }
+  state.lastPlayingCell = currentCell;
+
+  // 4. 滚动更新（与class切换在同一batch中）
+  if (scrollExcess > 0 && grid) {
+    grid.scrollLeft += scrollExcess * 0.5;
   }
 }
 
