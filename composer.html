@@ -83,6 +83,11 @@ a{color:var(--accent);text-decoration:none}
 .note-cell.cursor{background:var(--accent-dim);box-shadow:inset 0 -3px 0 var(--accent)}
 .note-cell.selected{background:#fff3cd !important;box-shadow:inset 0 0 0 2px var(--accent) !important;z-index:3}
 .note-cell.playing{background:var(--accent);color:#fff;transition:none}
+.note-gap{flex:0 0 10px;height:48px;position:relative;cursor:pointer;transition:background 0.1s}
+.note-gap:hover{background:rgba(232,150,20,0.08)}
+.note-gap.active{background:rgba(232,150,20,0.12)}
+.note-gap.active::after{content:'';position:absolute;left:50%;top:4px;bottom:4px;width:2px;background:var(--accent);border-radius:1px;box-shadow:0 0 4px rgba(232,150,20,0.4)}
+.note-gap.active::before{content:'▼';position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);font-size:7px;color:var(--accent);pointer-events:none}
 .notation-row.has-slur{padding-top:28px}
 .slur-line{position:absolute;top:3px;height:22px;overflow:visible;pointer-events:auto;cursor:pointer;z-index:5}
 .slur-line:hover svg path{stroke:var(--danger)!important;stroke-width:3!important}
@@ -1339,6 +1344,25 @@ function renderNotation() {
     row.appendChild(label);
 
     const isDrum = tr.instrument === 'drums';
+
+    function makeGap(pos) {
+      const gap = document.createElement('div');
+      const isActive = tr.id === state.activeTrackId;
+      gap.className = 'note-gap' + (isActive && pos === state.cursor && state.selection.startIdx < 0 ? ' active' : '');
+      gap.dataset.pos = pos;
+      gap.onclick = (e) => {
+        e.stopPropagation();
+        if (e.ctrlKey) return;
+        state.cursor = pos;
+        state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
+        renderNotation();
+      };
+      return gap;
+    }
+
+    // 在第一个音符前添加光标位
+    row.appendChild(makeGap(0));
+
     for (let i = 0; i < tr.notes.length; i++) {
       const n = tr.notes[i];
       const cell = document.createElement('div');
@@ -1348,7 +1372,7 @@ function renderNotation() {
       const selMax = Math.max(state.selection.startIdx, state.selection.endIdx);
       const isSelected = state.selection.trackId === tr.id && state.selection.startIdx >= 0 && i >= selMin && i <= selMax;
 
-      cell.className = 'note-cell' + (isActive && i === state.cursor && !isSelected ? ' cursor' : '') + (isSelected ? ' selected' : '') + (n.pitch === 0 ? ' rest' : '');
+      cell.className = 'note-cell' + (isSelected ? ' selected' : '') + (n.pitch === 0 ? ' rest' : '');
       cell.dataset.idx = i;
       cell.dataset.trackId = tr.id;
 
@@ -1378,12 +1402,20 @@ function renderNotation() {
       if (width < 20) cell.style.fontSize = '0.62rem';
       else if (width < 30) cell.style.fontSize = '0.75rem';
 
-      // 鼠标拖拽选择 (Ctrl+拖拽用于连音选择)
+      // 鼠标点击：定位光标到该音符前的间隔
       cell.onmousedown = (e) => {
         e.preventDefault();
-        state.selection = {trackId: tr.id, startIdx: i, endIdx: i, active: true, ctrlSel: e.ctrlKey};
-        _dragOccurred = false;
-        updateSelectionVisuals();
+        if (e.ctrlKey) {
+          // Ctrl+点击：选中音符（用于复制/批量操作）
+          state.selection = {trackId: tr.id, startIdx: i, endIdx: i, active: true, ctrlSel: true};
+          _dragOccurred = false;
+          updateSelectionVisuals();
+        } else {
+          // 普通点击：光标移到该音符前的间隔
+          state.cursor = i;
+          state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
+          renderNotation();
+        }
       };
       cell.onmouseenter = () => {
         if (state.selection.active && state.selection.trackId === tr.id) {
@@ -1394,6 +1426,8 @@ function renderNotation() {
       };
 
       row.appendChild(cell);
+      // 每个音符后添加一个间隔光标位
+      row.appendChild(makeGap(i + 1));
     }
 
     if (tr.slurs && tr.slurs.length > 0) {
@@ -1540,16 +1574,48 @@ document.addEventListener('keydown', e => {
     togglePlay();
   } else if (e.key === '.') {
     e.preventDefault();
-    state.dotted = !state.dotted;
-    const ind = $('dot-indicator');
-    if (ind) ind.classList.toggle('active', state.dotted);
-    showToast(state.dotted ? '附点模式 开' : '附点模式 关');
+    if (state.selection.startIdx >= 0 && state.selection.trackId !== null) {
+      // 选中音符批量修改附点
+      const selTr = state.tracks.find(t => t.id === state.selection.trackId);
+      if (selTr) {
+        const selMin = Math.min(state.selection.startIdx, state.selection.endIdx);
+        const selMax = Math.max(state.selection.startIdx, state.selection.endIdx);
+        const newVal = !selTr.notes[selMin].dotted;
+        for (let si = selMin; si <= selMax; si++) {
+          selTr.notes[si].dotted = newVal;
+        }
+        state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
+        renderNotation();
+        showToast(`已修改 ${selMax - selMin + 1} 个音符附点`);
+      }
+    } else {
+      state.dotted = !state.dotted;
+      const ind = $('dot-indicator');
+      if (ind) ind.classList.toggle('active', state.dotted);
+      showToast(state.dotted ? '附点模式 开' : '附点模式 关');
+    }
   } else if (e.key === ',') {
     e.preventDefault();
-    state.sharp = !state.sharp;
-    const si = $('sharp-indicator');
-    if (si) si.classList.toggle('active', state.sharp);
-    showToast(state.sharp ? '升调模式 开' : '升调模式 关');
+    if (state.selection.startIdx >= 0 && state.selection.trackId !== null) {
+      // 选中音符批量修改升调
+      const selTr = state.tracks.find(t => t.id === state.selection.trackId);
+      if (selTr) {
+        const selMin = Math.min(state.selection.startIdx, state.selection.endIdx);
+        const selMax = Math.max(state.selection.startIdx, state.selection.endIdx);
+        const newVal = !selTr.notes[selMin].sharp;
+        for (let si = selMin; si <= selMax; si++) {
+          selTr.notes[si].sharp = newVal;
+        }
+        state.selection = {trackId: null, startIdx: -1, endIdx: -1, active: false};
+        renderNotation();
+        showToast(`已修改 ${selMax - selMin + 1} 个音符升调`);
+      }
+    } else {
+      state.sharp = !state.sharp;
+      const si = $('sharp-indicator');
+      if (si) si.classList.toggle('active', state.sharp);
+      showToast(state.sharp ? '升调模式 开' : '升调模式 关');
+    }
   }
 });
 
