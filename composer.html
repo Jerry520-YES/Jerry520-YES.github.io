@@ -1660,16 +1660,19 @@ function highlightPlayingNote(beatPos) {
     }
   }
 
-  // 跑酷模式：音符到达画面一半后乐谱自动居中（已在RAF循环中调用，无需额外RAF）
+  // 跑酷模式：平滑滚动，音符越过画面一半后渐进居中（避免跳跃）
   if (state.lastPlayingCell && state.playing) {
     const grid = $('notation-grid');
     if (grid) {
+      // 合并 getBoundingClientRect 调用，避免布局抖动
       const gridRect = grid.getBoundingClientRect();
       const cellRect = state.lastPlayingCell.getBoundingClientRect();
       const cellCenter = cellRect.left + cellRect.width / 2 - gridRect.left;
       const gridCenter = gridRect.width / 2;
       if (cellCenter > gridCenter) {
-        grid.scrollLeft += cellCenter - gridCenter;
+        // 比例跟随：每次只滚动超出量的一半，产生渐进居中效果，避免跳跃
+        const excess = cellCenter - gridCenter;
+        grid.scrollLeft += excess * 0.5;
       }
     }
   }
