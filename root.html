@@ -8473,17 +8473,82 @@ const LANG_MAP = { en: '英语', de: '德语', fr: '法语', es: '西班牙语',
 
 function detectLanguage(word) {
   const w = word.trim().toLowerCase();
-  // 葡萄牙语：特殊字符 ã/õ 和独特词尾
-  if (/ção$|[ãõ]|lho$|nha$/.test(w)) return 'pt';
-  // 西班牙语：ñ 和独特词尾
-  if (/ñ|ción$|miento$|dad$/.test(w)) return 'es';
-  // 意大利语：gli/sci/sce 和独特词尾
-  if (/gli|sci|sce|zione$|ità$/.test(w)) return 'it';
-  // 法语：特殊重音字符和独特词尾组合
-  if (/[éèêëàâîïôùûç]|eau|oux|ez$|eur$|ois$|ique$/.test(w)) return 'fr';
-  // 德语：ß 和独特组合
-  if (/ß|cht|pf/.test(w)) return 'de';
-  return 'en';
+  if (w.length === 0) return 'en';
+
+  const scores = { en: 0, de: 0, fr: 0, es: 0, it: 0, pt: 0 };
+
+  // 1. 特殊字符（强信号，+50）
+  if (/ção$|[ãõ]|lho$|nha$/.test(w)) scores.pt += 50;
+  if (/ñ|ci[oó]n$|miento$/.test(w)) scores.es += 50;
+  if (/gli|sci|sce|zione$|ità$/.test(w)) scores.it += 50;
+  if (/[éèêëàâîïôùûç]|eau|oux|ez$|eur$|ois$|ique$/.test(w)) scores.fr += 50;
+  if (/ß|cht|pf/.test(w)) scores.de += 50;
+
+  // 2. 词尾模式（长度 > 词尾长度 + 1，避免短词误判）
+  const wlen = w.length;
+  function checkEnding(patterns, points) {
+    for (const p of patterns) {
+      if (wlen > p.length + 1 && w.endsWith(p)) return true;
+    }
+    return false;
+  }
+
+  // 英语特有词尾（强 +12，中 +6）
+  if (checkEnding(['tion','sion','ment','ness','less','ous','ful','able','ible','ship','ward','wise','ive','al','ic','ist','ism','dom','like','most','proof','scape','hood'], 0)) scores.en += 12;
+  if (checkEnding(['ize','ise','ing','ly','ed','er','or','en','fy','age','ure','ant','ent','ary','ory','ance','ence','ite','ate'], 0)) scores.en += 6;
+
+  // 德语词尾
+  if (checkEnding(['ung','heit','keit','schaft','tum','nis','ling','bar','chen','lein','sal','sam','los'], 0)) scores.de += 12;
+  else if (checkEnding(['en','lich','ig','sel','haft','los','wert'], 0)) scores.de += 6;
+  if (checkEnding(['e','te','er','ler'], 0)) scores.de += 3;
+
+  // 法语词尾
+  if (checkEnding(['tion','sion','ment','eur','teur','trice','ance','ence','eux','euse','eau','aux','esse','tion','sion'], 0)) scores.fr += 12;
+  else if (checkEnding(['ique','ois','ais','ain','ien','if','ive','oire','ure','ade','iste','isme','té','sant'], 0)) scores.fr += 6;
+  if (checkEnding(['e','re','tre','te','le'], 0)) scores.fr += 3;
+
+  // 意大利语词尾
+  if (checkEnding(['zione','ità','mento','mente','ezza','tore','trice'], 0)) scores.it += 12;
+  else if (checkEnding(['are','ere','ire','ista','ino','etto','ato','uto','ito','ario','anza','enza','ismo','tà'], 0)) scores.it += 6;
+  if (checkEnding(['e','a','i','o'], 0)) scores.it += 3;
+
+  // 西班牙语词尾
+  if (checkEnding(['ción','miento','dad','ble','mente','eza','tud','zón'], 0)) scores.es += 12;
+  else if (checkEnding(['ista','dor','dora','azo','ito','ita','ón','ona','ar','er','ir','ado','ido','eza','aje','ismo','anza','encia','ante','ente'], 0)) scores.es += 6;
+  if (checkEnding(['e','a','o','te','s'], 0)) scores.es += 3;
+
+  // 葡萄牙语词尾
+  if (checkEnding(['ção','dade','mente','eza','tude','tura'], 0)) scores.pt += 12;
+  else if (checkEnding(['ista','dor','dora','inho','inha','eiro','eira','são','ar','er','ir','ado','ido','eza','ismo','ança','ença','ante','ente','ção'], 0)) scores.pt += 6;
+  if (checkEnding(['e','a','o','ão','te','s'], 0)) scores.pt += 3;
+
+  // 3. 词根库反馈（非英语语言 +3/部件）
+  try {
+    const analysis = analyzeWord(w);
+    if (analysis && analysis.parts && analysis.parts.length > 0) {
+      for (const part of analysis.parts) {
+        if (part.languages && Array.isArray(part.languages)) {
+          for (const lang of part.languages) {
+            if (lang !== 'en' && scores[lang] !== undefined) {
+              scores[lang] += 3;
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {}
+
+  // 综合排序
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+
+  // 最高分 <= 0：回退到英语
+  if (sorted[0][1] <= 0) return 'en';
+
+  // 如果英语有得分且与最高分差距 <= 10 分，优先英语（避免过度检测为法语）
+  // 例：inspection → en(+12) vs fr(+21)，差距 9，英语胜出
+  if (scores.en > 0 && sorted[0][1] - scores.en <= 10) return 'en';
+
+  return sorted[0][0];
 }
 
 /**
