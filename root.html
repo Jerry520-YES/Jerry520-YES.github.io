@@ -8486,7 +8486,7 @@ function detectLanguage(word) {
 
   // 2. 词尾模式（长度 > 词尾长度 + 1，避免短词误判）
   const wlen = w.length;
-  function checkEnding(patterns, points) {
+  function checkEnding(patterns) {
     for (const p of patterns) {
       if (wlen > p.length + 1 && w.endsWith(p)) return true;
     }
@@ -8494,33 +8494,33 @@ function detectLanguage(word) {
   }
 
   // 英语特有词尾（强 +12，中 +6）
-  if (checkEnding(['tion','sion','ment','ness','less','ous','ful','able','ible','ship','ward','wise','ive','al','ic','ist','ism','dom','like','most','proof','scape','hood'], 0)) scores.en += 12;
-  if (checkEnding(['ize','ise','ing','ly','ed','er','or','en','fy','age','ure','ant','ent','ary','ory','ance','ence','ite','ate'], 0)) scores.en += 6;
+  if (checkEnding(['tion','sion','ment','ness','less','ous','ful','able','ible','ship','ward','wise','ive','al','ic','ist','ism','dom','like','most','proof','scape','hood'])) scores.en += 12;
+  if (checkEnding(['ize','ise','ing','ly','ed','er','or','en','fy','age','ure','ant','ent','ary','ory','ance','ence','ite','ate'])) scores.en += 6;
 
   // 德语词尾
-  if (checkEnding(['ung','heit','keit','schaft','tum','nis','ling','bar','chen','lein','sal','sam','los'], 0)) scores.de += 12;
-  else if (checkEnding(['en','lich','ig','sel','haft','los','wert'], 0)) scores.de += 6;
-  if (checkEnding(['e','te','er','ler'], 0)) scores.de += 3;
+  if (checkEnding(['ung','heit','keit','schaft','tum','nis','ling','bar','chen','lein','sal','sam','los'])) scores.de += 12;
+  else if (checkEnding(['en','lich','ig','sel','haft','los','wert'])) scores.de += 6;
+  if (checkEnding(['e','te','er','ler'])) scores.de += 3;
 
   // 法语词尾
-  if (checkEnding(['tion','sion','ment','eur','teur','trice','ance','ence','eux','euse','eau','aux','esse','tion','sion'], 0)) scores.fr += 12;
-  else if (checkEnding(['ique','ois','ais','ain','ien','if','ive','oire','ure','ade','iste','isme','té','sant'], 0)) scores.fr += 6;
-  if (checkEnding(['e','re','tre','te','le'], 0)) scores.fr += 3;
+  if (checkEnding(['tion','sion','ment','eur','teur','trice','ance','ence','eux','euse','eau','aux','esse'])) scores.fr += 12;
+  else if (checkEnding(['ique','ois','ais','ain','ien','if','ive','oire','ure','ade','iste','isme','té','sant'])) scores.fr += 6;
+  if (checkEnding(['e','re','tre','te','le'])) scores.fr += 3;
 
   // 意大利语词尾
-  if (checkEnding(['zione','ità','mento','mente','ezza','tore','trice'], 0)) scores.it += 12;
-  else if (checkEnding(['are','ere','ire','ista','ino','etto','ato','uto','ito','ario','anza','enza','ismo','tà'], 0)) scores.it += 6;
-  if (checkEnding(['e','a','i','o'], 0)) scores.it += 3;
+  if (checkEnding(['zione','ità','mento','mente','ezza','tore','trice'])) scores.it += 12;
+  else if (checkEnding(['are','ere','ire','ista','ino','etto','ato','uto','ito','ario','anza','enza','ismo','tà'])) scores.it += 6;
+  if (checkEnding(['e','a','i','o'])) scores.it += 3;
 
   // 西班牙语词尾
-  if (checkEnding(['ción','miento','dad','ble','mente','eza','tud','zón'], 0)) scores.es += 12;
-  else if (checkEnding(['ista','dor','dora','azo','ito','ita','ón','ona','ar','er','ir','ado','ido','eza','aje','ismo','anza','encia','ante','ente'], 0)) scores.es += 6;
-  if (checkEnding(['e','a','o','te','s'], 0)) scores.es += 3;
+  if (checkEnding(['ción','miento','dad','ble','mente','eza','tud','zón'])) scores.es += 12;
+  else if (checkEnding(['ista','dor','dora','azo','ito','ita','ón','ona','ar','er','ir','ado','ido','eza','aje','ismo','anza','encia','ante','ente'])) scores.es += 6;
+  if (checkEnding(['e','a','o','te','s'])) scores.es += 3;
 
   // 葡萄牙语词尾
-  if (checkEnding(['ção','dade','mente','eza','tude','tura'], 0)) scores.pt += 12;
-  else if (checkEnding(['ista','dor','dora','inho','inha','eiro','eira','são','ar','er','ir','ado','ido','eza','ismo','ança','ença','ante','ente','ção'], 0)) scores.pt += 6;
-  if (checkEnding(['e','a','o','ão','te','s'], 0)) scores.pt += 3;
+  if (checkEnding(['ção','dade','mente','eza','tude','tura'])) scores.pt += 12;
+  else if (checkEnding(['ista','dor','dora','inho','inha','eiro','eira','são','ar','er','ir','ado','ido','eza','ismo','ança','ença','ante','ente','ção'])) scores.pt += 6;
+  if (checkEnding(['e','a','o','ão','te','s'])) scores.pt += 3;
 
   // 3. 词根库反馈（非英语语言 +3/部件）
   try {
