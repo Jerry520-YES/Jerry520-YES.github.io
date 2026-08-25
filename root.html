@@ -8487,76 +8487,95 @@ function detectLanguage(word) {
 }
 
 /**
- * 分析单词的词根结构
+ * 分析单词的词根结构（多候选评分算法）
+ * 遍历所有可能的词根匹配，对每个候选尝试完整分解（前缀+词根+后缀），
+ * 优先选择无未识别部分的完整分解方案，避免匹配语义无关的词根。
  * 匹配时去掉词根中的连字符（如 "tract-" -> "tract"），以便匹配用户输入的单词
  */
 function analyzeWord(word) {
   if (!word || word.trim().length === 0) return null;
   const w = word.trim().toLowerCase();
-  const parts = [];
-  const unrecognized = [];
 
-  // 1. 在单词中找最长匹配的词根（优先语义匹配，防止误配前缀/后缀）
-  let bestRoot = null;
-  let bestRootIdx = -1;
+  // 收集所有可能的候选分解方案
+  const candidates = [];
+
   for (const r of ROOTS_BY_TYPE.root) {
     const cleanRoot = r.root.replace(/[-\s]/g, '');
     const idx = w.indexOf(cleanRoot);
-    if (idx !== -1) {
-      if (!bestRoot || cleanRoot.length > bestRoot.matchedText.length) {
-        bestRoot = { ...r, matchedText: cleanRoot, start: idx, end: idx + cleanRoot.length };
-        bestRootIdx = idx;
-      }
-    }
-  }
+    if (idx === -1) continue;
 
-  if (!bestRoot) {
-    unrecognized.push({ text: w, type: 'unrecognized' });
-    return { word: w, parts, unrecognized, confidence: 0 };
-  }
+    const beforeRoot = w.slice(0, idx);
+    const afterRoot = w.slice(idx + cleanRoot.length);
+    const parts = [];
+    const unrecognized = [];
 
-  parts.push(bestRoot);
-
-  // 2. 检查词根前是否有匹配的前缀（剩余文本必须精确匹配前缀）
-  const beforeRoot = w.slice(0, bestRootIdx);
-  if (beforeRoot.length > 0) {
+    // 匹配前缀（剩余文本必须精确匹配）
     let matchedPrefix = null;
-    for (const p of ROOTS_BY_TYPE.prefix) {
-      const cleanPrefix = p.root.replace(/[-\s]/g, '');
-      if (beforeRoot === cleanPrefix) {
-        matchedPrefix = { ...p, matchedText: cleanPrefix, start: 0, end: cleanPrefix.length };
-        break;
+    if (beforeRoot.length > 0) {
+      for (const p of ROOTS_BY_TYPE.prefix) {
+        const cleanPrefix = p.root.replace(/[-\s]/g, '');
+        if (beforeRoot === cleanPrefix) {
+          matchedPrefix = { ...p, matchedText: cleanPrefix, start: 0, end: cleanPrefix.length };
+          break;
+        }
       }
     }
     if (matchedPrefix) {
-      parts.unshift(matchedPrefix);
-    } else {
+      parts.push(matchedPrefix);
+    } else if (beforeRoot.length > 0) {
       unrecognized.push({ text: beforeRoot, type: 'unrecognized' });
     }
-  }
 
-  // 3. 检查词根后是否有匹配的后缀（剩余文本必须精确匹配后缀）
-  const afterRoot = w.slice(bestRoot.end);
-  if (afterRoot.length > 0) {
+    // 词根本身
+    const rootPart = { ...r, matchedText: cleanRoot, start: idx, end: idx + cleanRoot.length };
+    parts.push(rootPart);
+
+    // 匹配后缀（剩余文本必须精确匹配）
     let matchedSuffix = null;
-    for (const s of ROOTS_BY_TYPE.suffix) {
-      const cleanSuffix = s.root.replace(/[-\s]/g, '');
-      if (afterRoot === cleanSuffix) {
-        matchedSuffix = { ...s, matchedText: cleanSuffix, start: bestRoot.end, end: w.length };
-        break;
+    if (afterRoot.length > 0) {
+      for (const s of ROOTS_BY_TYPE.suffix) {
+        const cleanSuffix = s.root.replace(/[-\s]/g, '');
+        if (afterRoot === cleanSuffix) {
+          matchedSuffix = { ...s, matchedText: cleanSuffix, start: idx + cleanRoot.length, end: w.length };
+          break;
+        }
       }
     }
     if (matchedSuffix) {
       parts.push(matchedSuffix);
-    } else {
+    } else if (afterRoot.length > 0) {
       unrecognized.push({ text: afterRoot, type: 'unrecognized' });
     }
+
+    const confidence = calcConfidence(w, parts, unrecognized);
+
+    candidates.push({
+      parts,
+      unrecognized,
+      confidence,
+      complete: unrecognized.length === 0,
+      rootLength: cleanRoot.length,
+      startIdx: idx
+    });
   }
 
-  // 4. 计算置信度
-  const confidence = calcConfidence(w, parts, unrecognized);
+  // 没有找到任何候选词根
+  if (candidates.length === 0) {
+    return { word: w, parts: [], unrecognized: [{ text: w, type: 'unrecognized' }], confidence: 0 };
+  }
 
-  return { word: w, parts, unrecognized, confidence };
+  // 排序规则（按优先级）：
+  // 1. 完整分解（无未识别部分）优先
+  // 2. 置信度高优先
+  // 3. 词根位置靠前优先（更自然的分解）
+  candidates.sort((a, b) => {
+    if (a.complete !== b.complete) return b.complete - a.complete;
+    if (a.confidence !== b.confidence) return b.confidence - a.confidence;
+    return a.startIdx - b.startIdx;
+  });
+
+  const best = candidates[0];
+  return { word: w, parts: best.parts, unrecognized: best.unrecognized, confidence: best.confidence };
 }
 
 /**
