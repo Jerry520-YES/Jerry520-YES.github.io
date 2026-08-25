@@ -8566,10 +8566,14 @@ function analyzeWord(word) {
 
   // 排序规则（按优先级）：
   // 1. 完整分解（无未识别部分）优先
-  // 2. 置信度高优先
-  // 3. 词根位置靠前优先（更自然的分解）
+  // 2. 未识别部分少优先
+  // 3. 词根长度更长优先（词根越长，语义越可靠）
+  // 4. 置信度高优先
+  // 5. 词根位置靠前优先（更自然的分解）
   candidates.sort((a, b) => {
     if (a.complete !== b.complete) return b.complete - a.complete;
+    if (a.unrecognized.length !== b.unrecognized.length) return a.unrecognized.length - b.unrecognized.length;
+    if (a.rootLength !== b.rootLength) return b.rootLength - a.rootLength;
     if (a.confidence !== b.confidence) return b.confidence - a.confidence;
     return a.startIdx - b.startIdx;
   });
