@@ -47345,9 +47345,12 @@ for (const [key, val] of Object.entries(WORD_TRANSLATIONS)) {
   if (!NORM_TRANSLATIONS[nk]) NORM_TRANSLATIONS[nk] = val;
 }
 
+// 在线词典查询缓存（会话级）
+const TRANS_CACHE = {};
+
 /**
  * 获取单词的中文翻译
- * 仅查小词典，不根据词根拼凑翻译（避免"sonate→声音+使"这类错误）
+ * 本地小词典查找 + 重音归一化 + 在线缓存
  */
 function getWordTranslation(word, parts) {
   const w = word.trim().toLowerCase();
@@ -47356,7 +47359,54 @@ function getWordTranslation(word, parts) {
   // 重音归一化查找（如 "corazon" → "corazón"）
   const wn = normalizeAccents(w);
   if (NORM_TRANSLATIONS[wn]) return NORM_TRANSLATIONS[wn];
+  // 在线缓存查找
+  if (TRANS_CACHE[wn]) return TRANS_CACHE[wn];
   return '';
+}
+
+/**
+ * 从在线词典异步查询翻译（Youdao API）
+ * 结果存入缓存，自动更新页面
+ */
+async function fetchOnlineTranslation(word) {
+  const w = word.trim().toLowerCase();
+  if (!w) return;
+  const wn = normalizeAccents(w);
+  if (TRANS_CACHE[wn]) return; // 已在缓存
+  
+  try {
+    // 使用 MyMemory API（免费，支持 CORS）
+    const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(w) + '&langpair=en|zh-CN';
+    const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const translation = data?.responseData?.translatedText;
+    if (!translation || translation === w) return; // 翻译无意义时跳过
+    
+    TRANS_CACHE[wn] = translation;
+    
+    // 获取当前显示的单词，确保只更新匹配的
+    const headerWord = document.querySelector('.word-header-word');
+    if (!headerWord || normalizeAccents(headerWord.textContent.trim().toLowerCase()) !== wn) return;
+    
+    // 更新翻译显示
+    const notrans = document.querySelector('.word-header-notrans');
+    if (notrans) {
+      notrans.className = 'word-header-trans';
+      notrans.textContent = translation;
+      // 移除"仅供参考"提示
+      const tip = document.querySelector('.trans-missing-tip');
+      if (tip) tip.style.display = 'none';
+    } else {
+      const trans = document.querySelector('.word-header-trans');
+      if (trans) trans.textContent = translation;
+    }
+  } catch (e) {
+    // 静默失败，保持"暂无词典释义"显示
+    if (e.name !== 'AbortError') {
+      console.warn('在线词典查询失败:', e.message);
+    }
+  }
 }
 
 /**
@@ -47444,6 +47494,11 @@ function renderResults(result) {
   }
   
   resultsEl.innerHTML = html;
+  
+  // 本地词典未命中时，异步查询在线词典
+  if (!translation) {
+    fetchOnlineTranslation(result.word);
+  }
 }
 
 // 事件委托：点击同根词触发新查询
