@@ -212,7 +212,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 <div class="container">
   <div class="stats-row">
     <div class="stat-item">
-      <div class="stat-num" style="color:#E74C3C">4</div>
+      <div class="stat-num" style="color:#E74C3C" id="online-count">3</div>
       <div class="stat-label">在线项目</div>
     </div>
     <div class="stat-item">
@@ -255,6 +255,15 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
   </div>
   <p class="copyright">&copy; 2026 Jerry520-YES &middot; 可免费使用，不开源，使用时需要标注水印</p>
 </footer>
+
+<script>
+// 自动统计在线项目数量
+(function() {
+  const count = document.querySelectorAll('.project-badge:not(.soon)').length;
+  const el = document.getElementById('online-count');
+  if (el) el.textContent = count;
+})();
+</script>
 
 </body>
 </html>
