@@ -927,6 +927,21 @@ const ROOT_DB = [
         "es"]
     },
 {
+      root: "coraz-",
+      type: "root",
+      meaning: "心",
+      meaning_en: "heart",
+      origin: "拉丁语",
+      from: "cor",
+      examples: ["corazón",
+        "corazonada",
+        "enamorado",
+        "descorazonar"],
+      priority: 3,
+      languages: ["es"]
+    },
+
+{
       root: "corpor-",
       type: "root",
       meaning: "身体",
@@ -44781,15 +44796,15 @@ function detectLanguage(word, _analysis) {
   else if (checkEnding(['ista','dor','dora','inho','inha','eiro','eira','são','ar','er','ir','ado','ido','eza','ismo','ança','ença','ante','ente','ção'])) scores.pt += 6;
   if (checkEnding(['e','a','o','ão','te','s'])) scores.pt += 3;
 
-  // 3. 词根库反馈（非英语语言 +3/部件，复用已有分析结果避免重复计算）
+  // 3. 词根库反馈（非英语 +3，英语 +1，避免纯英语词根带偏非英语语言）
   try {
     const analysis = _analysis || analyzeWord(w);
     if (analysis && analysis.parts && analysis.parts.length > 0) {
       for (const part of analysis.parts) {
         if (part.languages && Array.isArray(part.languages)) {
           for (const lang of part.languages) {
-            if (lang !== 'en' && scores[lang] !== undefined) {
-              scores[lang] += 3;
+            if (scores[lang] !== undefined) {
+              scores[lang] += lang === 'en' ? 1 : 3;
             }
           }
         }
