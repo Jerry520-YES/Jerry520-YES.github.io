@@ -47338,15 +47338,24 @@ const WORD_TRANSLATIONS = {
   'útil': '有用的'
 };
 
+// 重音归一化翻译索引（方便用户输入不带重音的单词也能查到翻译）
+const NORM_TRANSLATIONS = {};
+for (const [key, val] of Object.entries(WORD_TRANSLATIONS)) {
+  const nk = normalizeAccents(key);
+  if (!NORM_TRANSLATIONS[nk]) NORM_TRANSLATIONS[nk] = val;
+}
+
 /**
  * 获取单词的中文翻译
  * 仅查小词典，不根据词根拼凑翻译（避免"sonate→声音+使"这类错误）
  */
 function getWordTranslation(word, parts) {
   const w = word.trim().toLowerCase();
-  // 查小词典
+  // 精确查找
   if (WORD_TRANSLATIONS[w]) return WORD_TRANSLATIONS[w];
-  // 不在词典中时不返回错误翻译
+  // 重音归一化查找（如 "corazon" → "corazón"）
+  const wn = normalizeAccents(w);
+  if (NORM_TRANSLATIONS[wn]) return NORM_TRANSLATIONS[wn];
   return '';
 }
 
