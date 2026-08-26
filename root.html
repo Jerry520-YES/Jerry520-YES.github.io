@@ -82,6 +82,12 @@ section{padding:72px 0}
 .tool-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--bg)}
 .tool-panels{padding:28px}
 .input-area{margin-bottom:20px}
+.script-status{
+  max-width:760px;margin:0 auto 14px;padding:8px 14px;border-radius:8px;
+  background:#fff8e1;color:#8a6d3b;border:1px solid #f0e0a8;
+  font-size:0.85rem;text-align:center;transition:opacity 0.4s;
+}
+.script-status.ready{background:#e8f5e9;color:#2e7d32;border-color:#c8e6c9}
 .word-input{
   width:100%;padding:18px 24px;border:2px solid var(--rule);border-radius:10px;
   font-family:var(--font);font-size:1.1rem;color:var(--ink);background:var(--bg);
@@ -353,6 +359,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
   <div class="container">
     <h2 class="section-title">词根拆解</h2>
     <p class="section-sub">输入单词，自动拆解词根</p>
+    <div id="script-status" class="script-status" role="status">⏳ 正在加载脚本...（若此提示长时间显示，说明脚本未加载，请按 Ctrl+F5 强制刷新）</div>
     <div class="tool-wrapper">
       <div class="tool-panels">
         <div class="input-area">
@@ -47572,6 +47579,18 @@ function showToast(msg) {
     setTimeout(() => toast.remove(), 300);
   }, 2500);
 }
+
+// ===== 脚本加载状态指示 =====
+// 若能执行到这里，说明整个脚本已成功解析并完成初始化（所有事件监听器已绑定）
+(function markReady() {
+  const el = document.getElementById('script-status');
+  if (el) {
+    el.textContent = '✅ 脚本已就绪，可以输入单词';
+    el.classList.add('ready');
+    setTimeout(() => { el.style.opacity = '0'; }, 2500);
+    setTimeout(() => { if (el) el.style.display = 'none'; }, 3200);
+  }
+})();
 </script>
 </body>
 </html>
