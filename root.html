@@ -463,6 +463,7 @@ footer .copyright{font-size:0.8rem;color:#6c757d}
 </footer>
 
 <script>
+console.log('Root: 脚本已加载，版本 ' + new Date().toISOString().slice(0,10));
 
 /* =============================================
    ROOT_DB — 词根数据库（1837条）
@@ -45007,37 +45008,46 @@ function clearInput() {
 }
 
 input.addEventListener('input', function() {
-  clearTimeout(debounceTimer);
-  const word = this.value.trim();
-  const langDetect = document.getElementById('lang-detect');
-  const clearBtn = document.getElementById('clear-btn');
-  // 显示/隐藏清除按钮
-  if (clearBtn) clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
-  if (word.length === 0) {
-    if (clearBtn) clearBtn.style.display = 'none';
-    langDetect.classList.remove('show');
-    // 显示初始引导
-    resultsEl.innerHTML = '<div class="placeholder"><div class="ph-icon">🌿</div>输入单词，自动拆解词根<br><span class="placeholder-hint">点击上方输入框，开始分析</span></div>';
-    document.getElementById('ai-summary').style.display = 'none';
-    return;
-  }
-  const langSelect = document.getElementById('lang-select');
-  debounceTimer = setTimeout(() => {
-    const result = analyzeWord(word);
-    // 语言检测复用 analyzeWord 结果，避免重复计算
-    if (langSelect.value === 'auto') {
-      const detected = detectLanguage(word, result);
-      langDetect.textContent = '检测到：' + (LANG_MAP[detected] || '英语');
-      langDetect.classList.add('show');
-    } else {
+  try {
+    clearTimeout(debounceTimer);
+    const word = this.value.trim();
+    const langDetect = document.getElementById('lang-detect');
+    const clearBtn = document.getElementById('clear-btn');
+    // 显示/隐藏清除按钮
+    if (clearBtn) clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
+    if (word.length === 0) {
+      if (clearBtn) clearBtn.style.display = 'none';
       langDetect.classList.remove('show');
+      // 显示初始引导
+      resultsEl.innerHTML = '<div class="placeholder"><div class="ph-icon">🌿</div>输入单词，自动拆解词根<br><span class="placeholder-hint">点击上方输入框，开始分析</span></div>';
+      document.getElementById('ai-summary').style.display = 'none';
+      return;
     }
-    renderResults(result);
-    if (aiEnabled && apiKey && result && result.parts.length > 0) {
-      const lang = langSelect.value === 'auto' ? detectLanguage(word, result) : langSelect.value;
-      analyzeWithAI(word, lang);
-    }
-  }, 300);
+    const langSelect = document.getElementById('lang-select');
+    debounceTimer = setTimeout(() => {
+      try {
+        const result = analyzeWord(word);
+        // 语言检测复用 analyzeWord 结果，避免重复计算
+        if (langSelect.value === 'auto') {
+          const detected = detectLanguage(word, result);
+          langDetect.textContent = '检测到：' + (LANG_MAP[detected] || '英语');
+          langDetect.classList.add('show');
+        } else {
+          langDetect.classList.remove('show');
+        }
+        renderResults(result);
+        if (aiEnabled && apiKey && result && result.parts.length > 0) {
+          const lang = langSelect.value === 'auto' ? detectLanguage(word, result) : langSelect.value;
+          analyzeWithAI(word, lang);
+        }
+      } catch (e) {
+        console.error('Root: 分析出错:', e);
+        resultsEl.innerHTML = '<div class="no-match"><div class="no-match-icon">⚠️</div><p>分析过程中出现错误</p><p class="no-match-hint">请查看控制台了解详情（F12）</p></div>';
+      }
+    }, 300);
+  } catch (e) {
+    console.error('Root: 输入处理出错:', e);
+  }
 });
 
 /**
